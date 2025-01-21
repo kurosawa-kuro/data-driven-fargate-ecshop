@@ -18,7 +18,7 @@ db-migrate:  # データベースマイグレーションの実行
 
 db-update: db-migrate db-generate  # マイグレーションとクライアント生成を順次実行
 
-db-seed: db-migrate db-generate  # データベースのシード処理
+db-reset: db-migrate db-generate  # データベースのリセット
 	cd fullstack-nextjs && pnpm run prisma:seed
 
 ###################
