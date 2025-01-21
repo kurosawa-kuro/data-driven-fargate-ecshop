@@ -1,0 +1,36 @@
+### ==================== 環境設定 ====================
+@ecsHost = 35.77.48.143
+@localHost = localhost
+@port = 3000
+
+http://35.77.48.143:3000
+
+### Base URLs
+@ecsBaseUrl = http://{{ecsHost}}:{{port}}
+@localBaseUrl = http://{{localHost}}:{{port}}
+
+### ==================== Fargate環境 ====================
+### 情報ログ
+GET {{ecsBaseUrl}}/api/log/info
+
+### エラーログ
+GET {{ecsBaseUrl}}/api/log/error
+
+### CPU負荷テスト
+GET {{ecsBaseUrl}}/api/metrics/cpu-test
+
+### メモリ負荷テスト
+GET {{ecsBaseUrl}}/api/metrics/memory-test
+
+### ==================== Local環境 ====================
+### 情報ログ
+GET {{localBaseUrl}}/api/log/info
+
+### エラーログ
+GET {{localBaseUrl}}/api/log/error
+
+### CPU負荷テスト
+GET {{localBaseUrl}}/api/metrics/cpu-test
+
+### メモリ負荷テスト
+GET {{localBaseUrl}}/api/metrics/memory-test
