@@ -1,90 +1,45 @@
-generator client {
+ECサイトシミュレーター用の最低限必要なスキーマを設計します：
+prismaCopygenerator client {
   provider = "prisma-client-js"
 }
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://neondb_owner:Nrp3FfO1goiB@ep-noisy-cherry-a7rp6riz.ap-southeast-2.aws.neon.tech/neondb?sslmode=require"
+  url      = env("DATABASE_URL")
 }
 // ユーザー関連
 model User {
   id              Int       @id @default(autoincrement())
-  name            String
   email           String    @unique
-  passwordHash    String
-  lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  
   // リレーション
-  userRoles       UserRole[]
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchases       Purchase[]
 }
-
-model Role {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  userRoles       UserRole[]
-}
-
-model UserRole {
-  userId          Int
-  roleId          Int
-  assignedAt      DateTime  @default(now())
-  
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@id([userId, roleId])
-  @@index([userId])
-  @@index([roleId])
-}
-
-
 // 商品関連
 model Product {
-  id              Int       @id @default(autoincrement())
-  name            String
-  price           Float
-  rating          Float
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id          Int       @id @default(autoincrement())
+  name        String
+  price       Float
+  categoryId  Int
+  rating      Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   // リレーション
-  productCategories ProductCategory[]
+  category        Category      @relation(fields: [categoryId], references: [id])
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchaseItems   PurchaseItem[]
+  @@index([categoryId])
 }
 // カテゴリー
 model Category {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  productCategories ProductCategory[]
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
 }
-
-model ProductCategory {
-  productId       Int
-  categoryId      Int
-  assignedAt      DateTime  @default(now())
-  
-  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@id([productId, categoryId])
-  @@index([productId])
-  @@index([categoryId])
-}
-
-
 // 閲覧履歴（Random Forest, Logistic Regression用）
 model ViewHistory {
   id          Int       @id @default(autoincrement())
@@ -97,9 +52,7 @@ model ViewHistory {
   product     Product   @relation(fields: [productId], references: [id])
   @@index([userId])
   @@index([productId])
-  @@unique([userId, productId, viewedAt])
 }
-
 // カート（K-means用）
 model CartItem {
   id          Int       @id @default(autoincrement())
@@ -114,7 +67,6 @@ model CartItem {
   @@index([userId])
   @@index([productId])
 }
-
 // 購入履歴（Linear Regression, PCA用）
 model Purchase {
   id          Int       @id @default(autoincrement())
@@ -127,7 +79,6 @@ model Purchase {
   purchaseItems PurchaseItem[]
   @@index([userId])
 }
-
 // 購入商品詳細
 model PurchaseItem {
   id          Int       @id @default(autoincrement())
@@ -142,3 +93,33 @@ model PurchaseItem {
   @@index([purchaseId])
   @@index([productId])
 }
+このスキーマで収集できるデータと対応する機械学習モデル：
+ランダムフォレスト：
+ViewHistory + Product + Purchase テーブルから
+特徴量：閲覧回数、商品属性
+目的変数：購入有無
+ロジスティック回帰：
+CartItem + Product テーブルから
+特徴量：商品属性
+目的変数：カート追加有無
+線形回帰：
+ViewHistory テーブルから
+特徴量：時間帯、商品属性
+目的変数：閲覧数推移
+K-means：
+CartItem + Purchase テーブルから
+ユーザーの購買行動クラスタリング
+PCA：
+Product + ViewHistory + Purchase テーブルから
+商品特性の次元削減
+主要な特徴：
+必要最小限のテーブル構成
+適切なインデックス設定
+時系列データの取得が容易
+柔軟な拡張性
+このスキーマは必要に応じて以下のように拡張可能です：
+商品の在庫管理
+より詳細なユーザープロフィール
+商品レビュー機能
+セッション管理
+割引・クーポン機能

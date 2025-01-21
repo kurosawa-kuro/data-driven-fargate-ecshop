@@ -1,23 +1,20 @@
-generator client {
+prismaCopygenerator client {
   provider = "prisma-client-js"
 }
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://neondb_owner:Nrp3FfO1goiB@ep-noisy-cherry-a7rp6riz.ap-southeast-2.aws.neon.tech/neondb?sslmode=require"
+  url      = env("DATABASE_URL")
 }
 // ユーザー関連
 model User {
   id              Int       @id @default(autoincrement())
-  name            String
   email           String    @unique
-  passwordHash    String
-  lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   
   // リレーション
-  userRoles       UserRole[]
+  role            Role        @relation(fields: [roleId], references: [id])     
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchases       Purchase[]
@@ -25,63 +22,46 @@ model User {
 
 model Role {
   id              Int       @id @default(autoincrement())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  userRoles       UserRole[]
+  name            String
+  users           User[]
 }
 
 model UserRole {
-  userId          Int
-  roleId          Int
-  assignedAt      DateTime  @default(now())
-  
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@id([userId, roleId])
-  @@index([userId])
-  @@index([roleId])
+    userId Int
+    roleId Int
+    user User @relation(fields: [userId], references: [id])
+    role Role @relation(fields: [roleId], references: [id])
 }
 
 
 // 商品関連
 model Product {
-  id              Int       @id @default(autoincrement())
-  name            String
-  price           Float
-  rating          Float
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id          Int       @id @default(autoincrement())
+  name        String
+  price       Float
+  categoryId  Int
+  rating      Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   // リレーション
-  productCategories ProductCategory[]
+  category        Category      @relation(fields: [categoryId], references: [id])
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchaseItems   PurchaseItem[]
+  @@index([categoryId])
 }
 // カテゴリー
 model Category {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  productCategories ProductCategory[]
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
 }
 
 model ProductCategory {
-  productId       Int
-  categoryId      Int
-  assignedAt      DateTime  @default(now())
-  
-  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@id([productId, categoryId])
-  @@index([productId])
-  @@index([categoryId])
+  productId Int
+  categoryId Int
+  product Product @relation(fields: [productId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
 }
 
 
@@ -97,9 +77,7 @@ model ViewHistory {
   product     Product   @relation(fields: [productId], references: [id])
   @@index([userId])
   @@index([productId])
-  @@unique([userId, productId, viewedAt])
 }
-
 // カート（K-means用）
 model CartItem {
   id          Int       @id @default(autoincrement())
@@ -114,7 +92,6 @@ model CartItem {
   @@index([userId])
   @@index([productId])
 }
-
 // 購入履歴（Linear Regression, PCA用）
 model Purchase {
   id          Int       @id @default(autoincrement())
@@ -127,7 +104,6 @@ model Purchase {
   purchaseItems PurchaseItem[]
   @@index([userId])
 }
-
 // 購入商品詳細
 model PurchaseItem {
   id          Int       @id @default(autoincrement())

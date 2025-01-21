@@ -18,3 +18,8 @@ next.js Shop Admin Post
 
 event bridge
 sns メール
+
+
+Amplify Cognito 
+Migration
+Seeder
