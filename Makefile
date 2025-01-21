@@ -6,17 +6,16 @@ dev:  # ローカル開発サーバー起動
 watch:
 	tail -f logs/combined.log
 
-# 環境セットアップ（シンプル化）
-setup-env:
-	chmod u+x ./infrastructure/setup-env.sh
-	sudo ./infrastructure/setup-env.sh
+# 環境セットアップ
+setup-system:
+	chmod u+x ./infrastructure/install/setup-system.sh
+	sudo ./infrastructure/install/setup-system.sh
 
-# 環境セットアップ（シンプル化）
+# 環境セットアップ
 setup-app:
-	chmod u+x ./infrastructure/setup-app.sh
-	sudo ./infrastructure/setup-app.sh
+	chmod u+x ./infrastructure/install/setup-app.sh
+	sudo ./infrastructure/install/setup-app.sh
 
-# /home/ec2-user/app/infrastructure/fargate-deploy.sh
 fargate-deploy:
 	chmod u+x ./infrastructure/fargate-deploy.sh
 	./infrastructure/fargate-deploy.sh
