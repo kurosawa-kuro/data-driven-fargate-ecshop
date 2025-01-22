@@ -4,6 +4,12 @@
 dev:  # ローカル開発サーバー起動
 	cd fullstack-nextjs && pnpm run dev
 
+lint:  # コードのチェック
+	cd fullstack-nextjs && pnpm run lint
+
+test:  # テストの実行
+	cd fullstack-nextjs && pnpm run test
+
 watch:  # ログファイルの監視
 	tail -f logs/combined.log
 
