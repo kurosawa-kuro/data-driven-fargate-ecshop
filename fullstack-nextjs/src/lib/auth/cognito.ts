@@ -8,7 +8,6 @@ import {
   type CognitoIdentityProviderClientConfig
 } from "@aws-sdk/client-cognito-identity-provider";
 import crypto from 'crypto';
-import { prisma } from "../prisma";
 
 // 定数の集約
 const COGNITO_CONFIG = {

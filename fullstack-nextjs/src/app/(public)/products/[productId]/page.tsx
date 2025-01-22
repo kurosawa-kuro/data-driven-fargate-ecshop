@@ -1,5 +1,6 @@
 'use client'; // Client Componentとして宣言
 
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Page() {
@@ -22,11 +23,14 @@ export default function Page() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* 左ペイン: 商品画像 */}
-        <div className="overflow-hidden rounded-lg bg-gray-700">
-          <img 
+        <div className="overflow-hidden rounded-lg bg-gray-700 relative h-[400px]">
+          <Image 
             src={product.image}
             alt={product.name}
-            className="h-full w-full object-cover object-center"
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover object-center"
+            priority
           />
         </div>
 

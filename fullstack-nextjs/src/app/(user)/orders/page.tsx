@@ -1,3 +1,7 @@
+'use client';
+
+import Image from 'next/image';
+
 // 商品アイテムの型定義
 type Product = {
   id: string;
@@ -73,11 +77,13 @@ export default function Page() {
             <div className="space-y-4">
               {order.products.map((product) => (
                 <div key={product.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
-                  <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0">
-                    <img 
+                  <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 relative">
+                    <Image 
                       src={product.imageUrl}
-                      alt={product.name} 
-                      className="w-full h-full object-cover rounded"
+                      alt={product.name}
+                      fill
+                      sizes="80px"
+                      className="object-cover rounded"
                     />
                   </div>
                   

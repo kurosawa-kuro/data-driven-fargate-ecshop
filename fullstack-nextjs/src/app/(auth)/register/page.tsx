@@ -6,6 +6,12 @@ import { useRouter } from 'next/navigation';
 // fullstack-nextjs/src/lib/auth/cognito.ts
 import { signUp } from '@/lib/auth/cognito';
 
+interface CognitoError extends Error {
+  name: string;
+  message: string;
+  code?: string;
+}
+
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,8 +26,9 @@ export default function RegisterPage() {
       
       // 確認ページへリダイレクト
       router.push(`/confirm?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as CognitoError;
+      setError(error.message || 'ユーザー登録に失敗しました');
     }
   };
 

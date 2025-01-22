@@ -43,6 +43,22 @@ export default function Page() {
     // ... 他の商品
   ]);
 
+  const updateQuantity = (productId: number, newQuantity: number) => {
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        item.id === productId
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    );
+  };
+
+  const removeItem = (productId: number) => {
+    setCartItems(prevItems =>
+      prevItems.filter(item => item.id !== productId)
+    );
+  };
+
   const calculateTotal = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
@@ -71,25 +87,34 @@ export default function Page() {
               <div className="flex-grow">
                 <h3 className="text-lg font-semibold text-white">{item.name}</h3>
                 <p className="text-gray-300">{item.description}</p>
-                <div className="mt-2">
-                  <label className="text-gray-300">数量：</label>
-                  <select 
-                    value={item.quantity}
-                    onChange={(e) => {
-                      // 数量更新ロジック
-                    }}
-                    className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white"
+                <div className="mt-2 flex items-center gap-4">
+                  <div>
+                    <label className="text-gray-300">数量：</label>
+                    <select 
+                      value={item.quantity}
+                      onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
+                      className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white"
+                    >
+                      {[1,2,3,4,5].map(num => (
+                        <option key={num} value={num}>{num}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="text-red-500 hover:text-red-400"
                   >
-                    {[1,2,3,4,5].map(num => (
-                      <option key={num} value={num}>{num}</option>
-                    ))}
-                  </select>
+                    削除
+                  </button>
                 </div>
               </div>
               
               {/* 価格 */}
               <div className="text-right">
                 <p className="font-semibold text-white">¥{item.price.toLocaleString()}</p>
+                <p className="text-sm text-gray-400">
+                  小計: ¥{(item.price * item.quantity).toLocaleString()}
+                </p>
               </div>
             </div>
           ))}

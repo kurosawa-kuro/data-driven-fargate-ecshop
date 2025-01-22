@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Page() {
@@ -136,11 +137,14 @@ export default function Page() {
             href={`/products/${product.id}`}
             className="group block bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
           >
-            <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-700">
-              <img 
+            <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-700 relative">
+              <Image 
                 src={product.image}
                 alt={product.name}
-                className="h-full w-full object-cover object-center group-hover:opacity-75 transition-opacity"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover object-center group-hover:opacity-75 transition-opacity"
+                priority={product.id <= 4} // 最初の4つの商品画像を優先的に読み込む
               />
             </div>
             <div className="p-4">

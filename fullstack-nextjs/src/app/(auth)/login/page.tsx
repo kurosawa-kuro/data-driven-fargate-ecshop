@@ -4,6 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/auth/cognito';
 
+interface CognitoError extends Error {
+  name: string;
+  message: string;
+  code?: string;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,8 +21,9 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
       router.push('/products'); // ログイン後のリダイレクト先
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as CognitoError;
+      setError(error.message || 'ログインに失敗しました');
     }
   };
 

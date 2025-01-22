@@ -6,6 +6,12 @@ import { confirmSignUp } from '@/lib/auth/cognito';
 import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { client } from '@/lib/auth/cognito';
 
+interface CognitoError extends Error {
+  name: string;
+  message: string;
+  code?: string;
+}
+
 export default function ConfirmPage() {
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
@@ -52,9 +58,10 @@ export default function ConfirmPage() {
       }
 
       router.push('/products'); 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Confirmation error:', err);
-      setError(err.message || '確認コードの検証に失敗しました');
+      const error = err as CognitoError;
+      setError(error.message || '確認コードの検証に失敗しました');
     }
   };
 

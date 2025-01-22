@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from 'next/link';
 import "@/app/globals.css";
 import Navigation from '@/components/layout/Navigation';
 
