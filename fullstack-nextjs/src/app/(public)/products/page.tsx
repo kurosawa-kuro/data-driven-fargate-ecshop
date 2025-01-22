@@ -127,16 +127,16 @@ export default function Page() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">Public Products</h1>
+      <h1 className="text-2xl font-bold mb-8 text-white">商品一覧</h1>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (
           <Link 
             key={product.id} 
             href={`/products/${product.id}`}
-            className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+            className="group block bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
           >
-            <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-200">
+            <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-700">
               <img 
                 src={product.image}
                 alt={product.name}
@@ -144,7 +144,7 @@ export default function Page() {
               />
             </div>
             <div className="p-4">
-              <h2 className="text-lg font-medium text-gray-900">{product.name}</h2>
+              <h2 className="text-lg font-medium text-white">{product.name}</h2>
               <div className="mt-2 flex items-center">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, index) => (
@@ -153,21 +153,21 @@ export default function Page() {
                       className={`${
                         index < Math.floor(product.rating)
                           ? "text-yellow-400"
-                          : "text-gray-300"
+                          : "text-gray-600"
                       } text-lg`}
                     >
                       ★
                     </span>
                   ))}
                 </div>
-                <span className="ml-2 text-sm text-gray-600">
+                <span className="ml-2 text-sm text-gray-300">
                   {product.rating}
                 </span>
-                <span className="ml-2 text-sm text-gray-500">
+                <span className="ml-2 text-sm text-gray-400">
                   ({product.reviews})
                 </span>
               </div>
-              <p className="mt-2 text-lg font-semibold text-gray-900">
+              <p className="mt-2 text-lg font-semibold text-white">
                 ¥{product.price.toLocaleString()}
               </p>
             </div>

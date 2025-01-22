@@ -18,11 +18,11 @@ export default function Page() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">商品詳細</h1>
+      <h1 className="text-2xl font-bold mb-8 text-white">商品詳細</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* 左ペイン: 商品画像 */}
-        <div className="overflow-hidden rounded-lg bg-gray-200">
+        <div className="overflow-hidden rounded-lg bg-gray-700">
           <img 
             src={product.image}
             alt={product.name}
@@ -32,8 +32,8 @@ export default function Page() {
 
         {/* 中央ペイン: 商品情報 */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-white-900">{product.name}</h2>
-          <p className="text-xl font-semibold text-white-900">
+          <h2 className="text-2xl font-bold text-white">{product.name}</h2>
+          <p className="text-xl font-semibold text-white">
             ¥{product.price.toLocaleString()}
           </p>
           <div className="flex items-center">
@@ -44,44 +44,43 @@ export default function Page() {
                   className={`${
                     index < Math.floor(product.rating)
                       ? "text-yellow-400"
-                      : "text-gray-300"
+                      : "text-gray-600"
                   } text-lg`}
                 >
                   ★
                 </span>
               ))}
             </div>
-            <span className="ml-2 text-sm text-white-900">
+            <span className="ml-2 text-sm text-gray-300">
               {product.rating}
             </span>
-            <span className="ml-2 text-sm text-white-900">
+            <span className="ml-2 text-sm text-gray-400">
               ({product.reviews}件のレビュー)
             </span>
           </div>
-          <p className="text-white-900">{product.description}</p>
+          <p className="text-gray-300">{product.description}</p>
         </div>
 
         {/* 右ペイン: カート追加 */}
-        <div className="bg-white-900 p-6 rounded-lg">
+        <div className="bg-gray-800 p-6 rounded-lg shadow">
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between text-white">
               <span className="text-lg font-medium">価格:</span>
               <span className="text-xl font-bold">¥{product.price.toLocaleString()}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between text-white">
               <span className="text-lg font-medium">数量:</span>
               <span className="text-xl font-bold">1</span>
             </div>
-            <button
-              onClick={() => {
-                // TODO: カート追加の実装
-                alert('カートに追加しました');
-              }}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              カートに追加
-            </button>
-            <p className="text-sm text-gray-500 text-center">
+            {/* http://localhost:3001/cart にリンク */}
+            <Link href="/cart">
+              <button
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                カートに追加
+              </button>
+            </Link>
+            <p className="text-sm text-gray-400 text-center">
               通常配送 2-4 日でお届け
             </p>
           </div>

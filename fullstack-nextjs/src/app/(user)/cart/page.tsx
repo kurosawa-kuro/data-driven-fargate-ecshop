@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 
 interface CartItem {
@@ -48,13 +49,13 @@ export default function Page() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">ショッピングカート</h1>
+      <h1 className="text-2xl font-bold mb-8 text-white">ショッピングカート</h1>
       
       <div className="flex flex-col md:flex-row gap-8">
         {/* 商品リスト */}
         <div className="md:w-2/3">
           {cartItems.map((item) => (
-            <div key={item.id} className="flex border-b py-4 gap-4">
+            <div key={item.id} className="flex border-b border-gray-700 py-4 gap-4">
               {/* 商品画像 */}
               <div className="w-[180px]">
                 <Image
@@ -68,16 +69,16 @@ export default function Page() {
               
               {/* 商品情報 */}
               <div className="flex-grow">
-                <h3 className="text-lg font-semibold">{item.name}</h3>
-                <p className="text-black-600">{item.description}</p>
+                <h3 className="text-lg font-semibold text-white">{item.name}</h3>
+                <p className="text-gray-300">{item.description}</p>
                 <div className="mt-2">
-                  <label>数量：</label>
+                  <label className="text-gray-300">数量：</label>
                   <select 
                     value={item.quantity}
                     onChange={(e) => {
                       // 数量更新ロジック
                     }}
-                    className="border rounded px-2 py-1 text-black"
+                    className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white"
                   >
                     {[1,2,3,4,5].map(num => (
                       <option key={num} value={num}>{num}</option>
@@ -88,7 +89,7 @@ export default function Page() {
               
               {/* 価格 */}
               <div className="text-right">
-                <p className="font-semibold">¥{item.price.toLocaleString()}</p>
+                <p className="font-semibold text-white">¥{item.price.toLocaleString()}</p>
               </div>
             </div>
           ))}
@@ -96,15 +97,17 @@ export default function Page() {
 
         {/* 小計 */}
         <div className="md:w-1/3">
-          <div className="bg-white-50 p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">注文概要</h2>
-            <div className="flex justify-between mb-4">
+          <div className="bg-gray-800 p-6 rounded-lg shadow">
+            <h2 className="text-xl font-bold mb-4 text-white">注文概要</h2>
+            <div className="flex justify-between mb-4 text-white">
               <span>小計</span>
               <span>¥{calculateTotal().toLocaleString()}</span>
             </div>
-            <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-              レジに進む
-            </button>
+            <Link href="/checkout"> 
+              <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                レジに進む
+              </button>
+            </Link>
           </div>
         </div>
       </div>
