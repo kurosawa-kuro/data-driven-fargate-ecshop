@@ -1,10 +1,13 @@
 // src/lib/auth/cognito.ts
-import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, ConfirmSignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, ConfirmSignUpCommand, AdminGetUserCommand  } from "@aws-sdk/client-cognito-identity-provider";
 import crypto from 'crypto';
 import { prisma } from "../prisma";
-const client = new CognitoIdentityProviderClient({
-  region: "ap-northeast-1",
-  // region: process.env.NEXT_PUBLIC_AWS_REGION,
+export const client = new CognitoIdentityProviderClient({
+  region: process.env.NEXT_PUBLIC_AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!
+  }
 });
 
 export async function signUp(email: string, password: string) {
@@ -40,8 +43,7 @@ function generateSecretHash(username: string) {
 
 export async function confirmSignUp(email: string, code: string) {
   const command = new ConfirmSignUpCommand({
-    ClientId: "eb28gts2rhj3rnfl53al7hj5q",
-    // ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
+    ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
     Username: email,
     ConfirmationCode: code,
     SecretHash: generateSecretHash(email),
@@ -51,23 +53,16 @@ export async function confirmSignUp(email: string, code: string) {
     const response = await client.send(command);
     console.log("response", response);
 
-    // // ユーザー登録APIを呼ぶ
-    // await signUp(email, password);
+        // AdminGetUserCommandを使用してユーザー情報を取得
+        const userCommand = new AdminGetUserCommand({
+          UserPoolId: "ap-northeast-1_08U4ee9ae", // あなたのUser Pool ID
+          Username: email
+        });
+        
+        const userResponse = await client.send(userCommand);
+        const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
+        console.log("sub", sub);
 
-    // userSub
-    // console.log("userSub", userSub);
-    // await prisma.user.create({
-    //   data: {
-    //     id: userSub,
-    //     email: email,
-    //     cognitoId: userSub,
-    //     status: "ACTIVE",
-    //     emailVerified: true,
-    //     lastLoginAt: new Date(),
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //   },
-    // });
     return response;
   } catch (error) {
     console.error('確認エラー:', error);

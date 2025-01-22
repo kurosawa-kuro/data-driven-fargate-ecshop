@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { confirmSignUp } from '@/lib/auth/cognito';
+import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { client } from '@/lib/auth/cognito';
 
 export default function ConfirmPage() {
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
-  const [userSub, setUserSub] = useState('');
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,10 +23,38 @@ export default function ConfirmPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await confirmSignUp(email, code );
+      const response = await confirmSignUp(email, code);
+      console.log("Confirmation successful:", response);
+
+      // Cognitoユーザー情報を取得
+      const userCommand = new AdminGetUserCommand({
+        UserPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
+        Username: email
+      });
+      
+      const userResponse = await client.send(userCommand);
+      const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
+      console.log("Got user sub:", sub);
+
+      if (sub) {
+        // ユーザー登録APIを呼び出し
+        console.log("Calling user registration API...");
+        const apiResponse = await fetch('/api/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, sub }),
+        });
+
+        const data = await apiResponse.json();
+        console.log("User registration response:", data);
+      }
+
       router.push('/login');
     } catch (err: any) {
-      setError(err.message);
+      console.error('Confirmation error:', err);
+      setError(err.message || '確認コードの検証に失敗しました');
     }
   };
 
