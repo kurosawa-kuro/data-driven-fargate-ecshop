@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from 'next/link';
-import "../globals.css";
-import Navigation from '../../components/layout/Navigation';
+import "../../globals.css";
+import Sidebar from '../../../components/layout/Sidebar';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,10 +16,12 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <Navigation />
-        <main className="container mx-auto px-4">
-          {children}
-        </main>
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 container mx-auto px-4">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );
