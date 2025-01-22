@@ -5,22 +5,33 @@ datasource db {
   provider = "postgresql"
   url      = "postgresql://neondb_owner:Nrp3FfO1goiB@ep-noisy-cherry-a7rp6riz.ap-southeast-2.aws.neon.tech/neondb?sslmode=require"
 }
-// ユーザー関連
+
 model User {
-  id              Int       @id @default(autoincrement())
-  name            String
+  // Cognitoとの連携のため修正
+  id              String    @id           // CognitoのsubをIDとして使用
   email           String    @unique
-  passwordHash    String
+  cognitoId       String    @unique      // Cognito User Pool IDとの紐付け
+  
+  // 認証関連の情報追加
+  emailVerified   Boolean   @default(false)
   lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  
-  // リレーション
+  // ステータス管理
+  status          UserStatus @default(ACTIVE)  // ACTIVE, DISABLED, DELETED など
+
+  // リレーション（既存）
   userRoles       UserRole[]
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchases       Purchase[]
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  DELETED
 }
 
 model Role {
@@ -33,7 +44,7 @@ model Role {
 }
 
 model UserRole {
-  userId          Int
+  userId          String
   roleId          Int
   assignedAt      DateTime  @default(now())
   
@@ -88,7 +99,7 @@ model ProductCategory {
 // 閲覧履歴（Random Forest, Logistic Regression用）
 model ViewHistory {
   id          Int       @id @default(autoincrement())
-  userId      Int
+  userId      String
   productId   Int
   viewedAt    DateTime  @default(now())
 
@@ -103,7 +114,7 @@ model ViewHistory {
 // カート（K-means用）
 model CartItem {
   id          Int       @id @default(autoincrement())
-  userId      Int
+  userId      String
   productId   Int
   quantity    Int       @default(1)
   addedAt     DateTime  @default(now())
@@ -118,7 +129,7 @@ model CartItem {
 // 購入履歴（Linear Regression, PCA用）
 model Purchase {
   id          Int       @id @default(autoincrement())
-  userId      Int
+  userId      String
   totalAmount Float
   purchasedAt DateTime  @default(now())
 
