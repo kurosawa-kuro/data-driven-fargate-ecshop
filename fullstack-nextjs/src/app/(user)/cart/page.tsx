@@ -1,7 +1,113 @@
+'use client';
+
+import Image from 'next/image';
+import { useState } from 'react';
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  description: string;
+}
+
 export default function Page() {
+  // サンプルデータ（実際はAPIやRedux/Contextから取得）
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: 1,
+      name: "Sample Product 1",
+      price: 2000,
+      quantity: 1,
+      image: "https://picsum.photos/id/1/180/200",
+      description: "This is a sample product description"
+    },
+    {
+      id: 2,
+      name: "Sample Product 2",
+      price: 3000,
+      quantity: 2,
+      image: "https://picsum.photos/id/2/180/200",
+      description: "This is another sample product description"
+    },
+    {
+      id: 3,
+      name: "Sample Product 3",
+      price: 4000,
+      quantity: 3,
+      image: "https://picsum.photos/id/3/180/200",
+      description: "This is another sample product description"
+    },
+    // ... 他の商品
+  ]);
+
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
   return (
-    <>
-      <h1 className="text-2xl font-bold mt-8 px-4">Public Product</h1>
-    </>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-8">ショッピングカート</h1>
+      
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* 商品リスト */}
+        <div className="md:w-2/3">
+          {cartItems.map((item) => (
+            <div key={item.id} className="flex border-b py-4 gap-4">
+              {/* 商品画像 */}
+              <div className="w-[180px]">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={180}
+                  height={200}
+                  className="rounded-lg"
+                />
+              </div>
+              
+              {/* 商品情報 */}
+              <div className="flex-grow">
+                <h3 className="text-lg font-semibold">{item.name}</h3>
+                <p className="text-black-600">{item.description}</p>
+                <div className="mt-2">
+                  <label>数量：</label>
+                  <select 
+                    value={item.quantity}
+                    onChange={(e) => {
+                      // 数量更新ロジック
+                    }}
+                    className="border rounded px-2 py-1 text-black"
+                  >
+                    {[1,2,3,4,5].map(num => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {/* 価格 */}
+              <div className="text-right">
+                <p className="font-semibold">¥{item.price.toLocaleString()}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 小計 */}
+        <div className="md:w-1/3">
+          <div className="bg-white-50 p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">注文概要</h2>
+            <div className="flex justify-between mb-4">
+              <span>小計</span>
+              <span>¥{calculateTotal().toLocaleString()}</span>
+            </div>
+            <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+              レジに進む
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
