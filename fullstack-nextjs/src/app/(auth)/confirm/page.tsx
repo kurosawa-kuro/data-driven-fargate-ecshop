@@ -51,7 +51,7 @@ export default function ConfirmPage() {
         console.log("User registration response:", data);
       }
 
-      router.push('/login');
+      router.push('/products'); 
     } catch (err: any) {
       console.error('Confirmation error:', err);
       setError(err.message || '確認コードの検証に失敗しました');

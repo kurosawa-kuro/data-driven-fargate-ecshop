@@ -15,7 +15,7 @@ const COGNITO_CONFIG = {
   REGION: process.env.NEXT_PUBLIC_AWS_REGION,
   CLIENT_ID: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
   CLIENT_SECRET: process.env.NEXT_PUBLIC_COGNITO_CLIENT_SECRET!,
-  USER_POOL_ID: "ap-northeast-1_08U4ee9ae",
+  USER_POOL_ID: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
 } as const;
 
 // クライアント設定の集約
