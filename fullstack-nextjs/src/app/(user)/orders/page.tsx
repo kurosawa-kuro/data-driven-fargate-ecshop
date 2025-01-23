@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import router from 'next/router';
+import { useEffect, useState } from 'react';
 
 // 商品アイテムの型定義
 type Product = {
@@ -23,44 +24,28 @@ type OrderItem = {
   products: Product[];
 };
 
-// モックデータを更新
-const mockOrders: OrderItem[] = [
-  {
-    id: '1',
-    orderDate: '2024年3月15日',
-    totalAmount: 18200,
-    products: [
-      {
-        id: 'p1',
-        name: 'プレミアムレザーバッグ',
-        quantity: 1,
-        imageUrl: 'https://picsum.photos/id/1/180/200',
-        price: 12800
-      },
-      {
-        id: 'p2',
-        name: 'シルクスカーフ',
-        quantity: 2,
-        imageUrl: 'https://picsum.photos/id/4/180/200',
-        price: 2700
-      }
-    ]
-  },
-  {
-    id: '2',
-    orderDate: '2024年3月10日',
-    totalAmount: 8600,
-    products: [
-      {
-        id: 'p3',
-        name: 'ワイヤレスイヤホン',
-        quantity: 2,
-        imageUrl: 'https://picsum.photos/id/2/180/200',
-        price: 4300
-      }
-    ]
-  }
-];
+interface PurchaseItem {
+  id: number;
+  purchaseId: number;
+  productId: number;
+  quantity: number;
+  price: number;
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    imageUrl: string;
+  };
+}
+
+interface Purchase {
+  id: number;
+  userId: string;
+  totalAmount: number;
+  purchasedAt: Date;
+  purchaseItems: PurchaseItem[];
+}
+
 
 // 返品、再購入、レビュー機能の仮実装
 const handleReturn = async (orderId: string, productId: string) => {
@@ -145,28 +130,36 @@ const handleReview = async (orderId: string, productId: string) => {
 export default function Page() {
   const router = useRouter();
 
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  useEffect(() => {
+    fetch('/api/purchase')
+      .then(response => response.json())
+      .then(data => setPurchases(data.purchases))
+      .catch(error => console.error('購入履歴取得エラー:', error));
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 text-white">注文履歴</h1>
       
       {/* 注文履歴カード */}
       <div className="space-y-6">
-        {mockOrders.map((order) => (
+        {purchases.map((order) => (
           <div key={order.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow">
             {/* 上部: 注文情報 */}
             <div className="flex justify-between items-center mb-4 text-sm text-gray-300">
-              <div>注文日: {order.orderDate}</div>
+              <div>注文日: {new Date(order.purchasedAt).toLocaleDateString('ja-JP')}</div>
               <div>合計: ¥{order.totalAmount.toLocaleString()}</div>
             </div>
             
             {/* 下部: 商品情報 */}
             <div className="space-y-4">
-              {order.products.map((product) => (
-                <div key={product.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
+              {order.purchaseItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
                   <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 relative">
                     <Image 
-                      src={product.imageUrl}
-                      alt={product.name}
+                      src={item.product.imageUrl}
+                      alt={item.product.name}
                       fill
                       sizes="80px"
                       className="object-cover rounded"
@@ -175,29 +168,33 @@ export default function Page() {
                   
                   <div className="flex-grow flex justify-between items-center">
                     <div>
-                      <h3 className="font-medium text-white">{product.name}</h3>
+                      <h3 className="font-medium text-white">{item.product.name}</h3>
                       <div className="text-sm text-gray-300 space-y-1">
-                        <p>数量: {product.quantity}</p>
-                        <p>価格: ¥{product.price.toLocaleString()}</p>
+                        <p>数量: {item.quantity}</p>
+                        <p>価格: ¥{item.price.toLocaleString()}</p>
                       </div>
                     </div>
                     
                     {/* 商品情報の右側にアクションボタンを配置 */}
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => handleReturn(order.id, product.id)}
+                        onClick={() => handleReturn(order.id.toString(), item.productId.toString())}
                         className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
                         返品
                       </button>
                       <button 
-                        onClick={() => handleRepurchase([product])}
+                        onClick={() => handleRepurchase([{
+                          ...item.product,
+                          id: item.product.id.toString(),
+                          quantity: item.quantity
+                        }])}
                         className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
                         再度購入
                       </button>
                       <button 
-                        onClick={() => handleReview(order.id, product.id)}
+                        onClick={() => handleReview(order.id.toString(), item.productId.toString())}
                         className="px-3 py-1 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
                       >
                         レビューを書く

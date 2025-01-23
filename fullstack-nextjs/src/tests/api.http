@@ -47,6 +47,10 @@ Content-Type: application/json
 ### カート一覧取得
 GET {{localBaseUrl}}/api/cart
 
+### 購入履歴取得
+GET {{localBaseUrl}}/api/purchase
+
+
 ### ==================== システム監視 ====================
 ### [Fargate] システムメトリクス
 ### ログ
