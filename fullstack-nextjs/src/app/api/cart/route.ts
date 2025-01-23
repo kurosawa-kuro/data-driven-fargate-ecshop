@@ -4,8 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const productId = body.productId || body.product?.productId;
-    const quantity = body.quantity || body.product?.quantity || 1;
+    const { productId, quantity = 1 } = body;
 
     if (!productId) {
       return NextResponse.json(
@@ -17,7 +16,7 @@ export async function POST(request: Request) {
     // カートアイテムを作成
     const cartItem = await prisma.cartItem.create({
       data: {
-        userId: "1", // TODO: 実際のユーザーIDを使用
+        userId: "auth0|user1", // 仮のユーザーID（後で認証システムと連携）
         productId: productId,
         quantity: quantity
       }

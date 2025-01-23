@@ -36,63 +36,14 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      // トランザクション処理の実装
-      await prisma.$transaction(async (tx) => {
-        // 1. CartItems取得
-        const cartItems = await tx.cartItem.findMany({
-          where: { userId: "1" },
-          include: { product: true }
-        });
-
-        // 2. Purchase作成
-        const purchase = await tx.purchase.create({
-          data: {
-            userId: "1",
-            totalAmount: calculateTotal(),
-            purchaseItems: {
-              create: cartItems.map(item => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.product.price
-              }))
-            }
-          }
-        });
-
-        // 3. CartItems削除
-        await tx.cartItem.deleteMany({
-          where: { userId: "1" }
-        });
-      });
-
-      await fetch('/api/log', {
+      const response = await fetch('/api/checkout/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          actionType: 'checkout_start'
-        })
       });
-
-      router.push('/checkout');
-    } catch (error) {
-      logger.error('チェックアウトの開始に失敗しました', error as Error);
-      // TODO: エラー処理（例：トースト表示など）
-    }
-
-    try {
-      await fetch('/api/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          actionType: 'order_complete'
-        })
-      });
-
       router.push('/orders');
     } catch (error) {
       logger.error('注文の確定に失敗しました', error as Error);

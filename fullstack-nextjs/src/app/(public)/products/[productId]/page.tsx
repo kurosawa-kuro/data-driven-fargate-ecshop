@@ -24,19 +24,23 @@ export default function Page() {
 
   const handleAddToCart = async () => {
     try {
-
-      await fetch('/api/cart', {
+      const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          product: {
-            productId: product.id,
-            quantity: 1  // デフォルト数量を1に設定
-          }
+          productId: product.id,  // 直接productIdを送信
+          quantity: 1
         })
       });
+
+      if (!response.ok) {
+        throw new Error('カートへの追加に失敗しました');
+      }
+
+      // 成功時の処理（例：トースト表示など）
+      
     } catch (error) {
       logger.error('カートへの追加に失敗しました', error as Error);
       // TODO: エラー処理（例：トースト表示など）
