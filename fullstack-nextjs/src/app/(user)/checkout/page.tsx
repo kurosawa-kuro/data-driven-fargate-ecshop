@@ -31,7 +31,7 @@ export default function Page() {
     e.preventDefault();
 
     try {
-      const response = await fetch('/api/checkout/confirm', {
+      await fetch('/api/checkout/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

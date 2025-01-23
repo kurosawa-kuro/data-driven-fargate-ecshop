@@ -19,22 +19,39 @@ interface CartItem {
   };
 }
 
+// カート操作の結果型
+type CartOperationResult = {
+  success: boolean;
+  error?: string;
+};
+
+// APIエンドポイント定数
+const API_ENDPOINTS = {
+  CART: '/api/cart',
+  LOG: '/api/log',
+} as const;
+
 export default function Page() {
   const router = useRouter();
-
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  // APIリクエストのエラーハンドラー
+  const handleApiError = (error: Error, message: string) => {
+    logger.error(message, error);
+    setError(message);
+  };
 
   // カート商品の取得
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch('/api/cart');
+        const response = await fetch(API_ENDPOINTS.CART);
         if (!response.ok) throw new Error('カートの取得に失敗しました');
         const data = await response.json();
         setCartItems(data.cartItems);
       } catch (error) {
-        logger.error('カート一覧取得エラー:', error as Error);
-        // TODO: エラー表示の実装
+        handleApiError(error as Error, 'カート一覧の取得に失敗しました');
       }
     };
     fetchCartItems();
@@ -42,19 +59,26 @@ export default function Page() {
 
   // カート操作関連の関数
   const cartOperations = {
-    updateQuantity: (productId: number, newQuantity: number) => {
-      setCartItems(prevItems =>
-        prevItems.map(item =>
-          item.id === productId
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-      );
+    async updateQuantity(productId: number, newQuantity: number): Promise<CartOperationResult> {
+      try {
+        // 数量更新のAPIコールをここに追加予定
+        setCartItems(prevItems =>
+          prevItems.map(item =>
+            item.id === productId
+              ? { ...item, quantity: newQuantity }
+              : item
+          )
+        );
+        return { success: true };
+      } catch (error) {
+        handleApiError(error as Error, '数量の更新に失敗しました');
+        return { success: false, error: '数量の更新に失敗しました' };
+      }
     },
 
-    removeItem: async (productId: number) => {
+    async removeItem(productId: number): Promise<CartOperationResult> {
       try {
-        const response = await fetch('/api/log', {
+        const response = await fetch(API_ENDPOINTS.LOG, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ actionType: 'cart_remove' })
@@ -62,13 +86,14 @@ export default function Page() {
         if (!response.ok) throw new Error('ログの記録に失敗しました');
         
         setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+        return { success: true };
       } catch (error) {
-        logger.error('カートからの削除に失敗しました', error as Error);
-        // TODO: エラー表示の実装
+        handleApiError(error as Error, 'カートからの削除に失敗しました');
+        return { success: false, error: 'カートからの削除に失敗しました' };
       }
     },
 
-    calculateTotal: () => {
+    calculateTotal(): number {
       return cartItems.reduce((total, item) => 
         total + (item.product.price * item.quantity), 0
       );
@@ -78,17 +103,9 @@ export default function Page() {
   // チェックアウト処理
   const handleProceedToCheckout = async () => {
     try {
-      // const response = await fetch('/api/log', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ actionType: 'checkout_start' })
-      // });
-      // if (!response.ok) throw new Error('ログの記録に失敗しました');
-
       router.push('/checkout');
     } catch (error) {
-      logger.error('チェックアウトの開始に失敗しました', error as Error);
-      // TODO: エラー表示の実装
+      handleApiError(error as Error, 'チェックアウトの開始に失敗しました');
     }
   };
 
