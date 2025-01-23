@@ -1,62 +1,72 @@
 import { logger } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+// Action type constants
+const ACTION_TYPES = {
+  CART_ADD: 'cart_add',
+  CART_REMOVE: 'cart_remove',
+  CHECKOUT_START: 'checkout_start',
+  CHECKOUT_COMPLETE: 'checkout_complete',
+  ORDER_COMPLETE: 'order_complete',
+} as const;
 
-  const body = await request.json();
-  const actionType = body.actionType;
+type ActionType = typeof ACTION_TYPES[keyof typeof ACTION_TYPES];
 
-  // action card_add
-  if (actionType === 'cart_add') {
-    const product = {
+// Common types for logging
+interface BaseLogPayload {
+  amount?: number;
+  quantity: number;
+  productId?: string;
+}
+
+// Handler functions for each action type
+const handleCartAdd = () => {
+  const product = {
     id: 1,
     name: 'Product 1',
     price: 1000
-    };
-    logger.action('cart_add', {
+  };
+  
+  return {
     productId: product.id.toString(),
     quantity: 1,
     amount: product.price,
     currency: 'JPY',
     metadata: {
-    productName: product.name,
+      productName: product.name,
     }
-    });
+  };
+};
 
-    return NextResponse.json({ });
-  } 
+const handleCartRemove = (body: any): BaseLogPayload => ({
+  productId: body.productId,
+  quantity: body.quantity
+});
 
-  // cart_remove
-  if (actionType === 'cart_remove') {
-    logger.action('cart_remove', {
-      productId: body.productId,
-      quantity: body.quantity
-    });
+const handleCheckoutOrOrder = (body: any): BaseLogPayload => ({
+  amount: body.cartTotal,
+  quantity: body.itemCount
+});
+
+// Main request handler
+export async function POST(request: Request) {
+  const body = await request.json();
+  const actionType = body.actionType as ActionType;
+
+  // Action type to handler mapping
+  const actionHandlers: Record<ActionType, (body: any) => any> = {
+    [ACTION_TYPES.CART_ADD]: handleCartAdd,
+    [ACTION_TYPES.CART_REMOVE]: handleCartRemove,
+    [ACTION_TYPES.CHECKOUT_START]: handleCheckoutOrOrder,
+    [ACTION_TYPES.CHECKOUT_COMPLETE]: handleCheckoutOrOrder,
+    [ACTION_TYPES.ORDER_COMPLETE]: handleCheckoutOrOrder,
+  };
+
+  const handler = actionHandlers[actionType];
+  if (handler) {
+    const logPayload = handler(body);
+    logger.action(actionType, logPayload);
   }
 
-  // action checkout_start
-  if (actionType === 'checkout_start') {
-    logger.action('checkout_start', {
-      amount: body.cartTotal,
-      quantity: body.itemCount
-    });
-  }
-
-  // checkout_complete
-  if (actionType === 'checkout_complete') {
-    logger.action('checkout_complete', {
-      amount: body.cartTotal,
-      quantity: body.itemCount
-    });
-  }
-
-  // order_complete
-  if (actionType === 'order_complete') {
-    logger.action('order_complete', {
-      amount: body.cartTotal,
-      quantity: body.itemCount
-    });
-  }
-
-  return NextResponse.json({ });
+  return NextResponse.json({});
 }
