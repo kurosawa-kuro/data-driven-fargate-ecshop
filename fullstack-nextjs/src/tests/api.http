@@ -1,7 +1,7 @@
 ### ==================== 環境設定 ====================
 @ecsHost = 35.77.48.143
 @localHost = localhost
-@port = 3001
+@port = 3000
 
 http://35.77.48.143:3000
 
@@ -9,43 +9,9 @@ http://35.77.48.143:3000
 @ecsBaseUrl = http://{{ecsHost}}:{{port}}
 @localBaseUrl = http://{{localHost}}:{{port}}
 
-### ==================== Fargate環境 ====================
-### 情報ログ
-GET {{ecsBaseUrl}}/api/log/info
 
-### エラーログ
-GET {{ecsBaseUrl}}/api/log/error
-
-### CPU負荷テスト
-GET {{ecsBaseUrl}}/api/metrics/cpu-test
-
-### メモリ負荷テスト
-GET {{ecsBaseUrl}}/api/metrics/memory-test
-
-### ==================== Local環境 ====================
-### 情報ログ
-GET {{localBaseUrl}}/api/log/info
-
-### エラーログ
-GET {{localBaseUrl}}/api/log/error
-
-### CPU負荷テスト
-GET {{localBaseUrl}}/api/metrics/cpu-test
-
-### メモリ負荷テスト
-GET {{localBaseUrl}}/api/metrics/memory-test
-
-
-
-    # await fetch("http://localhost:3001/api/user", {
-    #   method: "POST",
-    #   headers: {
-    #     'Content-Type': 'application/json',
-    #   },
-    #   body: JSON.stringify({ email: email, sub: sub }),
-    # });
-### メーザー登録
-
+### ==================== 認証・ユーザー管理 ====================
+### ユーザー登録
 POST {{localBaseUrl}}/api/user
 Content-Type: application/json
 
@@ -54,8 +20,7 @@ Content-Type: application/json
   "sub": "17441a88-60f1-709b-b7e3-3e3173aca5d62"
 }
 
-### auth/verify
-
+### 認証検証
 POST {{localBaseUrl}}/api/auth/verify
 Content-Type: application/json
 
@@ -63,3 +28,30 @@ Content-Type: application/json
   "email": "test03@example.com",
   "sub": "17441a88-60f1-709b-b7e3-3e3173aca5d62"
 }
+
+### ==================== 商品管理 ====================
+### 商品一覧取得
+GET {{localBaseUrl}}/api/products
+
+### 商品詳細取得
+GET {{localBaseUrl}}/api/products/1
+
+
+### ==================== システム監視 ====================
+### [Fargate] システムメトリクス
+### ログ
+GET {{ecsBaseUrl}}/api/log/info
+GET {{ecsBaseUrl}}/api/log/error
+
+### パフォーマンステスト
+GET {{ecsBaseUrl}}/api/metrics/cpu-test
+GET {{ecsBaseUrl}}/api/metrics/memory-test
+
+### [Local] システムメトリクス
+### ログ
+GET {{localBaseUrl}}/api/log/info
+GET {{localBaseUrl}}/api/log/error
+
+### パフォーマンステスト
+GET {{localBaseUrl}}/api/metrics/cpu-test
+GET {{localBaseUrl}}/api/metrics/memory-test

@@ -1,62 +1,19 @@
-'use client'; // Client Componentとして宣言
+'use server'; // Server Componentとして宣言
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
+import { use } from 'react';
+import { CartActions } from './CartActions';
 
-export default function Page() {
-  // 商品データの配列（後でデータベースから取得するように変更可能）
-  const product = 
-    { 
-      id: 1, 
-      name: "Product 1", 
-      price: 1980, 
-      image: "https://picsum.photos/id/1/180/200",
-      rating: 4.5,
-      reviews: 123,
-      description: "商品の詳細説明がここに入ります。"
-    }
-  ;
-
-  const router = useRouter();
-
-  const handleAddToCart = async () => {
-    try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId: product.id,  // 直接productIdを送信
-          quantity: 1
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('カートへの追加に失敗しました');
-      }
-
-      // 成功時の処理（例：トースト表示など）
-      
-    } catch (error) {
-      logger.error('カートへの追加に失敗しました', error as Error);
-      // TODO: エラー処理（例：トースト表示など）
-    }
-  };
-
-  const handleMoveToCart = async () => {
-    try {
-      // ログ
-      router.push('/cart');
-    } catch (error) {
-      logger.error('カートへの追加に失敗しました', error as Error);
-      // TODO: エラー処理（例：トースト表示など）
-    }
-  };
-
+export default async function Page({ params }: { params: { productId: string } }) {
+  const response = await fetch(`http://localhost:3000/api/products/${params.productId}`, {
+    cache: 'no-store'
+  });
+  const { product } = await response.json();
+  console.log("◇◇◇◇◇◇◇◇◇◇◇◇◇◇ productData", product);
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-8 text-white">商品詳細</h1>
@@ -64,14 +21,7 @@ export default function Page() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* 左ペイン: 商品画像 */}
         <div className="overflow-hidden rounded-lg bg-gray-700 relative h-[400px]">
-          <Image 
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover object-center"
-            priority
-          />
+          Image
         </div>
 
         {/* 中央ペイン: 商品情報 */}
@@ -105,34 +55,8 @@ export default function Page() {
           <p className="text-gray-300">{product.description}</p>
         </div>
 
-        {/* 右ペイン: カート追加 */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-white">
-              <span className="text-lg font-medium">価格:</span>
-              <span className="text-xl font-bold">¥{product.price.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between text-white">
-              <span className="text-lg font-medium">数量:</span>
-              <span className="text-xl font-bold">1</span>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              カートに追加
-            </button>
-            <button
-              onClick={handleMoveToCart}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              カートへ移動
-            </button>
-            <p className="text-sm text-gray-400 text-center">
-              通常配送 2-4 日でお届け
-            </p>
-          </div>
-        </div>
+        {/* 右ペイン: カートコンポーネント */}
+        <CartActions productData={product} />
       </div>
     </div>
   );
