@@ -22,7 +22,7 @@ export interface UserAction {
 }
 
 export interface LogEntry {
-  level: 'info' | 'warn' | 'error' | 'debug';
+  level: 'info' | 'warn' | 'error' | 'debug' | 'action';
   message: string;
   timestamp: string;
   method?: string;
@@ -35,7 +35,7 @@ export interface LogEntry {
     region?: string;
     city?: string;
   };
-  action?: UserAction;  // アクション情報を追加
+  action?: UserAction;
   error?: Error | unknown;
   [key: string]: unknown;
 }
