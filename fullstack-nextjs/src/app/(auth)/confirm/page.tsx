@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { confirmSignUp } from '@/lib/auth/cognito';
 import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
@@ -13,7 +13,8 @@ interface CognitoError extends Error {
   code?: string;
 }
 
-export default function ConfirmPage() {
+// 確認フォームのコンポーネントを分離
+function ConfirmForm() {
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -106,5 +107,14 @@ export default function ConfirmPage() {
         </div>
       </form>
     </>
+  );
+}
+
+// メインのページコンポーネント
+export default function ConfirmPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfirmForm />
+    </Suspense>
   );
 }

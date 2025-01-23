@@ -15,7 +15,8 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Prismaの生成とビルド
-RUN npx prisma generate && pnpm run build
+RUN npx prisma generate
+RUN pnpm run build || (cat .next/error.log && exit 1)
 
 # Production stage
 FROM node:20-alpine AS runner

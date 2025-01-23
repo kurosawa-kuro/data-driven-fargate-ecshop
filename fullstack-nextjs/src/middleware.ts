@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { logger } from '@/lib/logger';
 
 export async function middleware(request: NextRequest) {
 
   // クッキーから email を参照
   const email = request.cookies.get('email')?.value;
-  console.log("★★★★★★★★★★★★★★★★★★★★         email       ★★★★★★★★★★★★★★★★★★★★:", email);
+  console.log("email : ", email);
   
   // ユーザー情報をヘッダーに設定
   const response = NextResponse.next();
@@ -23,10 +24,8 @@ export async function middleware(request: NextRequest) {
     const region = request.headers.get('CloudFront-Viewer-Country-Region') || 'Unknown';
     const city = request.headers.get('CloudFront-Viewer-City') || 'Unknown';
 
-    // エッジランタイムで動作する簡易ロギング
-    console.log(JSON.stringify({
-      level: 'info',
-      message: 'API Request',
+    // ロガーを使用してリクエスト情報を記録
+    logger.info('API Request', {
       method: request.method,
       origin: request.nextUrl.origin,
       pathname: request.nextUrl.pathname,
@@ -36,9 +35,8 @@ export async function middleware(request: NextRequest) {
         countryName,
         region,
         city
-      },
-      timestamp: new Date().toISOString()
-    }));
+      }
+    });
 
     // レスポンスヘッダーに国情報を追加
     response.headers.set('X-Country-Code', country);
@@ -49,7 +47,7 @@ export async function middleware(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error('Logging failed:', error);
+    logger.error('Logging failed', error as Error);
     return NextResponse.next()
   }
 }

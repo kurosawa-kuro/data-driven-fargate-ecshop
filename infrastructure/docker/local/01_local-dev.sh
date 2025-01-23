@@ -52,9 +52,31 @@ fi
 
 # イメージのビルド
 echo "本番用Dockerイメージをビルド中..."
+cd ${NEXTJS_DIR}  # Dockerビルドの前にディレクトリを移動
+
+# .envファイルの存在確認とコピー
+if [ ! -f ".env" ]; then
+    echo ".envファイルが見つかりません。.env.exampleからコピーします..."
+    if [ -f ".env.example" ]; then
+        cp .env.example .env
+    else
+        echo "エラー: .env.exampleファイルも見つかりません。"
+        exit 1
+    fi
+fi
+
+# .envファイルがDockerビルドコンテキストに含まれることを確認
+if [ -f ".dockerignore" ]; then
+    if grep -q "^.env$" .dockerignore; then
+        echo ".dockerignoreから.envの除外設定を削除します..."
+        sed -i '/^.env$/d' .dockerignore
+    fi
+fi
+
 docker build -t ${REPOSITORY_NAME}:${IMAGE_TAG} \
     --build-arg NODE_ENV=production \
-    --no-cache .
+    --no-cache \
+    .
 
 # コンテナの実行
 echo "ローカルで本番用コンテナを実行中..."
