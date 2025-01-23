@@ -1,13 +1,34 @@
 import { CartActions } from './addToCart';
 import { use } from 'react';
+// import { getServerSession } from 'next-auth/next';
+import { prisma } from '@/lib/prisma';
+// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export default async function Page({ params }: { params: Promise<{ productId: string }> }) {
   const resolvedParams = await params;
+  // const session = await getServerSession(authOptions);
+  
   const response = await fetch(`http://localhost:3000/api/products/${resolvedParams.productId}`, {
     cache: 'no-store'
   });
   const { product } = await response.json();
   
+// ### 閲覧履歴取得
+// POST {{localBaseUrl}}/api/view-history
+// Content-Type: application/json
+
+  // {
+  //   "productId": 1
+  // }
+
+  await fetch(`http://localhost:3000/api/view-history`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ productId: resolvedParams.productId })
+  });
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-8 text-white">商品詳細</h1>

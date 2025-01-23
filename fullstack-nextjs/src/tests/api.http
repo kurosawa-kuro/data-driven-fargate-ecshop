@@ -50,6 +50,13 @@ GET {{localBaseUrl}}/api/cart
 ### 購入履歴取得
 GET {{localBaseUrl}}/api/purchase
 
+### 閲覧履歴取得
+POST {{localBaseUrl}}/api/view-history
+Content-Type: application/json
+
+{
+  "productId": 1
+}
 
 ### ==================== システム監視 ====================
 ### [Fargate] システムメトリクス
