@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from "next/link";
 import { logger } from '@/lib/logger';
-import { prisma } from '@/lib/prisma';
 
 interface OrderFormData {
   name: string;
@@ -16,11 +14,6 @@ interface OrderFormData {
   paymentMethod: 'credit_card' | 'bank_transfer';
 }
 
-const calculateTotal = () => {
-  const subtotal = 10000; // TODO: 実際のカート合計を計算
-  const shippingFee = 550;
-  return subtotal + shippingFee;
-};
 
 export default function Page() {
   const router = useRouter();
@@ -43,6 +36,15 @@ export default function Page() {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          name: formData.name,
+          address: formData.address,
+          cardNumber: formData.cardNumber,
+          expiryDate: formData.expiryDate,
+          securityCode: formData.securityCode,
+          deliveryDate: formData.deliveryDate,
+          paymentMethod: formData.paymentMethod
+        })
       });
       router.push('/orders');
     } catch (error) {
