@@ -173,37 +173,39 @@ export default function Page() {
                     />
                   </div>
                   
-                  <div className="flex-grow">
-                    <h3 className="font-medium text-white">{product.name}</h3>
-                    <div className="text-sm text-gray-300 space-y-1">
-                      <p>数量: {product.quantity}</p>
-                      <p>価格: ¥{product.price.toLocaleString()}</p>
+                  <div className="flex-grow flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium text-white">{product.name}</h3>
+                      <div className="text-sm text-gray-300 space-y-1">
+                        <p>数量: {product.quantity}</p>
+                        <p>価格: ¥{product.price.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    {/* 商品情報の右側にアクションボタンを配置 */}
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleReturn(order.id, product.id)}
+                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        返品
+                      </button>
+                      <button 
+                        onClick={() => handleRepurchase([product])}
+                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        再度購入
+                      </button>
+                      <button 
+                        onClick={() => handleReview(order.id, product.id)}
+                        className="px-3 py-1 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
+                      >
+                        レビューを書く
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
-            
-            {/* アクションボタン */}
-            <div className="flex justify-end gap-2 mt-4">
-              <button 
-                onClick={() => handleReturn(order.id, order.products[0].id)}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                返品
-              </button>
-              <button 
-                onClick={() => handleRepurchase(order.products)}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                再度購入
-              </button>
-              <button 
-                onClick={() => handleReview(order.id, order.products[0].id)}
-                className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
-              >
-                レビューを書く
-              </button>
             </div>
           </div>
         ))}

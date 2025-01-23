@@ -187,4 +187,42 @@ enum ActionType {
   START_CHECKOUT
   COMPLETE_PURCHASE
   CANCEL_PURCHASE
+  RETURN_REQUESTED
+  RETURN_COMPLETED
+}
+
+model Return {
+  id           Int       @id @default(autoincrement())
+  purchaseId   Int
+  userId       String
+  returnedAt   DateTime  @default(now())
+  status       ReturnStatus @default(REQUESTED)
+  reason       String
+  
+  purchase     Purchase  @relation(fields: [purchaseId], references: [id])
+  returnItems  ReturnItem[]
+  user         User      @relation(fields: [userId], references: [id])
+
+  @@index([purchaseId])
+  @@index([userId])
+}
+
+model ReturnItem {
+  id          Int       @id @default(autoincrement())
+  returnId    Int
+  productId   Int
+  quantity    Int
+  
+  return      Return    @relation(fields: [returnId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@index([returnId])
+  @@index([productId])
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  COMPLETED
 }
