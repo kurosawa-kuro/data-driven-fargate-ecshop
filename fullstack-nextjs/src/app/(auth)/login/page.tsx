@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/auth/cognito';
+import Cookies from 'js-cookie';
 
 interface CognitoError extends Error {
   name: string;
@@ -20,7 +21,9 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signIn(email, password);
-      router.push('/products'); // ログイン後のリダイレクト先
+      // クライアントサイドでのクッキー設定
+      Cookies.set('email', email);
+      router.push('/products');
     } catch (err: unknown) {
       const error = err as CognitoError;
       setError(error.message || 'ログインに失敗しました');

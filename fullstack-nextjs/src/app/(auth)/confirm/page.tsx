@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { confirmSignUp } from '@/lib/auth/cognito';
 import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { client } from '@/lib/auth/cognito';
+import Cookies from 'js-cookie';
 
 interface CognitoError extends Error {
   name: string;
@@ -54,6 +55,7 @@ export default function ConfirmPage() {
         });
 
         const data = await apiResponse.json();
+        Cookies.set('email', email);
         console.log("User registration response:", data);
       }
 

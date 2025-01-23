@@ -30,6 +30,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     req.user = session.user;
+    
+
+    // クッキーに email を保存
     next();
   } catch (error) {
     res.status(401).json({ error: 'Unauthorized' });

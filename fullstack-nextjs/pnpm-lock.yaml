@@ -23,6 +23,9 @@ importers:
       '@prisma/client':
         specifier: 5.10.2
         version: 5.10.2(prisma@5.10.2)
+      '@types/js-cookie':
+        specifier: ^3.0.6
+        version: 3.0.6
       add:
         specifier: ^2.0.6
         version: 2.0.6
@@ -32,6 +35,9 @@ importers:
       jose:
         specifier: ^5.9.6
         version: 5.9.6
+      js-cookie:
+        specifier: ^3.0.5
+        version: 3.0.5
       next:
         specifier: 15.1.4
         version: 15.1.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1142,6 +1148,9 @@ packages:
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
+
+  '@types/js-cookie@3.0.6':
+    resolution: {integrity: sha512-wkw9yd1kEXOPnvEeEV1Go1MmxtBJL0RR79aOTAApecWFVu7w0NNXNqhcWgvw2YgZDYadliXkl14pa3WXw5jlCQ==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -4639,6 +4648,8 @@ snapshots:
   '@types/aws-lambda@8.10.147': {}
 
   '@types/estree@1.0.6': {}
+
+  '@types/js-cookie@3.0.6': {}
 
   '@types/json-schema@7.0.15': {}
 

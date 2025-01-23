@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from 'next/headers';
 
-export default function Page() {
+export default async function Page() {
   // 商品データの配列（後でデータベースから取得するように変更可能）
   const products = [
     { 
@@ -125,6 +126,11 @@ export default function Page() {
       reviews: 198
     }
   ];
+
+  // ログインしている場合はユーザー情報を取得
+  const headersList = await headers();
+  const email = headersList.get('X-User-Email');
+  console.log("★★★★★★★★★★★★★★★★★★★★         email    fullstack-nextjs/src/app/(public)/products/page.tsx   ★★★★★★★★★★★★★★★★★★★★:", email);
 
   return (
     <div className="container mx-auto px-4 py-8">
