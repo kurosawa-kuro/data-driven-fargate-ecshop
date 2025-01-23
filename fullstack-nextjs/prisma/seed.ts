@@ -8,30 +8,32 @@ import { UserStatus, ActionType } from '@prisma/client';
  * リレーションの依存関係を考慮した順序で削除
  */
 async function cleanAllTables() {
-  // 依存関係を考慮した順序でテーブルを削除
-  await prisma.userActionLog.deleteMany();
-  await prisma.purchaseItem.deleteMany();
-  await prisma.purchase.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.viewHistory.deleteMany();
-  await prisma.productCategory.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.userRole.deleteMany();
-  await prisma.role.deleteMany();
-  await prisma.user.deleteMany();
-
-  // シーケンスをリセット
-  await prisma.$executeRaw`ALTER SEQUENCE "UserActionLog_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "CartItem_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "ViewHistory_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "ProductCategory_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "Category_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "Product_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "UserRole_id_seq" RESTART WITH 1;`;
-  await prisma.$executeRaw`ALTER SEQUENCE "Role_id_seq" RESTART WITH 1;`;
+  // 依存関係のあるすべてのテーブルを完全に削除
+  await prisma.$executeRaw`
+    DO $$ 
+    BEGIN 
+      DELETE FROM "UserActionLog";
+      DELETE FROM "PurchaseItem";
+      DELETE FROM "Purchase";
+      DELETE FROM "CartItem";
+      DELETE FROM "ViewHistory";
+      DELETE FROM "ProductCategory";
+      DELETE FROM "Category";
+      DELETE FROM "Product";
+      DELETE FROM "UserRole";
+      DELETE FROM "Role";
+      DELETE FROM "User";
+      
+      ALTER SEQUENCE "UserActionLog_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "CartItem_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "ViewHistory_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "Category_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "Product_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "Role_id_seq" RESTART WITH 1;
+    END $$;
+  `;
   
   console.log("全テーブルのクリーンアップとシーケンスのリセットが完了しました");
 }
