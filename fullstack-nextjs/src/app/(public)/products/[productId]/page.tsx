@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { logger } from '@/lib/logger';
 
 export default function Page() {
   // 商品データの配列（後でデータベースから取得するように変更可能）
@@ -16,6 +18,27 @@ export default function Page() {
       description: "商品の詳細説明がここに入ります。"
     }
   ;
+
+  const router = useRouter();
+
+  const handleAddToCart = async () => {
+    try {
+      await fetch('/api/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          actionType: 'cart_add',
+        })
+      });
+
+      router.push('/cart');
+    } catch (error) {
+      logger.error('カートへの追加に失敗しました', error as Error);
+      // TODO: エラー処理（例：トースト表示など）
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -76,14 +99,12 @@ export default function Page() {
               <span className="text-lg font-medium">数量:</span>
               <span className="text-xl font-bold">1</span>
             </div>
-            {/* http://localhost:3001/cart にリンク */}
-            <Link href="/cart">
-              <button
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                カートに追加
-              </button>
-            </Link>
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              カートに追加
+            </button>
             <p className="text-sm text-gray-400 text-center">
               通常配送 2-4 日でお届け
             </p>
