@@ -1,18 +1,12 @@
-'use server'; // Server Componentとして宣言
-
-import Image from "next/image";
-import Link from "next/link";
-import { logger } from '@/lib/logger';
-import { prisma } from '@/lib/prisma';
-import { use } from 'react';
 import { CartActions } from './CartActions';
+import { use } from 'react';
 
-export default async function Page({ params }: { params: { productId: string } }) {
-  const response = await fetch(`http://localhost:3000/api/products/${params.productId}`, {
+export default async function Page({ params }: { params: Promise<{ productId: string }> }) {
+  const resolvedParams = await params;
+  const response = await fetch(`http://localhost:3000/api/products/${resolvedParams.productId}`, {
     cache: 'no-store'
   });
   const { product } = await response.json();
-  console.log("◇◇◇◇◇◇◇◇◇◇◇◇◇◇ productData", product);
   
   return (
     <div className="container mx-auto px-4 py-8">

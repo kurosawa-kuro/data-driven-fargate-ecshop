@@ -3,7 +3,6 @@ import Link from "next/link";
 import { headers } from 'next/headers';
 
 export default async function Page() {
-  // APIからの商品データ取得
   const response = await fetch('http://localhost:3000/api/products', {
     cache: 'no-store'
   });
