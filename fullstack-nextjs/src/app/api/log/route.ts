@@ -24,5 +24,39 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ });
+  } 
+
+  // cart_remove
+  if (actionType === 'cart_remove') {
+    logger.action('cart_remove', {
+      productId: body.productId,
+      quantity: body.quantity
+    });
   }
+
+  // action checkout_start
+  if (actionType === 'checkout_start') {
+    logger.action('checkout_start', {
+      amount: body.cartTotal,
+      quantity: body.itemCount
+    });
+  }
+
+  // checkout_complete
+  if (actionType === 'checkout_complete') {
+    logger.action('checkout_complete', {
+      amount: body.cartTotal,
+      quantity: body.itemCount
+    });
+  }
+
+  // order_complete
+  if (actionType === 'order_complete') {
+    logger.action('order_complete', {
+      amount: body.cartTotal,
+      quantity: body.itemCount
+    });
+  }
+
+  return NextResponse.json({ });
 }

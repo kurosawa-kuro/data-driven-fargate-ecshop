@@ -4,6 +4,7 @@ export type ActionType =
   | 'checkout_start'
   | 'checkout_complete'
   | 'checkout_failed'
+  | 'order_complete'
   | 'product_view'
   | 'user_login'
   | 'user_logout';
@@ -100,7 +101,12 @@ class AppLogger implements Logger {
       actionType,
       ...data,
     };
-    this.info(`User Action: ${actionType}`, { action });
+    console.log('\x1b[33m%s\x1b[0m', this.formatMessage({
+      level: 'info',
+      message: `User Action: ${actionType}`,
+      timestamp: new Date().toISOString(),
+      action,
+    }));
   }
 }
 

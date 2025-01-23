@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { logger } from '@/lib/logger';
 
 interface CartItem {
   id: number;
@@ -14,6 +16,8 @@ interface CartItem {
 }
 
 export default function Page() {
+  const router = useRouter();
+  
   // サンプルデータ（実際はAPIやRedux/Contextから取得）
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
@@ -53,7 +57,20 @@ export default function Page() {
     );
   };
 
-  const removeItem = (productId: number) => {
+  const removeItem = async (productId: number) => {
+    try {
+      await fetch('/api/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          actionType: 'cart_remove'
+        })
+      });
+    } catch (error) {
+      logger.error('カートからの削除に失敗しました', error as Error);
+    }
     setCartItems(prevItems =>
       prevItems.filter(item => item.id !== productId)
     );
@@ -61,6 +78,25 @@ export default function Page() {
 
   const calculateTotal = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const handleProceedToCheckout = async () => {
+    try {
+      await fetch('/api/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          actionType: 'checkout_start'
+        })
+      });
+
+      router.push('/checkout');
+    } catch (error) {
+      logger.error('チェックアウトの開始に失敗しました', error as Error);
+      // TODO: エラー処理（例：トースト表示など）
+    }
   };
 
   return (
@@ -128,11 +164,12 @@ export default function Page() {
               <span>小計</span>
               <span>¥{calculateTotal().toLocaleString()}</span>
             </div>
-            <Link href="/checkout"> 
-              <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                レジに進む
-              </button>
-            </Link>
+            <button 
+              onClick={handleProceedToCheckout}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+            >
+              レジに進む
+            </button>
           </div>
         </div>
       </div>
