@@ -1,6 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { logger } from '@/lib/logger';
+import { prisma } from '@/lib/prisma';
+import router from 'next/router';
 
 // 商品アイテムの型定義
 type Product = {
@@ -58,7 +62,87 @@ const mockOrders: OrderItem[] = [
   }
 ];
 
+// 返品、再購入、レビュー機能の仮実装
+const handleReturn = async (orderId: string, productId: string) => {
+  try {
+    // ログ記録
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        actionType: 'return_request',
+        orderId,
+        productId
+      })
+    });
+
+    // TODO: 返品処理の実装
+    alert('返品リクエストを受け付けました。カスタマーサービスからご連絡いたします。');
+
+  } catch (error) {
+    logger.error('返品処理に失敗しました', error as Error);
+  }
+};
+
+const handleRepurchase = async (products: Product[]) => {
+  try {
+    // カートに商品を追加
+    for (const product of products) {
+      await prisma.cartItem.create({
+        data: {
+          productId: parseInt(product.id),
+          quantity: product.quantity,
+          userId: "1", // TODO: 実際のユーザーIDを使用
+        }
+      });
+    }
+
+    // ログ記録
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        actionType: 'repurchase',
+        products: products.map(p => p.id)
+      })
+    });
+
+    router.push('/cart');
+
+  } catch (error) {
+    logger.error('再購入処理に失敗しました', error as Error);
+  }
+};
+
+const handleReview = async (orderId: string, productId: string) => {
+  try {
+    // ログ記録
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        actionType: 'review_start',
+        orderId,
+        productId
+      })
+    });
+
+    router.push(`/reviews/new?orderId=${orderId}&productId=${productId}`);
+
+  } catch (error) {
+    logger.error('レビュー画面への遷移に失敗しました', error as Error);
+  }
+};
+
 export default function Page() {
+  const router = useRouter();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 text-white">注文履歴</h1>
@@ -100,13 +184,22 @@ export default function Page() {
             
             {/* アクションボタン */}
             <div className="flex justify-end gap-2 mt-4">
-              <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+              <button 
+                onClick={() => handleReturn(order.id, order.products[0].id)}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
                 返品
               </button>
-              <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+              <button 
+                onClick={() => handleRepurchase(order.products)}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
                 再度購入
               </button>
-              <button className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700">
+              <button 
+                onClick={() => handleReview(order.id, order.products[0].id)}
+                className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
+              >
                 レビューを書く
               </button>
             </div>

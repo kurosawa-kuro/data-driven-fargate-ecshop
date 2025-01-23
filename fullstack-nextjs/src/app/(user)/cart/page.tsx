@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
-
+import { prisma } from '@/lib/prisma';
 interface CartItem {
   id: number;
   name: string;

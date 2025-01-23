@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { logger } from '@/lib/logger';
+import { prisma } from '@/lib/prisma';
 
 interface OrderFormData {
   name: string;
@@ -14,6 +15,12 @@ interface OrderFormData {
   deliveryDate: string;
   paymentMethod: 'credit_card' | 'bank_transfer';
 }
+
+const calculateTotal = () => {
+  const subtotal = 10000; // TODO: 実際のカート合計を計算
+  const shippingFee = 550;
+  return subtotal + shippingFee;
+};
 
 export default function Page() {
   const router = useRouter();
@@ -29,7 +36,52 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    try {
+      // トランザクション処理の実装
+      await prisma.$transaction(async (tx) => {
+        // 1. CartItems取得
+        const cartItems = await tx.cartItem.findMany({
+          where: { userId: "1" },
+          include: { product: true }
+        });
+
+        // 2. Purchase作成
+        const purchase = await tx.purchase.create({
+          data: {
+            userId: "1",
+            totalAmount: calculateTotal(),
+            purchaseItems: {
+              create: cartItems.map(item => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.product.price
+              }))
+            }
+          }
+        });
+
+        // 3. CartItems削除
+        await tx.cartItem.deleteMany({
+          where: { userId: "1" }
+        });
+      });
+
+      await fetch('/api/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          actionType: 'checkout_start'
+        })
+      });
+
+      router.push('/checkout');
+    } catch (error) {
+      logger.error('チェックアウトの開始に失敗しました', error as Error);
+      // TODO: エラー処理（例：トースト表示など）
+    }
+
     try {
       await fetch('/api/log', {
         method: 'POST',

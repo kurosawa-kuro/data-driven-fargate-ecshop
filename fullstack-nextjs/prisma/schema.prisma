@@ -153,3 +153,30 @@ model PurchaseItem {
   @@index([purchaseId])
   @@index([productId])
 }
+
+model UserActionLog {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  actionType  ActionType
+  productId   Int?
+  cartItemId  Int?
+  purchaseId  Int?
+  metadata    Json?     // 追加情報（価格変更、数量変更など）
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+  product     Product?  @relation(fields: [productId], references: [id])
+
+  @@index([userId, actionType, createdAt])
+  @@index([productId])
+}
+
+enum ActionType {
+  VIEW_PRODUCT
+  ADD_TO_CART
+  REMOVE_FROM_CART
+  UPDATE_CART
+  START_CHECKOUT
+  COMPLETE_PURCHASE
+  CANCEL_PURCHASE
+}

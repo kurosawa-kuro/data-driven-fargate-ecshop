@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logger } from '@/lib/logger';
+import { prisma } from '@/lib/prisma';
 
 export default function Page() {
   // 商品データの配列（後でデータベースから取得するように変更可能）
@@ -23,7 +24,16 @@ export default function Page() {
 
   const handleAddToCart = async () => {
     try {
-      await fetch('/api/log', {
+
+      await prisma.cartItem.create({
+        data: {
+          productId: product.id,
+          quantity: 1,
+          userId: "1", // 文字列として渡す
+        }
+      });
+
+      await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,6 +43,15 @@ export default function Page() {
         })
       });
 
+      // router.push('/cart');
+    } catch (error) {
+      logger.error('カートへの追加に失敗しました', error as Error);
+      // TODO: エラー処理（例：トースト表示など）
+    }
+  };
+
+  const handleMoveToCart = async () => {
+    try {
       router.push('/cart');
     } catch (error) {
       logger.error('カートへの追加に失敗しました', error as Error);
@@ -104,6 +123,12 @@ export default function Page() {
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
             >
               カートに追加
+            </button>
+            <button
+              onClick={handleMoveToCart}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              カートへ移動
             </button>
             <p className="text-sm text-gray-400 text-center">
               通常配送 2-4 日でお届け
