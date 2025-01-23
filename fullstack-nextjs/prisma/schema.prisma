@@ -26,6 +26,7 @@ model User {
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchases       Purchase[]
+  userActionLogs  UserActionLog[]
 }
 
 enum UserStatus {
@@ -71,6 +72,7 @@ model Product {
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchaseItems   PurchaseItem[]
+  userActionLogs  UserActionLog[]
 }
 // カテゴリー
 model Category {
@@ -122,6 +124,7 @@ model CartItem {
   // リレーション
   user        User      @relation(fields: [userId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
+  userActionLogs UserActionLog[]
   @@index([userId])
   @@index([productId])
 }
@@ -136,6 +139,7 @@ model Purchase {
   // リレーション
   user          User            @relation(fields: [userId], references: [id])
   purchaseItems PurchaseItem[]
+  userActionLogs UserActionLog[]
   @@index([userId])
 }
 
@@ -166,9 +170,13 @@ model UserActionLog {
 
   user        User      @relation(fields: [userId], references: [id])
   product     Product?  @relation(fields: [productId], references: [id])
+  cartItem    CartItem? @relation(fields: [cartItemId], references: [id])
+  purchase    Purchase? @relation(fields: [purchaseId], references: [id])
 
   @@index([userId, actionType, createdAt])
   @@index([productId])
+  @@index([cartItemId])
+  @@index([purchaseId])
 }
 
 enum ActionType {

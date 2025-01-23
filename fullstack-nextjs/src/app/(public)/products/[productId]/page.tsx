@@ -25,25 +25,18 @@ export default function Page() {
   const handleAddToCart = async () => {
     try {
 
-      await prisma.cartItem.create({
-        data: {
-          productId: product.id,
-          quantity: 1,
-          userId: "1", // 文字列として渡す
-        }
-      });
-
       await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          actionType: 'cart_add',
+          product: {
+            productId: product.id,
+            quantity: 1  // デフォルト数量を1に設定
+          }
         })
       });
-
-      // router.push('/cart');
     } catch (error) {
       logger.error('カートへの追加に失敗しました', error as Error);
       // TODO: エラー処理（例：トースト表示など）
@@ -52,6 +45,7 @@ export default function Page() {
 
   const handleMoveToCart = async () => {
     try {
+      // ログ
       router.push('/cart');
     } catch (error) {
       logger.error('カートへの追加に失敗しました', error as Error);

@@ -1,7 +1,34 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function GET() {
-  console.log('');
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const productId = body.productId || body.product?.productId;
+    const quantity = body.quantity || body.product?.quantity || 1;
 
-  return NextResponse.json({ });
+    if (!productId) {
+      return NextResponse.json(
+        { error: '商品IDが必要です' },
+        { status: 400 }
+      );
+    }
+
+    // カートアイテムを作成
+    const cartItem = await prisma.cartItem.create({
+      data: {
+        userId: "1", // TODO: 実際のユーザーIDを使用
+        productId: productId,
+        quantity: quantity
+      }
+    });
+
+    return NextResponse.json({ success: true, cartItem });
+  } catch (error) {
+    console.error('Cart error:', error);
+    return NextResponse.json(
+      { error: 'カートへの追加に失敗しました' },
+      { status: 500 }
+    );
+  }
 }

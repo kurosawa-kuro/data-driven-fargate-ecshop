@@ -88,16 +88,19 @@ const handleReturn = async (orderId: string, productId: string) => {
 
 const handleRepurchase = async (products: Product[]) => {
   try {
-    // カートに商品を追加
-    for (const product of products) {
-      await prisma.cartItem.create({
-        data: {
+    // Prismaの直接呼び出しを削除し、APIエンドポイントを使用
+    await fetch('/api/cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        products: products.map(product => ({
           productId: parseInt(product.id),
-          quantity: product.quantity,
-          userId: "1", // TODO: 実際のユーザーIDを使用
-        }
-      });
-    }
+          quantity: product.quantity
+        }))
+      })
+    });
 
     // ログ記録
     await fetch('/api/log', {
@@ -112,7 +115,6 @@ const handleRepurchase = async (products: Product[]) => {
     });
 
     router.push('/cart');
-
   } catch (error) {
     logger.error('再購入処理に失敗しました', error as Error);
   }
