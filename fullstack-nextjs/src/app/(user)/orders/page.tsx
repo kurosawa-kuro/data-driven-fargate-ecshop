@@ -5,19 +5,23 @@ import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 
-// 型定義
+// 型定義をまとめて管理
+type ActionType = 'return_request' | 'repurchase' | 'review_start';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
+}
+
 interface PurchaseItem {
   id: number;
   purchaseId: number;
   productId: number;
   quantity: number;
   price: number;
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    imageUrl: string;
-  };
+  product: Product;
 }
 
 interface Purchase {
@@ -28,27 +32,47 @@ interface Purchase {
   purchaseItems: PurchaseItem[];
 }
 
+// API通信用のユーティリティ関数
+const apiClient = {
+  async logAction(actionType: ActionType, payload: Record<string, any>) {
+    return fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actionType, ...payload })
+    });
+  },
+
+  async addToCart(products: { productId: number; quantity: number }[]) {
+    return fetch('/api/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ products })
+    });
+  }
+};
+
 // メインコンポーネント
 export default function Page() {
   const router = useRouter();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
 
-  // データ取得
   useEffect(() => {
-    fetch('/api/purchase')
-      .then(response => response.json())
-      .then(data => setPurchases(data.purchases))
-      .catch(error => console.error('購入履歴取得エラー:', error));
+    const fetchPurchases = async () => {
+      try {
+        const response = await fetch('/api/purchase');
+        const data = await response.json();
+        setPurchases(data.purchases);
+      } catch (error) {
+        logger.error('購入履歴取得エラー:', error as Error);
+      }
+    };
+    fetchPurchases();
   }, []);
 
-  // アクションハンドラー
+  // アクションハンドラーをリファクタリング
   const handleReturn = async (orderId: string, productId: string) => {
     try {
-      await fetch('/api/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ actionType: 'return_request', orderId, productId })
-      });
+      await apiClient.logAction('return_request', { orderId, productId });
       alert('返品リクエストを受け付けました。カスタマーサービスからご連絡いたします。');
     } catch (error) {
       logger.error('返品処理に失敗しました', error as Error);
@@ -57,26 +81,15 @@ export default function Page() {
 
   const handleRepurchase = async (products: { id: string; quantity: number }[]) => {
     try {
-      await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          products: products.map(product => ({
-            productId: parseInt(product.id),
-            quantity: product.quantity
-          }))
-        })
+      await apiClient.addToCart(
+        products.map(p => ({
+          productId: parseInt(p.id),
+          quantity: p.quantity
+        }))
+      );
+      await apiClient.logAction('repurchase', {
+        products: products.map(p => p.id)
       });
-
-      await fetch('/api/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          actionType: 'repurchase',
-          products: products.map(p => p.id)
-        })
-      });
-
       router.push('/cart');
     } catch (error) {
       logger.error('再購入処理に失敗しました', error as Error);
@@ -85,11 +98,7 @@ export default function Page() {
 
   const handleReview = async (orderId: string, productId: string) => {
     try {
-      await fetch('/api/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ actionType: 'review_start', orderId, productId })
-      });
+      await apiClient.logAction('review_start', { orderId, productId });
       router.push(`/reviews/new?orderId=${orderId}&productId=${productId}`);
     } catch (error) {
       logger.error('レビュー画面への遷移に失敗しました', error as Error);

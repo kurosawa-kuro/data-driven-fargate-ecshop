@@ -21,133 +21,74 @@ interface CartItem {
 
 export default function Page() {
   const router = useRouter();
-  
-//   ### カート一覧取得
-// GET {{localBaseUrl}}/api/cart
-
-// {
-//   "cartItems": [
-//     {
-//       "id": 1,
-//       "userId": "auth0|user5",
-//       "productId": 1,
-//       "quantity": 2,
-//       "addedAt": "2025-01-23T18:25:05.132Z",
-//       "product": {
-//         "id": 1,
-//         "name": "Smartwatch",
-//         "price": 299.99,
-//         "rating": 4.4,
-//         "createdAt": "2025-01-23T18:25:04.260Z",
-//         "updatedAt": "2025-01-23T18:25:04.260Z"
-//       }
-//     },
-//     {
-//       "id": 2,
-//       "userId": "auth0|user4",
-//       "productId": 2,
-//       "quantity": 1,
-//       "addedAt": "2025-01-23T18:25:05.132Z",
-//       "product": {
-//         "id": 2,
-//         "name": "Tablet",
-//         "price": 499.99,
-//         "rating": 4.2,
-//         "createdAt": "2025-01-23T18:25:04.260Z",
-//         "updatedAt": "2025-01-23T18:25:04.260Z"
-//       }
-//     },
-//     {
-//       "id": 4,
-//       "userId": "auth0|user2",
-//       "productId": 4,
-//       "quantity": 1,
-//       "addedAt": "2025-01-23T18:25:05.132Z",
-//       "product": {
-//         "id": 4,
-//         "name": "Smartphone",
-//         "price": 699.99,
-//         "rating": 4.3,
-//         "createdAt": "2025-01-23T18:25:04.260Z",
-//         "updatedAt": "2025-01-23T18:25:04.260Z"
-//       }
-//     },
-//     {
-//       "id": 5,
-//       "userId": "auth0|user3",
-//       "productId": 3,
-//       "quantity": 3,
-//       "addedAt": "2025-01-23T18:25:05.132Z",
-//       "product": {
-//         "id": 3,
-//         "name": "Headphones",
-//         "price": 199.99,
-//         "rating": 4.7,
-//         "createdAt": "2025-01-23T18:25:04.260Z",
-//         "updatedAt": "2025-01-23T18:25:04.260Z"
-//       }
-//     }
-//   ]
-// }
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  // カート商品の取得
   useEffect(() => {
-    fetch('/api/cart')
-      .then(response => response.json())
-      .then(data => setCartItems(data.cartItems))
-      .catch(error => console.error('カート一覧取得エラー:', error));
+    const fetchCartItems = async () => {
+      try {
+        const response = await fetch('/api/cart');
+        if (!response.ok) throw new Error('カートの取得に失敗しました');
+        const data = await response.json();
+        setCartItems(data.cartItems);
+      } catch (error) {
+        logger.error('カート一覧取得エラー:', error as Error);
+        // TODO: エラー表示の実装
+      }
+    };
+    fetchCartItems();
   }, []);
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === productId
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
-  };
+  // カート操作関連の関数
+  const cartOperations = {
+    updateQuantity: (productId: number, newQuantity: number) => {
+      setCartItems(prevItems =>
+        prevItems.map(item =>
+          item.id === productId
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    },
 
-  const removeItem = async (productId: number) => {
-    try {
-      await fetch('/api/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          actionType: 'cart_remove'
-        })
-      });
-    } catch (error) {
-      logger.error('カートからの削除に失敗しました', error as Error);
+    removeItem: async (productId: number) => {
+      try {
+        const response = await fetch('/api/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ actionType: 'cart_remove' })
+        });
+        if (!response.ok) throw new Error('ログの記録に失敗しました');
+        
+        setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+      } catch (error) {
+        logger.error('カートからの削除に失敗しました', error as Error);
+        // TODO: エラー表示の実装
+      }
+    },
+
+    calculateTotal: () => {
+      return cartItems.reduce((total, item) => 
+        total + (item.product.price * item.quantity), 0
+      );
     }
-    setCartItems(prevItems =>
-      prevItems.filter(item => item.id !== productId)
-    );
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  };
-
+  // チェックアウト処理
   const handleProceedToCheckout = async () => {
     try {
-      await fetch('/api/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          actionType: 'checkout_start'
-        })
-      });
+      // const response = await fetch('/api/log', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ actionType: 'checkout_start' })
+      // });
+      // if (!response.ok) throw new Error('ログの記録に失敗しました');
 
       router.push('/checkout');
     } catch (error) {
       logger.error('チェックアウトの開始に失敗しました', error as Error);
-      // TODO: エラー処理（例：トースト表示など）
+      // TODO: エラー表示の実装
     }
   };
 
@@ -174,7 +115,7 @@ export default function Page() {
                     <label className="text-gray-300">数量：</label>
                     <select 
                       value={item.quantity}
-                      onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
+                      onChange={(e) => cartOperations.updateQuantity(item.id, Number(e.target.value))}
                       className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white"
                     >
                       {[1,2,3,4,5].map(num => (
@@ -183,7 +124,7 @@ export default function Page() {
                     </select>
                   </div>
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => cartOperations.removeItem(item.id)}
                     className="text-red-500 hover:text-red-400"
                   >
                     削除
@@ -208,7 +149,7 @@ export default function Page() {
             <h2 className="text-xl font-bold mb-4 text-white">注文概要</h2>
             <div className="flex justify-between mb-4 text-white">
               <span>小計</span>
-              <span>¥{calculateTotal().toLocaleString()}</span>
+              <span>¥{cartOperations.calculateTotal().toLocaleString()}</span>
             </div>
             <button 
               onClick={handleProceedToCheckout}
