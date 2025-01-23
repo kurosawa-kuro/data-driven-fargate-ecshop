@@ -70,7 +70,7 @@ async function main() {
           email: "user3@example.com",
           cognitoId: "cognito|user3",
           emailVerified: false,
-          status: UserStatus.ACTIVE
+          status: UserStatus.DELETED
         }
       }),
       prisma.user.create({
@@ -102,12 +102,6 @@ async function main() {
         data: { name: "USER" }
       }),
       prisma.role.create({
-        data: { name: "MODERATOR" }
-      }),
-      prisma.role.create({
-        data: { name: "SUPPORT" }
-      }),
-      prisma.role.create({
         data: { name: "GUEST" }
       })
     ]);
@@ -117,31 +111,31 @@ async function main() {
       prisma.userRole.create({
         data: {
           userId: users[0].id,
-          roleId: roles[0].id
+          roleId: roles[0].id  // ADMIN
         }
       }),
       prisma.userRole.create({
         data: {
           userId: users[1].id,
-          roleId: roles[1].id
+          roleId: roles[1].id  // USER
         }
       }),
       prisma.userRole.create({
         data: {
           userId: users[2].id,
-          roleId: roles[2].id
+          roleId: roles[2].id  // GUEST
         }
       }),
       prisma.userRole.create({
         data: {
           userId: users[3].id,
-          roleId: roles[1].id
+          roleId: roles[1].id  // USER
         }
       }),
       prisma.userRole.create({
         data: {
           userId: users[4].id,
-          roleId: roles[4].id
+          roleId: roles[1].id  // USER（roles[4]から修正）
         }
       })
     ]);
