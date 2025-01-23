@@ -36,6 +36,16 @@ GET {{localBaseUrl}}/api/products
 ### 商品詳細取得
 GET {{localBaseUrl}}/api/products/1
 
+### カート追加
+POST {{localBaseUrl}}/api/cart
+Content-Type: application/json
+
+{
+  "productId": "1"
+}
+
+### カート一覧取得
+GET {{localBaseUrl}}/api/cart
 
 ### ==================== システム監視 ====================
 ### [Fargate] システムメトリクス

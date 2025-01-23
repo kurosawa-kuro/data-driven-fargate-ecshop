@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export async function GET(request: Request) {
+  const cartItems = await prisma.cartItem.findMany({
+    include: {
+      product: true
+    }
+  });
+  return NextResponse.json({ cartItems });
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

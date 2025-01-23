@@ -1,49 +1,103 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
+
 interface CartItem {
   id: number;
-  name: string;
-  price: number;
+  userId: string;
+  productId: number;
   quantity: number;
-  image: string;
-  description: string;
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    image: string;
+    description: string;
+  };
 }
 
 export default function Page() {
   const router = useRouter();
   
-  // サンプルデータ（実際はAPIやRedux/Contextから取得）
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Sample Product 1",
-      price: 2000,
-      quantity: 1,
-      image: "https://picsum.photos/id/1/180/200",
-      description: "This is a sample product description"
-    },
-    {
-      id: 2,
-      name: "Sample Product 2",
-      price: 3000,
-      quantity: 2,
-      image: "https://picsum.photos/id/2/180/200",
-      description: "This is another sample product description"
-    },
-    {
-      id: 3,
-      name: "Sample Product 3",
-      price: 4000,
-      quantity: 3,
-      image: "https://picsum.photos/id/3/180/200",
-      description: "This is another sample product description"
-    },
-    // ... 他の商品
-  ]);
+//   ### カート一覧取得
+// GET {{localBaseUrl}}/api/cart
+
+// {
+//   "cartItems": [
+//     {
+//       "id": 1,
+//       "userId": "auth0|user5",
+//       "productId": 1,
+//       "quantity": 2,
+//       "addedAt": "2025-01-23T18:25:05.132Z",
+//       "product": {
+//         "id": 1,
+//         "name": "Smartwatch",
+//         "price": 299.99,
+//         "rating": 4.4,
+//         "createdAt": "2025-01-23T18:25:04.260Z",
+//         "updatedAt": "2025-01-23T18:25:04.260Z"
+//       }
+//     },
+//     {
+//       "id": 2,
+//       "userId": "auth0|user4",
+//       "productId": 2,
+//       "quantity": 1,
+//       "addedAt": "2025-01-23T18:25:05.132Z",
+//       "product": {
+//         "id": 2,
+//         "name": "Tablet",
+//         "price": 499.99,
+//         "rating": 4.2,
+//         "createdAt": "2025-01-23T18:25:04.260Z",
+//         "updatedAt": "2025-01-23T18:25:04.260Z"
+//       }
+//     },
+//     {
+//       "id": 4,
+//       "userId": "auth0|user2",
+//       "productId": 4,
+//       "quantity": 1,
+//       "addedAt": "2025-01-23T18:25:05.132Z",
+//       "product": {
+//         "id": 4,
+//         "name": "Smartphone",
+//         "price": 699.99,
+//         "rating": 4.3,
+//         "createdAt": "2025-01-23T18:25:04.260Z",
+//         "updatedAt": "2025-01-23T18:25:04.260Z"
+//       }
+//     },
+//     {
+//       "id": 5,
+//       "userId": "auth0|user3",
+//       "productId": 3,
+//       "quantity": 3,
+//       "addedAt": "2025-01-23T18:25:05.132Z",
+//       "product": {
+//         "id": 3,
+//         "name": "Headphones",
+//         "price": 199.99,
+//         "rating": 4.7,
+//         "createdAt": "2025-01-23T18:25:04.260Z",
+//         "updatedAt": "2025-01-23T18:25:04.260Z"
+//       }
+//     }
+//   ]
+// }
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/cart')
+      .then(response => response.json())
+      .then(data => setCartItems(data.cartItems))
+      .catch(error => console.error('カート一覧取得エラー:', error));
+  }, []);
 
   const updateQuantity = (productId: number, newQuantity: number) => {
     setCartItems(prevItems =>
@@ -75,7 +129,7 @@ export default function Page() {
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   };
 
   const handleProceedToCheckout = async () => {
@@ -108,19 +162,13 @@ export default function Page() {
             <div key={item.id} className="flex border-b border-gray-700 py-4 gap-4">
               {/* 商品画像 */}
               <div className="w-[180px]">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  width={180}
-                  height={200}
-                  className="rounded-lg"
-                />
+                Image
               </div>
               
               {/* 商品情報 */}
               <div className="flex-grow">
-                <h3 className="text-lg font-semibold text-white">{item.name}</h3>
-                <p className="text-gray-300">{item.description}</p>
+                <h3 className="text-lg font-semibold text-white">{item.product.name}</h3>
+                <p className="text-gray-300">{item.product.description}</p>
                 <div className="mt-2 flex items-center gap-4">
                   <div>
                     <label className="text-gray-300">数量：</label>
@@ -145,9 +193,9 @@ export default function Page() {
               
               {/* 価格 */}
               <div className="text-right">
-                <p className="font-semibold text-white">¥{item.price.toLocaleString()}</p>
+                <p className="font-semibold text-white">¥{item.product.price.toLocaleString()}</p>
                 <p className="text-sm text-gray-400">
-                  小計: ¥{(item.price * item.quantity).toLocaleString()}
+                  小計: ¥{(item.product.price * item.quantity).toLocaleString()}
                 </p>
               </div>
             </div>
