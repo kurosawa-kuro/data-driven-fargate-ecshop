@@ -4,18 +4,21 @@ import { logger } from '@/lib/logger';
 
 export async function middleware(request: NextRequest) {
 
+  // デバッグ用：全てのクッキーを確認
+  console.log("All cookies:", request.cookies.getAll());
+  
   // クッキーから email を参照
   const email = request.cookies.get('email')?.value;
-  console.log("email : ", email);
+  console.log("email cookie:", email);
   
-  // ユーザー情報をヘッダーに設定
+  // // ユーザー情報をヘッダーに設定
   const response = NextResponse.next();
-  response.headers.set('X-User-Email', email || '');
+  // response.headers.set('X-User-Email', email || '');
 
-  // ロギング対象外のパスはスキップ
-  if (request.nextUrl.pathname === '/api/logging') {
-    return NextResponse.next()
-  }
+  // // ロギング対象外のパスはスキップ
+  // if (request.nextUrl.pathname === '/api/logging') {
+  //   return NextResponse.next()
+  // }
 
   try {
     // CloudFrontヘッダーから国情報を取得

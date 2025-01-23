@@ -20,9 +20,19 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signIn(email, password);
-      // クライアントサイドでのクッキー設定
+      const result = await signIn(email, password);
+      console.log("signIn result:", result);
+      
+      // // 必要なトークン情報のみを保存
+      // const tokenInfo = {
+      //   accessToken: result?.AuthenticationResult?.AccessToken || '',
+      //   idToken: result?.AuthenticationResult?.IdToken || '',
+      //   refreshToken: result?.AuthenticationResult?.RefreshToken || '',
+      // };
+  
       Cookies.set('email', email);
+      // Cookies.set('accessToken', tokenInfo.accessToken);
+      // Cookies.set('idToken', tokenInfo.idToken);
       router.push('/products');
     } catch (err: unknown) {
       const error = err as CognitoError;

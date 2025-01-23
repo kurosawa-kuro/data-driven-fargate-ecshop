@@ -1,9 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 
 export default async function Page() {
   const response = await fetch('http://localhost:3000/api/products', {
+    headers: {
+      'Cookie': `email=${(await cookies()).get('email')?.value || ''}`,
+    },
+    credentials: 'include',
     cache: 'no-store'
   });
   const { products } = await response.json();

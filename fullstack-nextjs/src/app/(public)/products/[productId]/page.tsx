@@ -48,12 +48,15 @@ export default async function Page({ params }: ProductPageProps) {
   
   // データフェッチング
   const response = await fetch(`${API_BASE_URL}/products/${resolvedParams.productId}`, {
+    credentials: 'include',
     cache: 'no-store'
   });
   const { product } = await response.json() as { product: Product };
 
   // 閲覧履歴の記録
   await fetch(`${API_BASE_URL}/view-history`, {
+    credentials: 'include',
+    cache: 'no-store',
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
