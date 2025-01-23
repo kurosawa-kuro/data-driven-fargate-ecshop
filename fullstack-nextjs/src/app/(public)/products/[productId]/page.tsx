@@ -1,27 +1,59 @@
 import { CartActions } from './addToCart';
 import { use } from 'react';
-// import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
-// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-export default async function Page({ params }: { params: Promise<{ productId: string }> }) {
+// 型定義
+type ProductPageProps = {
+  params: Promise<{ productId: string }>
+};
+
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  description: string;
+};
+
+// 定数
+const MAX_RATING_STARS = 5;
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// コンポーネント
+const RatingStars = ({ rating, reviews }: { rating: number; reviews: number }) => (
+  <div className="flex items-center">
+    <div className="flex items-center">
+      {[...Array(MAX_RATING_STARS)].map((_, index) => (
+        <span 
+          key={index}
+          className={`${
+            index < Math.floor(rating)
+              ? "text-yellow-400"
+              : "text-gray-600"
+          } text-lg`}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+    <span className="ml-2 text-sm text-gray-300">{rating}</span>
+    <span className="ml-2 text-sm text-gray-400">({reviews}件のレビュー)</span>
+  </div>
+);
+
+// メインページコンポーネント
+export default async function Page({ params }: ProductPageProps) {
   const resolvedParams = await params;
-  // const session = await getServerSession(authOptions);
   
-  const response = await fetch(`http://localhost:3000/api/products/${resolvedParams.productId}`, {
+  // データフェッチング
+  const response = await fetch(`${API_BASE_URL}/products/${resolvedParams.productId}`, {
     cache: 'no-store'
   });
-  const { product } = await response.json();
-  
-// ### 閲覧履歴取得
-// POST {{localBaseUrl}}/api/view-history
-// Content-Type: application/json
+  const { product } = await response.json() as { product: Product };
 
-  // {
-  //   "productId": 1
-  // }
-
-  await fetch(`http://localhost:3000/api/view-history`, {
+  // 閲覧履歴の記録
+  await fetch(`${API_BASE_URL}/view-history`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -45,28 +77,7 @@ export default async function Page({ params }: { params: Promise<{ productId: st
           <p className="text-xl font-semibold text-white">
             ¥{product.price.toLocaleString()}
           </p>
-          <div className="flex items-center">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, index) => (
-                <span 
-                  key={index}
-                  className={`${
-                    index < Math.floor(product.rating)
-                      ? "text-yellow-400"
-                      : "text-gray-600"
-                  } text-lg`}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            <span className="ml-2 text-sm text-gray-300">
-              {product.rating}
-            </span>
-            <span className="ml-2 text-sm text-gray-400">
-              ({product.reviews}件のレビュー)
-            </span>
-          </div>
+          <RatingStars rating={product.rating} reviews={product.reviews} />
           <p className="text-gray-300">{product.description}</p>
         </div>
 
