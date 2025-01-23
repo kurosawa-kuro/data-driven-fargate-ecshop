@@ -40,7 +40,42 @@ async function main() {
           status: UserStatus.ACTIVE
         }
       }),
-      // ... 4人分追加のユーザーを作成
+      prisma.user.create({
+        data: {
+          id: "auth0|user2",
+          email: "user2@example.com",
+          cognitoId: "cognito|user2",
+          emailVerified: true,
+          status: UserStatus.ACTIVE
+        }
+      }),
+      prisma.user.create({
+        data: {
+          id: "auth0|user3",
+          email: "user3@example.com",
+          cognitoId: "cognito|user3",
+          emailVerified: false,
+          status: UserStatus.ACTIVE
+        }
+      }),
+      prisma.user.create({
+        data: {
+          id: "auth0|user4",
+          email: "user4@example.com",
+          cognitoId: "cognito|user4",
+          emailVerified: true,
+          status: UserStatus.ACTIVE
+        }
+      }),
+      prisma.user.create({
+        data: {
+          id: "auth0|user5",
+          email: "user5@example.com",
+          cognitoId: "cognito|user5",
+          emailVerified: true,
+          status: UserStatus.DISABLED
+        }
+      })
     ]);
 
     // ロールの作成
@@ -51,7 +86,15 @@ async function main() {
       prisma.role.create({
         data: { name: "USER" }
       }),
-      // ... 3つ追加のロールを作成
+      prisma.role.create({
+        data: { name: "MODERATOR" }
+      }),
+      prisma.role.create({
+        data: { name: "SUPPORT" }
+      }),
+      prisma.role.create({
+        data: { name: "GUEST" }
+      })
     ]);
 
     // UserRoleの作成
@@ -62,7 +105,30 @@ async function main() {
           roleId: roles[0].id
         }
       }),
-      // ... 4つ追加のUserRoleを作成
+      prisma.userRole.create({
+        data: {
+          userId: users[1].id,
+          roleId: roles[1].id
+        }
+      }),
+      prisma.userRole.create({
+        data: {
+          userId: users[2].id,
+          roleId: roles[2].id
+        }
+      }),
+      prisma.userRole.create({
+        data: {
+          userId: users[3].id,
+          roleId: roles[1].id
+        }
+      }),
+      prisma.userRole.create({
+        data: {
+          userId: users[4].id,
+          roleId: roles[4].id
+        }
+      })
     ]);
 
     // カテゴリーの作成
@@ -70,7 +136,18 @@ async function main() {
       prisma.category.create({
         data: { name: "Electronics" }
       }),
-      // ... 4つ追加のカテゴリーを作成
+      prisma.category.create({
+        data: { name: "Books" }
+      }),
+      prisma.category.create({
+        data: { name: "Clothing" }
+      }),
+      prisma.category.create({
+        data: { name: "Sports" }
+      }),
+      prisma.category.create({
+        data: { name: "Home & Garden" }
+      })
     ]);
 
     // 商品の作成
@@ -82,7 +159,34 @@ async function main() {
           rating: 4.5
         }
       }),
-      // ... 4つ追加の商品を作成
+      prisma.product.create({
+        data: {
+          name: "Smartphone",
+          price: 699.99,
+          rating: 4.3
+        }
+      }),
+      prisma.product.create({
+        data: {
+          name: "Headphones",
+          price: 199.99,
+          rating: 4.7
+        }
+      }),
+      prisma.product.create({
+        data: {
+          name: "Tablet",
+          price: 499.99,
+          rating: 4.2
+        }
+      }),
+      prisma.product.create({
+        data: {
+          name: "Smartwatch",
+          price: 299.99,
+          rating: 4.4
+        }
+      })
     ]);
 
     // ProductCategoryの作成
@@ -93,7 +197,30 @@ async function main() {
           categoryId: categories[0].id
         }
       }),
-      // ... 4つ追加のProductCategoryを作成
+      prisma.productCategory.create({
+        data: {
+          productId: products[1].id,
+          categoryId: categories[0].id
+        }
+      }),
+      prisma.productCategory.create({
+        data: {
+          productId: products[2].id,
+          categoryId: categories[0].id
+        }
+      }),
+      prisma.productCategory.create({
+        data: {
+          productId: products[3].id,
+          categoryId: categories[0].id
+        }
+      }),
+      prisma.productCategory.create({
+        data: {
+          productId: products[4].id,
+          categoryId: categories[0].id
+        }
+      })
     ]);
 
     // ViewHistoryの作成
@@ -104,7 +231,30 @@ async function main() {
           productId: products[0].id
         }
       }),
-      // ... 4つ追加のViewHistoryを作成
+      prisma.viewHistory.create({
+        data: {
+          userId: users[1].id,
+          productId: products[1].id
+        }
+      }),
+      prisma.viewHistory.create({
+        data: {
+          userId: users[2].id,
+          productId: products[2].id
+        }
+      }),
+      prisma.viewHistory.create({
+        data: {
+          userId: users[3].id,
+          productId: products[3].id
+        }
+      }),
+      prisma.viewHistory.create({
+        data: {
+          userId: users[4].id,
+          productId: products[4].id
+        }
+      })
     ]);
 
     // CartItemの作成
@@ -116,7 +266,34 @@ async function main() {
           quantity: 2
         }
       }),
-      // ... 4つ追加のCartItemを作成
+      prisma.cartItem.create({
+        data: {
+          userId: users[1].id,
+          productId: products[1].id,
+          quantity: 1
+        }
+      }),
+      prisma.cartItem.create({
+        data: {
+          userId: users[2].id,
+          productId: products[2].id,
+          quantity: 3
+        }
+      }),
+      prisma.cartItem.create({
+        data: {
+          userId: users[3].id,
+          productId: products[3].id,
+          quantity: 1
+        }
+      }),
+      prisma.cartItem.create({
+        data: {
+          userId: users[4].id,
+          productId: products[4].id,
+          quantity: 2
+        }
+      })
     ]);
 
     // Purchaseの作成
@@ -127,7 +304,30 @@ async function main() {
           totalAmount: 1999.98
         }
       }),
-      // ... 4つ追加のPurchaseを作成
+      prisma.purchase.create({
+        data: {
+          userId: users[1].id,
+          totalAmount: 699.99
+        }
+      }),
+      prisma.purchase.create({
+        data: {
+          userId: users[2].id,
+          totalAmount: 599.97
+        }
+      }),
+      prisma.purchase.create({
+        data: {
+          userId: users[3].id,
+          totalAmount: 499.99
+        }
+      }),
+      prisma.purchase.create({
+        data: {
+          userId: users[4].id,
+          totalAmount: 599.98
+        }
+      })
     ]);
 
     // PurchaseItemの作成
@@ -140,7 +340,38 @@ async function main() {
           price: 999.99
         }
       }),
-      // ... 4つ追加のPurchaseItemを作成
+      prisma.purchaseItem.create({
+        data: {
+          purchaseId: purchases[1].id,
+          productId: products[1].id,
+          quantity: 1,
+          price: 699.99
+        }
+      }),
+      prisma.purchaseItem.create({
+        data: {
+          purchaseId: purchases[2].id,
+          productId: products[2].id,
+          quantity: 3,
+          price: 199.99
+        }
+      }),
+      prisma.purchaseItem.create({
+        data: {
+          purchaseId: purchases[3].id,
+          productId: products[3].id,
+          quantity: 1,
+          price: 499.99
+        }
+      }),
+      prisma.purchaseItem.create({
+        data: {
+          purchaseId: purchases[4].id,
+          productId: products[4].id,
+          quantity: 2,
+          price: 299.99
+        }
+      })
     ]);
 
     // UserActionLogの作成
@@ -152,7 +383,34 @@ async function main() {
           productId: products[0].id
         }
       }),
-      // ... 4つ追加のUserActionLogを作成
+      prisma.userActionLog.create({
+        data: {
+          userId: users[1].id,
+          actionType: ActionType.ADD_TO_CART,
+          productId: products[1].id
+        }
+      }),
+      prisma.userActionLog.create({
+        data: {
+          userId: users[2].id,
+          actionType: ActionType.COMPLETE_PURCHASE,
+          productId: products[2].id
+        }
+      }),
+      prisma.userActionLog.create({
+        data: {
+          userId: users[3].id,
+          actionType: ActionType.VIEW_PRODUCT,
+          productId: products[3].id
+        }
+      }),
+      prisma.userActionLog.create({
+        data: {
+          userId: users[4].id,
+          actionType: ActionType.ADD_TO_CART,
+          productId: products[4].id
+        }
+      })
     ]);
 
     console.log("シードプロセスが完了しました");
