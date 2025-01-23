@@ -1,4 +1,4 @@
-import { CartActions } from './CartActions';
+import { CartActions } from './addToCart';
 import { use } from 'react';
 
 export default async function Page({ params }: { params: Promise<{ productId: string }> }) {
