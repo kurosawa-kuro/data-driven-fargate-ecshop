@@ -17,31 +17,19 @@ export const config = {
 
 export async function middleware(request: NextRequest) {
   const idToken = request.cookies.get('idToken')?.value;
-  
-  // クローンではなく新しいヘッダーを作成
   const requestHeaders = new Headers(request.headers);
 
   if (idToken) {
     try {
       const decodedIdToken = await jose.decodeJwt(idToken);
-      
-      if (typeof decodedIdToken.email === 'string') {
-        // カスタムヘッダーを設定
-        requestHeaders.set('x-user-email', decodedIdToken.email);
-        if (typeof decodedIdToken.sub === 'string') {
-          requestHeaders.set('x-user-id', decodedIdToken.sub);
-        }
-        // Cookieを明示的に設定
-        requestHeaders.set('cookie', `idToken=${idToken}`);
+      if (decodedIdToken.email && decodedIdToken.sub) {
+        requestHeaders.set('x-user-email', String(decodedIdToken.email));
+        requestHeaders.set('x-user-id', String(decodedIdToken.sub));
       }
     } catch (error) {
       console.error('Token decode error:', error);
     }
   }
-
-  // // デバッグ用
-  // console.log('Middleware - Request path:', request.nextUrl.pathname);
-  // console.log('Middleware - Headers:', Object.fromEntries(requestHeaders.entries()));
 
   const response = NextResponse.next({
     request: {
@@ -49,27 +37,10 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // レスポンスヘッダーにも設定（クライアントサイドで利用可能にする）
-  if (idToken) {
-    try {
-      const decodedIdToken = await jose.decodeJwt(idToken);
-      if (typeof decodedIdToken.email === 'string') {
-        response.headers.set('x-user-email', decodedIdToken.email);
-        if (typeof decodedIdToken.sub === 'string') {
-          response.headers.set('x-user-id', decodedIdToken.sub);
-        }
-      }
-    } catch (error) {
-      console.error('Token decode error in response:', error);
-    }
-  }
-
-  // APIルートの場合は特別な処理
+  // APIルートの場合はレスポンスヘッダーにも設定
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    // APIルート用のヘッダーを設定
-    response.headers.append('x-middleware-override-headers', 'x-user-email,x-user-id');
-    response.headers.append('x-middleware-request-x-user-email', requestHeaders.get('x-user-email') || '');
-    response.headers.append('x-middleware-request-x-user-id', requestHeaders.get('x-user-id') || '');
+    response.headers.set('x-user-email', requestHeaders.get('x-user-email') || '');
+    response.headers.set('x-user-id', requestHeaders.get('x-user-id') || '');
   }
 
   return response;

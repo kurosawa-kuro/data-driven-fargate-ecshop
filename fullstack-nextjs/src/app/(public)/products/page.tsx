@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { cookies } from 'next/headers';
 import { headers } from "next/headers";
 
 export default async function Page() {

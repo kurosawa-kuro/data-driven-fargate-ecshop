@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { headers } from "next/headers";
 
 export async function GET(request: NextRequest) {
+
+  // そもそもリクエストヘッダーではなくレスポンスヘッダーに設定ではないので
     const headersList = await headers();
     const email = headersList.get('x-user-email')?.split(',')[0];
     const userId = headersList.get('x-user-id')?.split(',')[0];
