@@ -1,16 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from 'next/headers';
+import { headers } from "next/headers";
 
 export default async function Page() {
   const response = await fetch('http://localhost:3000/api/products', {
-    headers: {
-      'Cookie': `email=${(await cookies()).get('email')?.value || ''}`,
-    },
     credentials: 'include',
     cache: 'no-store'
   });
   const { products } = await response.json();
+  const headersList = headers();
+  const email = (await headersList).get('x-user-email');
+  const userId = (await headersList).get('x-user-id');
+  console.log("App Route - userId from header:", userId);
+  console.log("App Route - email from header:", email);
 
   return (
     <div className="container mx-auto px-4 py-8">

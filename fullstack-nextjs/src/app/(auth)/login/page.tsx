@@ -21,18 +21,11 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const result = await signIn(email, password);
-      console.log("signIn result:", result);
       
-      // // 必要なトークン情報のみを保存
-      // const tokenInfo = {
-      //   accessToken: result?.AuthenticationResult?.AccessToken || '',
-      //   idToken: result?.AuthenticationResult?.IdToken || '',
-      //   refreshToken: result?.AuthenticationResult?.RefreshToken || '',
-      // };
-  
-      Cookies.set('email', email);
-      // Cookies.set('accessToken', tokenInfo.accessToken);
-      // Cookies.set('idToken', tokenInfo.idToken);
+      // idTokenをクッキーに設定
+      const idToken = result?.AuthenticationResult?.IdToken;
+      document.cookie = `idToken=${idToken}; path=/`;
+      
       router.push('/products');
     } catch (err: unknown) {
       const error = err as CognitoError;

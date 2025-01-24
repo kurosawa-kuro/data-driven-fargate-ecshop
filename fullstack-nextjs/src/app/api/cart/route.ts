@@ -13,7 +13,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { productId, quantity = 1 } = body;
+    const { email, productId, quantity = 1 } = body;
+
+    // emailからユーザーIDを取得
+    const user = await prisma.user.findUnique({
+      where: { email: email }
+    });
 
     if (!productId) {
       return NextResponse.json(
@@ -25,7 +30,7 @@ export async function POST(request: Request) {
     // カートアイテムを作成
     const cartItem = await prisma.cartItem.create({
       data: {
-        userId: "auth0|user1", // 仮のユーザーID（後で認証システムと連携）
+        userId: user?.id || '',
         productId: productId,
         quantity: quantity
       }

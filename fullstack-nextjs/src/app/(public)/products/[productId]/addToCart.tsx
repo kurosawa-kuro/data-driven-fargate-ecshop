@@ -2,21 +2,26 @@
 
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
+import Cookies from 'js-cookie';
 
 export function CartActions({ productData }: { productData: any }) {
   const router = useRouter();
 
   const handleAddToCart = async () => {
     try {
+      const email = Cookies.get('email');
+      
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          email: email || '',
           productId: productData.id,
           quantity: 1
-        })
+        }),
+        credentials: 'include'
       });
 
       if (!response.ok) {
