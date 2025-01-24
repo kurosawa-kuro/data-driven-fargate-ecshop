@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import * as jose from 'jose'
 
+// マッチャー設定
 export const config = {
   matcher: [
     /*
@@ -15,45 +16,82 @@ export const config = {
   ],
 }
 
-export async function middleware(request: NextRequest) {
-  // すべてのCookieをログ出力（デバッグ用）
-  console.log('All cookies:', request.cookies.getAll());
-  
-  // Cookieの取得方法を変更
-  const idToken = request.cookies.get('idToken')?.value || 
-                 request.headers.get('cookie')?.split(';')
-                   .find(c => c.trim().startsWith('idToken='))
-                   ?.split('=')[1];
+// トークン取得とデコード処理を担当
+class TokenProcessor {
+  private request: NextRequest;
 
-  const requestHeaders = new Headers(request.headers);
+  constructor(request: NextRequest) {
+    this.request = request;
+  }
 
-  console.log('Middleware - Cookie:', idToken); // デバッグ用
+  // Cookieからトークンを取得
+  getIdToken(): string | undefined {
+    console.log('All cookies:', this.request.cookies.getAll());
+    
+    const idToken = this.request.cookies.get('idToken')?.value || 
+                   this.request.headers.get('cookie')?.split(';')
+                     .find(c => c.trim().startsWith('idToken='))
+                     ?.split('=')[1];
+    
+    console.log('Middleware - Cookie:', idToken);
+    return idToken;
+  }
 
-  if (idToken) {
+  // トークンをデコードしてユーザー情報を取得
+  async decodeToken(idToken: string): Promise<{ email?: string, sub?: string } | null> {
     try {
       const decodedIdToken = await jose.decodeJwt(idToken);
-      console.log('Middleware - Decoded Token:', decodedIdToken); // デバッグ用
+      console.log('Middleware - Decoded Token:', decodedIdToken);
       
       if (decodedIdToken.email && decodedIdToken.sub) {
-        requestHeaders.set('x-user-email', String(decodedIdToken.email));
-        requestHeaders.set('x-user-id', String(decodedIdToken.sub));
+        return {
+          email: String(decodedIdToken.email),
+          sub: String(decodedIdToken.sub)
+        };
       }
     } catch (error) {
       console.error('Token decode error:', error);
     }
+    return null;
+  }
+}
+
+// ヘッダー処理を担当
+class HeaderManager {
+  private headers: Headers;
+
+  constructor(originalHeaders: Headers) {
+    this.headers = new Headers(originalHeaders);
   }
 
-  const response = NextResponse.next({
+  // ユーザー情報をヘッダーに設定
+  setUserInfo(email: string, userId: string): void {
+    this.headers.set('x-user-email', email);
+    this.headers.set('x-user-id', userId);
+  }
+
+  getHeaders(): Headers {
+    return this.headers;
+  }
+}
+
+// メインのミドルウェア関数
+export async function middleware(request: NextRequest) {
+  const tokenProcessor = new TokenProcessor(request);
+  const headerManager = new HeaderManager(request.headers);
+
+  const idToken = tokenProcessor.getIdToken();
+  
+  if (idToken) {
+    const userInfo = await tokenProcessor.decodeToken(idToken);
+    if (userInfo?.email && userInfo.sub) {
+      headerManager.setUserInfo(userInfo.email, userInfo.sub);
+    }
+  }
+
+  return NextResponse.next({
     request: {
-      headers: requestHeaders,
+      headers: headerManager.getHeaders(),
     },
   });
-
-  // // APIルートの場合はレスポンスヘッダーにも設定
-  // if (request.nextUrl.pathname.startsWith('/api/')) {
-  //   response.headers.set('x-user-email', requestHeaders.get('x-user-email') || '');
-  //   response.headers.set('x-user-id', requestHeaders.get('x-user-id') || '');
-  // }
-
-  return response;
 }
