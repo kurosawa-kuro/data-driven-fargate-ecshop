@@ -27,7 +27,7 @@ type CartOperationResult = {
 
 // APIエンドポイント定数
 const API_ENDPOINTS = {
-  CART: '/api/cart',
+  CART: '/api/carts',
   LOG: '/api/log',
 } as const;
 
@@ -46,7 +46,14 @@ export default function Page() {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.CART);
+        // //         headers: { 
+        // //   'Content-Type': 'application/json'
+        // // },
+        const response = await fetch(API_ENDPOINTS.CART, {
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+        });
         if (!response.ok) throw new Error('カートの取得に失敗しました');
         const data = await response.json();
         setCartItems(data.cartItems);

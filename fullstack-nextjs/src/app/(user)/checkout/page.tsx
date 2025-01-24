@@ -46,7 +46,7 @@ export default function Page() {
           paymentMethod: formData.paymentMethod
         })
       });
-      router.push('/orders');
+      router.push('/purchase');
     } catch (error) {
       logger.error('注文の確定に失敗しました', error as Error);
     }
