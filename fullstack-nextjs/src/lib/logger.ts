@@ -7,7 +7,8 @@ export type ActionType =
   | 'order_complete'
   | 'product_view'
   | 'user_login'
-  | 'user_logout';
+  | 'user_logout'
+  | 'user_register';
 
 export interface UserAction {
   actionType: ActionType;

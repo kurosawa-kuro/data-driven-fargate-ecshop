@@ -8,6 +8,7 @@ import {
   type CognitoIdentityProviderClientConfig
 } from "@aws-sdk/client-cognito-identity-provider";
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 // 定数の集約
 const COGNITO_CONFIG = {
@@ -36,20 +37,30 @@ function generateSecretHash(username: string): string {
   return hmac.update(message).digest('base64');
 }
 
-export async function signUp(email: string, password: string) {
-  const command = new SignUpCommand({
+// サインアップコマンド生成
+function createSignUpCommand(email: string, password: string) {
+  return new SignUpCommand({
     ClientId: COGNITO_CONFIG.CLIENT_ID,
     Username: email,
     Password: password,
     SecretHash: generateSecretHash(email),
     UserAttributes: [{ Name: "email", Value: email }],
   });
+}
 
+// サインアップ処理
+export async function signUp(email: string, password: string) {
   try {
+    const command = createSignUpCommand(email, password);
     const response = await client.send(command);
+    
+    logger.action('user_register', {
+      metadata: { email }
+    });
+    
     return { ...response, UserSub: response.UserSub };
   } catch (error) {
-    console.error('登録エラー:', error);
+    logger.error('Cognito登録エラー:', error as Error);
     throw error;
   }
 }

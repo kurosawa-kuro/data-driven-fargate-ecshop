@@ -26,14 +26,14 @@ class TokenProcessor {
 
   // Cookieからトークンを取得
   getIdToken(): string | undefined {
-    console.log('All cookies:', this.request.cookies.getAll());
+    // console.log('All cookies:', this.request.cookies.getAll());
     
     const idToken = this.request.cookies.get('idToken')?.value || 
                    this.request.headers.get('cookie')?.split(';')
                      .find(c => c.trim().startsWith('idToken='))
                      ?.split('=')[1];
     
-    console.log('Middleware - Cookie:', idToken);
+    // console.log('Middleware - Cookie:', idToken);
     return idToken;
   }
 
