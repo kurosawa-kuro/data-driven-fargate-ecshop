@@ -1,6 +1,4 @@
 import { CartActions } from './addToCart';
-import { use } from 'react';
-import { prisma } from '@/lib/prisma';
 
 // 型定義
 type ProductPageProps = {
@@ -44,10 +42,13 @@ const RatingStars = ({ rating, reviews }: { rating: number; reviews: number }) =
 
 // メインページコンポーネント
 export default async function Page({ params }: ProductPageProps) {
+  // Zustand等のステート管理でユーザー情報を管理しているので、ヘッダーから取得する必要はない
+
   const resolvedParams = await params;
   
   // データフェッチング
   const response = await fetch(`${API_BASE_URL}/products/${resolvedParams.productId}`, {
+    // headers: headersList,
     credentials: 'include',
     cache: 'no-store'
   });

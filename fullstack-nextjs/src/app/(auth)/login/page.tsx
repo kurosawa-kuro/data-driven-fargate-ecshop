@@ -3,13 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/auth/cognito';
-import Cookies from 'js-cookie';
-
-interface CognitoError extends Error {
-  name: string;
-  message: string;
-  code?: string;
-}
+import * as jose from 'jose';
+import { useAuthStore } from '@/stores/auth.store';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,15 +16,18 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const result = await signIn(email, password);
-      
-      // idTokenをクッキーに設定
       const idToken = result?.AuthenticationResult?.IdToken;
-      document.cookie = `idToken=${idToken}; path=/`;
-      
-      router.push('/products');
-    } catch (err: unknown) {
-      const error = err as CognitoError;
-      setError(error.message || 'ログインに失敗しました');
+      if (idToken) {
+        const decoded = await jose.decodeJwt(idToken);
+        useAuthStore.getState().setUser({
+          email: decoded.email as string,
+          userId: decoded.sub as string,
+          idToken
+        });
+        router.push('/products');
+      }
+    } catch (err) {
+      setError('ログインに失敗しました');
     }
   };
 

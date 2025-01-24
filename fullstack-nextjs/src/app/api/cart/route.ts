@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { headers } from 'next/headers';
 
 export async function GET(request: Request) {
   const cartItems = await prisma.cartItem.findMany({
@@ -12,36 +13,31 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email, productId, quantity = 1 } = body;
-
-    // emailからユーザーIDを取得
-    const user = await prisma.user.findUnique({
-      where: { email: email }
-    });
-
-    if (!productId) {
-      return NextResponse.json(
-        { error: '商品IDが必要です' },
-        { status: 400 }
-      );
+    const headersList = await headers();
+    const userId = headersList.get('x-user-id');
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // カートアイテムを作成
+    const body = await request.json();
+    const { productId, quantity = 1 } = body;
+
+    if (!productId) {
+      return NextResponse.json({ error: '商品IDが必要です' }, { status: 400 });
+    }
+
     const cartItem = await prisma.cartItem.create({
       data: {
-        userId: user?.id || '',
-        productId: productId,
-        quantity: quantity
+        userId,
+        productId,
+        quantity
       }
     });
 
     return NextResponse.json({ success: true, cartItem });
   } catch (error) {
     console.error('Cart error:', error);
-    return NextResponse.json(
-      { error: 'カートへの追加に失敗しました' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'カートへの追加に失敗しました' }, { status: 500 });
   }
 }

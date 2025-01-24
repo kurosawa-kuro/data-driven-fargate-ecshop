@@ -14,14 +14,6 @@ export async function GET(request: NextRequest) {
     console.log("API Route - UserId:", userId);
 
     try {
-        // ユーザー情報の確認（開発中は一時的にコメントアウト）
-        // if (!email) {
-        //     return NextResponse.json(
-        //         { error: 'Unauthorized: User email not found' },
-        //         { status: 401 }
-        //     );
-        // }
-
         const products = await prisma.product.findMany();
         return NextResponse.json({ 
             success: true, 

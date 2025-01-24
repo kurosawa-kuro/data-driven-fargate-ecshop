@@ -2,22 +2,43 @@
 
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
+import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import { useAuthStore } from '@/stores/auth.store';
+// import { headers } from "next/headers";
 
 export function CartActions({ productData }: { productData: any }) {
   const router = useRouter();
+  const [userInfo, setUserInfo] = useState<{
+    email: string | null;
+    userId: string | null;
+  }>({
+    email: null,
+    userId: null
+  });
+
+  // Zustandからユーザー Subを取得
+  const userId = useAuthStore.getState().user.userId;
+  console.log("addToCart - userId:", userId);
+
+  // useEffect(() => {
+  //   console.log("document",document);
+  //   const email = document.querySelector('meta[name="x-user-email"]')?.getAttribute('content') ?? null;
+  //   const userId = document.querySelector('meta[name="x-user-id"]')?.getAttribute('content') ?? null;
+  //   console.log("addToCart - userId from header:", userId);
+  //   console.log("addToCart - email from header:", email);
+  //   setUserInfo({ email, userId });
+  // }, []);
 
   const handleAddToCart = async () => {
     try {
-      const email = Cookies.get('email');
-      
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email || '',
+          userId: userId,
           productId: productData.id,
           quantity: 1
         }),
