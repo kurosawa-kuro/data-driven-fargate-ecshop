@@ -13,8 +13,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const headersList = headers();
-    const userId = (await headersList).get('x-user-id');
+    const headersList = await headers();
+    const email = headersList.get('x-user-email')?.split(',')[0];
+    const userId = headersList.get('x-user-id')?.split(',')[0];
+
+    // console.log("API Route - All headers:", Object.fromEntries([...headersList.entries()]));
+    console.log("API Cart Route - Email:", email);
+    console.log("API Cart Route - UserId:", userId);
+    // const userId = (await headersList).get('x-user-id');
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,6 +31,12 @@ export async function POST(request: Request) {
 
     if (!productId) {
       return NextResponse.json({ error: '商品IDが必要です' }, { status: 400 });
+    }
+
+    // ユーザーIDがDBに存在しない場合はエラーを返す
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return NextResponse.json({ error: 'ユーザーIDが存在しません' }, { status: 400 });
     }
 
     const cartItem = await prisma.cartItem.create({

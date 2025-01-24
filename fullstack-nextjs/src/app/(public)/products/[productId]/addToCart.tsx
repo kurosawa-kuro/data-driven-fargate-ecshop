@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/auth.store';
 export function CartActions({ productData }: { productData: any }) {
   const router = useRouter();
   const { user } = useAuthStore(); // Zustandのstoreから直接userを取得
+  console.log("addToCart - user:", user);
 
   const handleAddToCart = async () => {
     try {
@@ -22,8 +23,7 @@ export function CartActions({ productData }: { productData: any }) {
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user.userId // ヘッダーにユーザーIDを追加
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           productId: productData.id,

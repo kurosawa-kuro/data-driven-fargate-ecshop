@@ -127,6 +127,7 @@ model CartItem {
   user        User      @relation(fields: [userId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
   userActionLogs UserActionLog[]
+  
   @@index([userId])
   @@index([productId])
 }
