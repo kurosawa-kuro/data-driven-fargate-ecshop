@@ -16,7 +16,15 @@ export const config = {
 }
 
 export async function middleware(request: NextRequest) {
-  const idToken = request.cookies.get('idToken')?.value;
+  // すべてのCookieをログ出力（デバッグ用）
+  console.log('All cookies:', request.cookies.getAll());
+  
+  // Cookieの取得方法を変更
+  const idToken = request.cookies.get('idToken')?.value || 
+                 request.headers.get('cookie')?.split(';')
+                   .find(c => c.trim().startsWith('idToken='))
+                   ?.split('=')[1];
+
   const requestHeaders = new Headers(request.headers);
 
   console.log('Middleware - Cookie:', idToken); // デバッグ用

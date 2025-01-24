@@ -27,9 +27,9 @@ export async function POST(request: NextRequest) {
       name: 'idToken',
       value: idToken,
       path: '/',
-      secure: true,
-      sameSite: 'strict',
-      httpOnly: true
+      secure: false,
+      sameSite: 'lax',
+      httpOnly: true,
     });
 
     return response;
