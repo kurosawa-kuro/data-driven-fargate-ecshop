@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/lib/auth/cognito';
-import * as jose from 'jose';
 import { useAuthStore } from '@/stores/auth.store';
 
 export default function LoginPage() {
@@ -15,21 +13,23 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await signIn(email, password);
-      const idToken = result?.AuthenticationResult?.IdToken;
-      if (!idToken) throw new Error('認証トークンがありません');
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      });
 
-      // secure属性追加 idTokenをCookie保存
-      document.cookie = `idToken=${idToken}; path=/; secure`;
-      const decoded = await jose.decodeJwt(idToken);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error);
+      }
 
       // Zustand: 表示用情報のみ
-      useAuthStore.getState().setUser({
-        email: decoded.email as string,
-        userId: decoded.sub as string,
-      });
-      
-
+      useAuthStore.getState().setUser(data.user);
 
       // ログイン後にリダイレクト
       router.push('/products');

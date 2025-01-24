@@ -11,7 +11,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
   ],
 }
 
@@ -19,9 +19,13 @@ export async function middleware(request: NextRequest) {
   const idToken = request.cookies.get('idToken')?.value;
   const requestHeaders = new Headers(request.headers);
 
+  console.log('Middleware - Cookie:', idToken); // デバッグ用
+
   if (idToken) {
     try {
       const decodedIdToken = await jose.decodeJwt(idToken);
+      console.log('Middleware - Decoded Token:', decodedIdToken); // デバッグ用
+      
       if (decodedIdToken.email && decodedIdToken.sub) {
         requestHeaders.set('x-user-email', String(decodedIdToken.email));
         requestHeaders.set('x-user-id', String(decodedIdToken.sub));

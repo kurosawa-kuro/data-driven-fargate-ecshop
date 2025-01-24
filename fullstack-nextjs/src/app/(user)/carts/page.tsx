@@ -45,9 +45,6 @@ export default function Page() {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        // //         headers: { 
-        // //   'Content-Type': 'application/json'
-        // // },
         const response = await fetch(API_ENDPOINTS.CART, {
           headers: { 
             'Content-Type': 'application/json'
