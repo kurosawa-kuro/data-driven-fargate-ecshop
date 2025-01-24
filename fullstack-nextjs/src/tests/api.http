@@ -12,7 +12,7 @@ http://35.77.48.143:3000
 
 ### ==================== 認証・ユーザー管理 ====================
 ### ユーザー登録
-POST {{localBaseUrl}}/api/user
+POST {{localBaseUrl}}/api/users
 Content-Type: application/json
 
 {
