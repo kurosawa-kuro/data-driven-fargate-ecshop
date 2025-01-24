@@ -3,14 +3,13 @@ import { prisma } from '@/lib/prisma';
 import { headers } from "next/headers";
 
 export async function GET(request: NextRequest) {
-    // ミドルウェアからのヘッダーを取得
-    const headersList = headers();
-    const email = (await headersList).get('x-middleware-request-x-user-email');
-    const userId = (await headersList).get('x-middleware-request-x-user-id');
+    const headersList = await headers();
+    const email = headersList.get('x-user-email')?.split(',')[0];
+    const userId = headersList.get('x-user-id')?.split(',')[0];
 
-    console.log("API Route - All headers:", Object.fromEntries([...(await headersList).entries()]));
-    console.log("API Route - Email from middleware:", email);
-    console.log("API Route - UserId from middleware:", userId);
+    // console.log("API Route - All headers:", Object.fromEntries([...headersList.entries()]));
+    console.log("API Route - Email:", email);
+    console.log("API Route - UserId:", userId);
 
     try {
         // ユーザー情報の確認（開発中は一時的にコメントアウト）
@@ -25,17 +24,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ 
             success: true, 
             products,
-            user: { email, userId },
-            debug: {
-                headers: Object.fromEntries((await headersList).entries())
-            }
-        }, { 
-            status: 200,
-            headers: {
-                'x-debug-email': email || 'not-found',
-                'x-debug-user-id': userId || 'not-found'
-            }
-        });
+            user: { email, userId }
+        }, { status: 200 });
     } catch (error) {
         console.error('Error fetching products:', error);
         return NextResponse.json(

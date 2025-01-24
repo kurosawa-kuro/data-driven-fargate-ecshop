@@ -39,9 +39,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // デバッグ用
-  console.log('Middleware - Request path:', request.nextUrl.pathname);
-  console.log('Middleware - Headers:', Object.fromEntries(requestHeaders.entries()));
+  // // デバッグ用
+  // console.log('Middleware - Request path:', request.nextUrl.pathname);
+  // console.log('Middleware - Headers:', Object.fromEntries(requestHeaders.entries()));
 
   const response = NextResponse.next({
     request: {
