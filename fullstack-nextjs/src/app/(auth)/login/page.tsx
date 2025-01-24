@@ -17,17 +17,23 @@ export default function LoginPage() {
     try {
       const result = await signIn(email, password);
       const idToken = result?.AuthenticationResult?.IdToken;
-      if (idToken) {
-        const decoded = await jose.decodeJwt(idToken);
-        useAuthStore.getState().setUser({
-          email: decoded.email as string,
-          userId: decoded.sub as string,
-          idToken
-        });
-        router.push('/products');
-      }
+      if (!idToken) throw new Error('認証トークンがありません');
+
+      // secure属性追加 idTokenをCookie保存
+      document.cookie = `idToken=${idToken}; path=/; secure`;
+      const decoded = await jose.decodeJwt(idToken);
+
+      // Zustand: 表示用情報のみ
+      useAuthStore.getState().setUser({
+        email: decoded.email as string,
+        userId: decoded.sub as string,
+      });
+
+      // ログイン後にリダイレクト
+      router.push('/products');
     } catch (err) {
       setError('ログインに失敗しました');
+      console.error(err);
     }
   };
 

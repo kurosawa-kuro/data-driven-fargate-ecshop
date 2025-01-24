@@ -4,7 +4,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 interface User {
   email: string | null;
   userId: string | null;
-  idToken: string | null;
 }
 
 interface AuthStore {
@@ -17,8 +16,7 @@ interface AuthStore {
 const initialState = {
   user: {
     email: null,
-    userId: null,
-    idToken: null
+    userId: null
   }
 };
 

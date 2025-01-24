@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { confirmSignUp } from '@/lib/auth/cognito';
+import { confirmSignUp, signIn } from '@/lib/auth/cognito';
 import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { client } from '@/lib/auth/cognito';
 import Cookies from 'js-cookie';
@@ -41,6 +41,7 @@ function ConfirmForm() {
       });
       
       const userResponse = await client.send(userCommand);
+      console.log("User response:", userResponse);
       const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
       console.log("Got user sub:", sub);
 
@@ -57,7 +58,7 @@ function ConfirmForm() {
         // console.log("User registration response:", apiResponse);
       }
 
-      router.push('/products'); 
+      router.push('/login'); 
     } catch (err: unknown) {
       console.error('Confirmation error:', err);
       const error = err as CognitoError;
