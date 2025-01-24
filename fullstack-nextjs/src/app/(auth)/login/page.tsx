@@ -28,6 +28,8 @@ export default function LoginPage() {
         email: decoded.email as string,
         userId: decoded.sub as string,
       });
+      
+
 
       // ログイン後にリダイレクト
       router.push('/products');
