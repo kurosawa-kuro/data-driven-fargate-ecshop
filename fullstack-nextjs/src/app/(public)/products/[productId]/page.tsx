@@ -48,7 +48,7 @@ export default async function Page({ params }: ProductPageProps) {
   
   // データフェッチング
   const response = await fetch(`${API_BASE_URL}/products/${resolvedParams.productId}`, {
-    // headers: headersList,
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     cache: 'no-store'
   });

@@ -1,45 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
+import { headers } from 'next/headers';
 
 export async function GET(request: Request) {
   try {
-    // 注文一覧取得
-    // // 購入履歴（Linear Regression, PCA用）
-    // model Purchase {
-    //   id          Int       @id @default(autoincrement())
-    //   userId      String
-    //   totalAmount Float
-    //   purchasedAt DateTime  @default(now())
-
-    //   // リレーション
-    //   user          User            @relation(fields: [userId], references: [id])
-    //   purchaseItems PurchaseItem[]
-    //   userActionLogs UserActionLog[]
-    //   @@index([userId])
-    // }
-
-    // // 購入商品詳細
-    // model PurchaseItem {
-    //   id          Int       @id @default(autoincrement())
-    //   purchaseId  Int
-    //   productId   Int
-    //   quantity    Int
-    //   price       Float     // 購入時の価格を保存
-
-    //   // リレーション
-    //   purchase    Purchase  @relation(fields: [purchaseId], references: [id])
-    //   product     Product   @relation(fields: [productId], references: [id])
-    //   @@index([purchaseId])
-    //   @@index([productId])
-    // }
-
-    // 購入履歴取得
-    // 商品名、購入日時、購入金額、購入数量、購入時の価格
+    const headersList = await headers();
+    const email = headersList.get('x-user-email');
+    const userId = headersList.get('x-user-id');
+  
+    console.log("Checkout Confirm - userId from header:", userId);
+    console.log("Checkout Confirm - email from header:", email);
     // 購入履歴はユーザーIDで絞り込む
     const purchases = await prisma.purchase.findMany({
       where: {
-        userId: "auth0|user1"
+        userId: userId || ''
       },
       include: {
         purchaseItems: {
@@ -49,7 +23,7 @@ export async function GET(request: Request) {
         }
       },
     });
-    console.log("◇◇◇◇◇◇◇◇◇◇◇◇◇◇ purchases", purchases);
+    // console.log("◇◇◇◇◇◇◇◇◇◇◇◇◇◇ purchases", purchases);
 
     // 成功時のレスポンスを追加
     return NextResponse.json({ success: true, purchases }, { status: 201 });

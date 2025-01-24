@@ -9,36 +9,23 @@ import { useAuthStore } from '@/stores/auth.store';
 
 export function CartActions({ productData }: { productData: any }) {
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState<{
-    email: string | null;
-    userId: string | null;
-  }>({
-    email: null,
-    userId: null
-  });
-
-  // Zustandからユーザー Subを取得
-  const userId = useAuthStore.getState().user.userId;
-  console.log("addToCart - userId:", userId);
-
-  // useEffect(() => {
-  //   console.log("document",document);
-  //   const email = document.querySelector('meta[name="x-user-email"]')?.getAttribute('content') ?? null;
-  //   const userId = document.querySelector('meta[name="x-user-id"]')?.getAttribute('content') ?? null;
-  //   console.log("addToCart - userId from header:", userId);
-  //   console.log("addToCart - email from header:", email);
-  //   setUserInfo({ email, userId });
-  // }, []);
+  const { user } = useAuthStore(); // Zustandのstoreから直接userを取得
 
   const handleAddToCart = async () => {
     try {
+      if (!user?.userId) {
+        // ユーザーが未ログインの場合はログインページへリダイレクト
+        router.push('/login');
+        return;
+      }
+
       const response = await fetch('/api/cart', {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
+          'x-user-id': user.userId // ヘッダーにユーザーIDを追加
         },
         body: JSON.stringify({
-          userId: userId,
           productId: productData.id,
           quantity: 1
         }),
@@ -48,6 +35,9 @@ export function CartActions({ productData }: { productData: any }) {
       if (!response.ok) {
         throw new Error('カートへの追加に失敗しました');
       }
+
+      // 成功時の処理（オプション）
+      router.push('/cart');
     } catch (error) {
       logger.error('カートへの追加に失敗しました', error as Error);
     }

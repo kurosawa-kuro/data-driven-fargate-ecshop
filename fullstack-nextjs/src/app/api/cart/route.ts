@@ -13,8 +13,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const headersList = await headers();
-    const userId = headersList.get('x-user-id');
+    const headersList = headers();
+    const userId = (await headersList).get('x-user-id');
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, cartItem });
   } catch (error) {
-    console.error('Cart error:', error);
+    console.error('Cart error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ error: 'カートへの追加に失敗しました' }, { status: 500 });
   }
 }

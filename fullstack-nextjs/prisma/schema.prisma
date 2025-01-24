@@ -27,6 +27,7 @@ model User {
   cartItems       CartItem[]
   purchases       Purchase[]
   userActionLogs  UserActionLog[]
+  returns         Return[]
 }
 
 enum UserStatus {
@@ -73,6 +74,7 @@ model Product {
   cartItems       CartItem[]
   purchaseItems   PurchaseItem[]
   userActionLogs  UserActionLog[]
+  returnItems     ReturnItem[]
 }
 // カテゴリー
 model Category {
@@ -140,6 +142,7 @@ model Purchase {
   user          User            @relation(fields: [userId], references: [id])
   purchaseItems PurchaseItem[]
   userActionLogs UserActionLog[]
+  returns         Return[]
   @@index([userId])
 }
 

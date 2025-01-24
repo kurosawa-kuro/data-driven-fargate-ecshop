@@ -59,7 +59,11 @@ export default function Page() {
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const response = await fetch('/api/purchase');
+        const response = await fetch('/api/purchase',
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
         const data = await response.json();
         setPurchases(data.purchases);
       } catch (error) {

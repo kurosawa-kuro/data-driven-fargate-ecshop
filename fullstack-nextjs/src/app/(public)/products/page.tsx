@@ -11,7 +11,7 @@ export default async function Page() {
   console.log("App Route - email from header:", email);
 
   const response = await fetch('http://localhost:3000/api/products', {
-    headers: headersList,
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     cache: 'no-store'
   });
