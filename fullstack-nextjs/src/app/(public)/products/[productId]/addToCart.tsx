@@ -14,37 +14,28 @@ export function CartActions({ productData }: { productData: any }) {
 
   const handleAddToCart = async () => {
     try {
-      if (!user?.userId) {
-        // ユーザーが未ログインの場合はログインページへリダイレクト
-        router.push('/login');
-        return;
-      }
+      console.log('Debug - Product Data:', productData);
 
-      const response = await fetch('/api/cart', {
+      const response = await fetch('/api/carts', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          productId: productData.id,
-          quantity: 1
-        }),
-        credentials: 'include'
+        body: JSON.stringify({ 
+          productId: productData?.id || 2  // デフォルト値を設定
+        })
       });
 
-      if (!response.ok) {
-        throw new Error('カートへの追加に失敗しました');
-      }
-
-      // 成功時の処理（オプション）
-      router.push('/cart');
+      const data = await response.json();
+      console.log('API Response:', response.status, data);
+      
     } catch (error) {
-      logger.error('カートへの追加に失敗しました', error as Error);
+      console.error('Connection error:', error);
     }
   };
 
   const handleMoveToCart = () => {
-    router.push('/cart');
+    router.push('/carts');
   };
 
   return (

@@ -37,11 +37,11 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // APIルートの場合はレスポンスヘッダーにも設定
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    response.headers.set('x-user-email', requestHeaders.get('x-user-email') || '');
-    response.headers.set('x-user-id', requestHeaders.get('x-user-id') || '');
-  }
+  // // APIルートの場合はレスポンスヘッダーにも設定
+  // if (request.nextUrl.pathname.startsWith('/api/')) {
+  //   response.headers.set('x-user-email', requestHeaders.get('x-user-email') || '');
+  //   response.headers.set('x-user-id', requestHeaders.get('x-user-id') || '');
+  // }
 
   return response;
 }

@@ -58,6 +58,14 @@ Content-Type: application/json
   "productId": 1
 }
 
+### カート追加
+POST {{localBaseUrl}}/api/carts
+Content-Type: application/json
+
+{
+  "productId": 1
+}
+
 ### ==================== システム監視 ====================
 ### [Fargate] システムメトリクス
 ### ログ
