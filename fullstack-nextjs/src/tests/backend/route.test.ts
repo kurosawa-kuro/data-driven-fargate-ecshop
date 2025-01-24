@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { POST } from '../app/api/users/route'
+import { POST } from '@/app/api/users/route'
 import { prisma } from '@/lib/prisma'
 
 describe('Users API', () => {

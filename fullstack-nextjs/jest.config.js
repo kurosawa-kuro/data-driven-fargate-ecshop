@@ -6,8 +6,11 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const customJestConfig = {
-  testEnvironment: 'node',
-  testMatch: ['<rootDir>/src/tests/**/*.test.ts'],
+  testEnvironment: process.env.TEST_ENV === 'frontend' ? 'jsdom' : 'node',
+  testMatch: [
+    '<rootDir>/src/**/*.test.{tsx,jsx}',
+    '<rootDir>/src/**/*.test.ts'
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
@@ -22,6 +25,7 @@ const customJestConfig = {
     '!src/**/*.stories.{js,jsx,ts,tsx}',
   ],
   coverageDirectory: 'coverage',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js']
 }
 
 module.exports = createJestConfig(customJestConfig) 
