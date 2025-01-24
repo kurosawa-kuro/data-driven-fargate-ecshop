@@ -16,7 +16,7 @@ describe('Users API', () => {
   })
 
   it('正常にユーザーを作成できること', async () => {
-    const request = new NextRequest(new Request('http://localhost/api/users', {
+    const request = new NextRequest(new Request('http://localhost/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
