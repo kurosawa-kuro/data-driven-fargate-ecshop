@@ -25,7 +25,11 @@ const customJestConfig = {
     '!src/**/*.stories.{js,jsx,ts,tsx}',
   ],
   coverageDirectory: 'coverage',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js']
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // joseモジュールをトランスフォーム対象に含める
+  transformIgnorePatterns: [
+    '/node_modules/(?!(jose)/)'
+  ]
 }
 
 module.exports = createJestConfig(customJestConfig) 
