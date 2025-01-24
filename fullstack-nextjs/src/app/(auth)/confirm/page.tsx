@@ -54,10 +54,7 @@ function ConfirmForm() {
           },
           body: JSON.stringify({ email, sub }),
         });
-
-        const data = await apiResponse.json();
-        Cookies.set('email', email);
-        console.log("User registration response:", data);
+        console.log("User registration response:", apiResponse);
       }
 
       router.push('/products'); 
