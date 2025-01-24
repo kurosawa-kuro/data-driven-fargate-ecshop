@@ -26,14 +26,11 @@ class TokenProcessor {
 
   // Cookieからトークンを取得
   getIdToken(): string | undefined {
-    // console.log('All cookies:', this.request.cookies.getAll());
-    
     const idToken = this.request.cookies.get('idToken')?.value || 
                    this.request.headers.get('cookie')?.split(';')
                      .find(c => c.trim().startsWith('idToken='))
                      ?.split('=')[1];
-    
-    // console.log('Middleware - Cookie:', idToken);
+
     return idToken;
   }
 
@@ -41,7 +38,6 @@ class TokenProcessor {
   async decodeToken(idToken: string): Promise<{ email?: string, sub?: string } | null> {
     try {
       const decodedIdToken = await jose.decodeJwt(idToken);
-      console.log('Middleware - Decoded Token:', decodedIdToken);
       
       if (decodedIdToken.email && decodedIdToken.sub) {
         return {
