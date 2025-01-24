@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 
@@ -14,6 +14,11 @@ interface OrderFormData {
   paymentMethod: 'credit_card' | 'bank_transfer';
 }
 
+interface OrderSummary {
+  subtotal: number;
+  shippingFee: number;
+  total: number;
+}
 
 export default function Page() {
   const router = useRouter();
@@ -26,6 +31,31 @@ export default function Page() {
     deliveryDate: '明日 - 12/24（日）',
     paymentMethod: 'credit_card',
   });
+
+  const [orderSummary, setOrderSummary] = useState<OrderSummary>({
+    subtotal: 0,
+    shippingFee: 550, // 送料は固定
+    total: 0
+  });
+
+  useEffect(() => {
+    const fetchCartSummary = async () => {
+      try {
+        const response = await fetch('/api/carts/summary');
+        const data = await response.json();
+        console.log("カート情報の取得に成功しました", data);
+        setOrderSummary({
+          subtotal: data.subtotal,
+          shippingFee: 550,
+          total: data.subtotal + 550
+        });
+      } catch (error) {
+        logger.error('カート情報の取得に失敗しました', error as Error);
+      }
+    };
+
+    fetchCartSummary();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,16 +181,16 @@ export default function Page() {
               <div className="space-y-4">
                 <div className="flex justify-between text-white">
                   <span>小計</span>
-                  <span>¥10,000</span>
+                  <span>¥{orderSummary.subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-white">
                   <span>送料</span>
-                  <span>¥550</span>
+                  <span>¥{orderSummary.shippingFee.toLocaleString()}</span>
                 </div>
                 <div className="border-t border-gray-600 pt-4 font-bold text-white">
                   <div className="flex justify-between">
                     <span>請求額合計</span>
-                    <span>¥10,550</span>
+                    <span>¥{orderSummary.total.toLocaleString()}</span>
                   </div>
                 </div>
                 <button 

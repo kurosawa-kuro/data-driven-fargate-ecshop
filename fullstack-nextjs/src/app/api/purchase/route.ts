@@ -10,10 +10,13 @@ export async function GET(request: Request) {
   
     console.log("Checkout Confirm - userId from header:", userId);
     console.log("Checkout Confirm - email from header:", email);
-    // 購入履歴はユーザーIDで絞り込む
+    // 購入履歴はユーザーIDで絞り込む 最新順番に並べ替え
     const purchases = await prisma.purchase.findMany({
       where: {
         userId: userId || ''
+      },
+      orderBy: {
+        purchasedAt: 'desc' 
       },
       include: {
         purchaseItems: {
