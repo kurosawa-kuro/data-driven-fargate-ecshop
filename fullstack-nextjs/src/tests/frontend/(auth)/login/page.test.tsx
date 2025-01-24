@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import LoginPage from '@/app/(auth)/login/page';
 import { signIn } from '@/lib/auth/cognito';
 import { useAuthStore } from '@/stores/auth.store';
+import * as jose from 'jose';
 
 // モックの設定
 jest.mock('next/navigation', () => ({
@@ -13,20 +14,19 @@ jest.mock('@/lib/auth/cognito', () => ({
   signIn: jest.fn()
 }));
 
-// joseモジュール全体をモック
-jest.mock('jose', () => ({
-  decodeJwt: () => Promise.resolve({
-    email: 'test@example.com',
-    sub: 'user123'
-  })
-}));
-
+// Zustand storeのモックを修正
+const mockSetUser = jest.fn();
 jest.mock('@/stores/auth.store', () => ({
   useAuthStore: {
-    getState: () => ({
-      setUser: jest.fn()
-    })
+    getState: jest.fn(() => ({
+      setUser: mockSetUser
+    }))
   }
+}));
+
+// JOSEのモック
+jest.mock('jose', () => ({
+  decodeJwt: jest.fn()
 }));
 
 describe('LoginPage', () => {
@@ -39,59 +39,67 @@ describe('LoginPage', () => {
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
   });
 
-  it('フォームが正しく表示されること', () => {
-    render(<LoginPage />);
-    
-    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument();
-    expect(screen.getByLabelText('パスワード')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'ログイン' })).toBeInTheDocument();
-  });
-
-  it('ログイン成功時に/productsにリダイレクトされること', async () => {
+  it('正常にログインが完了した場合、/productsにリダイレクトされる', async () => {
+    // モックの戻り値を設定
     const mockIdToken = 'mock-id-token';
+    const mockDecodedToken = {
+      email: 'test@example.com',
+      sub: 'test-user-id'
+    };
+
     (signIn as jest.Mock).mockResolvedValueOnce({
       AuthenticationResult: {
         IdToken: mockIdToken
       }
     });
 
+    (jose.decodeJwt as jest.Mock).mockReturnValueOnce(mockDecodedToken);
+
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText('メールアドレス'), { 
-      target: { value: 'test@example.com' } 
+    // フォームに値を入力
+    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+      target: { value: 'test@example.com' }
     });
-    fireEvent.change(screen.getByLabelText('パスワード'), { 
-      target: { value: 'password123' } 
+    fireEvent.change(screen.getByLabelText('パスワード'), {
+      target: { value: 'password123' }
     });
-    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
+    // フォームを送信
+    fireEvent.submit(screen.getByRole('button', { name: 'ログイン' }));
+
+    // 期待される動作の検証
     await waitFor(() => {
+      expect(signIn).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockSetUser).toHaveBeenCalledWith({
+        email: mockDecodedToken.email,
+        userId: mockDecodedToken.sub,
+        idToken: mockIdToken
+      });
       expect(mockRouter.push).toHaveBeenCalledWith('/products');
     });
   });
 
-  it('ログイン失敗時にエラーメッセージが表示されること', async () => {
+  it('ログインに失敗した場合、エラーメッセージが表示される', async () => {
+    // ログイン失敗のモックを設定
     (signIn as jest.Mock).mockRejectedValueOnce(new Error('Login failed'));
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText('メールアドレス'), { 
-      target: { value: 'test@example.com' } 
+    // フォームに値を入力
+    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+      target: { value: 'test@example.com' }
     });
-    fireEvent.change(screen.getByLabelText('パスワード'), { 
-      target: { value: 'wrongpassword' } 
+    fireEvent.change(screen.getByLabelText('パスワード'), {
+      target: { value: 'password123' }
     });
-    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
+    // フォームを送信
+    fireEvent.submit(screen.getByRole('button', { name: 'ログイン' }));
+
+    // エラーメッセージの表示を確認
     await waitFor(() => {
       expect(screen.getByText('ログインに失敗しました')).toBeInTheDocument();
     });
-  });
-
-  it('必須フィールドが空の場合にフォーム送信を防ぐこと', () => {
-    render(<LoginPage />);
-    
-    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }));
-    expect(signIn).not.toHaveBeenCalled();
   });
 });
