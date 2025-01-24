@@ -1,20 +1,20 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { logger } from '@/lib/logger';
-import { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
 import { useAuthStore } from '@/stores/auth.store';
-// import { headers } from "next/headers";
 
-export function CartActions({ productData }: { productData: any }) {
+interface ProductData {
+  id: number;
+  price: number;
+}
+
+export function CartActions({ productData }: { productData: ProductData }) {
   const router = useRouter();
-  const { user } = useAuthStore(); // Zustandのstoreから直接userを取得
+  const { user } = useAuthStore();
   console.log("addToCart - user:", user);
 
   const handleAddToCart = async () => {
     try {
-      console.log('Debug - Product Data:', productData);
 
       const response = await fetch('/api/carts', {
         method: 'POST',
@@ -22,13 +22,11 @@ export function CartActions({ productData }: { productData: any }) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
-          productId: productData?.id || 2  // デフォルト値を設定
+          productId: productData?.id
         })
       });
 
-      const data = await response.json();
-      console.log('API Response:', response.status, data);
-      
+      await response.json();
     } catch (error) {
       console.error('Connection error:', error);
     }

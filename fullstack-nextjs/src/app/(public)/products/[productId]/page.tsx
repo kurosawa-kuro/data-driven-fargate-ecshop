@@ -6,7 +6,7 @@ type ProductPageProps = {
 };
 
 type Product = {
-  id: string;
+  id: number;
   name: string;
   price: number;
   rating: number;

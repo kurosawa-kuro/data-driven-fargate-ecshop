@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const headersList = headers();
     const userId = (await headersList).get('x-user-id');
@@ -28,16 +28,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // console.log("Cart API - Request:", request);
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
-    const email = headersList.get('x-user-email');
-    
-    console.log("Cart API - UserId:", userId);
-    console.log("Cart API - Email:", email);
-
-    const allUsers = await prisma.user.findMany();
-    console.log('3. All users in DB:', allUsers);
 
     // ユーザーIDがDBに存在しない場合はエラーを返す
     const user = await prisma.user.findUnique({ 

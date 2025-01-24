@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
 import LoginPage from '@/app/(auth)/login/page';
 import { signIn } from '@/lib/auth/cognito';
-import { useAuthStore } from '@/stores/auth.store';
 import * as jose from 'jose';
 
 // モックの設定

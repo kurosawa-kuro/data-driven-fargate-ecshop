@@ -1,8 +1,8 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse  } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from "next/headers";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
 
   // そもそもリクエストヘッダーではなくレスポンスヘッダーに設定ではないので
     const headersList = await headers();

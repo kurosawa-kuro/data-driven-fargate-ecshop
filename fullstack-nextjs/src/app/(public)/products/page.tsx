@@ -2,6 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  rating: number;
+}
+
 export default async function Page() {
   const headersList = await headers();
   const email = headersList.get('x-user-email');
@@ -23,7 +30,7 @@ export default async function Page() {
       <h1 className="text-2xl font-bold mb-8 text-white">商品一覧</h1>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product: any) => (
+        {products.map((product: Product) => (
           <Link 
             key={product.id} 
             href={`/products/${product.id}`}

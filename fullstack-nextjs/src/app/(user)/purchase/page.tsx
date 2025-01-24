@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
@@ -34,7 +33,7 @@ interface Purchase {
 
 // API通信用のユーティリティ関数
 const apiClient = {
-  async logAction(actionType: ActionType, payload: Record<string, any>) {
+  async logAction(actionType: ActionType, payload: Record<string, string>) {
     return fetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -92,7 +91,7 @@ export default function Page() {
         }))
       );
       await apiClient.logAction('repurchase', {
-        products: products.map(p => p.id)
+        products: products.map(p => p.id).join(',')
       });
       router.push('/cart');
     } catch (error) {

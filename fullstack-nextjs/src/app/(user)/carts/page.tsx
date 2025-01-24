@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
@@ -119,6 +118,12 @@ export default function Page() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-8 text-white">ショッピングカート</h1>
+      
+      {error && (
+        <div className="bg-red-500 text-white p-4 mb-4 rounded">
+          {error}
+        </div>
+      )}
       
       <div className="flex flex-col md:flex-row gap-8">
         {/* 商品リスト */}

@@ -2,10 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { confirmSignUp, signIn } from '@/lib/auth/cognito';
+import { confirmSignUp} from '@/lib/auth/cognito';
 import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { client } from '@/lib/auth/cognito';
-import Cookies from 'js-cookie';
 
 interface CognitoError extends Error {
   name: string;
@@ -48,7 +47,7 @@ function ConfirmForm() {
       if (sub) {
         // ユーザー登録APIを呼び出し
         console.log("Calling user registration API...");
-        const apiResponse = await fetch('/api/users', {
+        await fetch('/api/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

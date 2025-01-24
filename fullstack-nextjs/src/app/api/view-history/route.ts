@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const userId = body.userId;
+    // const userId = body.userId;
     const productId = body.productId;
     
     const user = await prisma.viewHistory.create({
