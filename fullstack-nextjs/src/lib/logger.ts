@@ -165,34 +165,10 @@ class AppLogger implements Logger {
         actionType: action.actionType as PrismaActionType,
         productId: action.productId,
         cartItemId: action.cartItemId,
-        quantity: action.metadata?.quantity as number | undefined,
+        quantity: action.quantity,
         purchaseId: action.purchaseId,
         metadata: action.metadata as Prisma.InputJsonValue
       } satisfies Prisma.UserActionLogUncheckedCreateInput;
-
-      // メタデータから特定のフィールドを抽出
-      if (action.metadata) {
-        const {
-          quantity,
-          savedForLater,
-          paymentErrorDetails,
-          reviewText,
-          rating,
-          deleteReason,
-          ...restMetadata
-        } = action.metadata;
-
-        // 型安全な代入
-        // if (typeof quantity === 'number') logData.quantity = quantity;
-        // if (typeof savedForLater === 'boolean') logData.savedForLater = savedForLater;
-        // if (typeof paymentErrorDetails === 'string') logData.paymentErrorDetails = paymentErrorDetails;
-        // if (typeof reviewText === 'string') logData.reviewText = reviewText;
-        // if (typeof rating === 'number') logData.rating = rating;
-        // if (typeof deleteReason === 'string') logData.deleteReason = deleteReason;
-
-        // 残りのメタデータを保存
-        logData.metadata = restMetadata as Prisma.InputJsonValue;
-      }
 
       await this.prisma.userActionLog.create({ data: logData });
 
@@ -269,10 +245,10 @@ class AppLogger implements Logger {
       productId: action.productId,
       purchaseId: action.purchaseId,
       cartItemId: action.cartItemId,
-      quantity: action.quantity
+      quantity: action.quantity,
+      metadata: action.metadata
     };
 
-    // オレンジ色で簡潔なログ出力
     console.log('\x1b[33m%s\x1b[0m', JSON.stringify(logData));
 
     // DBログの処理
@@ -282,7 +258,8 @@ class AppLogger implements Logger {
         message: `User Action: ${action.actionType}`,
         timestamp,
         action,
-        requestID
+        requestID,
+        metadata: action.metadata
       }).catch(error => {
         if (error instanceof Error) {
           console.error('Failed to log action:', error.message);

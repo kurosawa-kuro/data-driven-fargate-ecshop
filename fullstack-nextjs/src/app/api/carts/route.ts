@@ -32,7 +32,6 @@ export async function POST(request: Request) {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
     const requestID = headersList.get('x-request-id');
-    console.log("cart requestID ２", requestID);
 
     // ユーザーIDがDBに存在しない場合はエラーを返す
     const user = await prisma.user.findUnique({ 
@@ -61,14 +60,25 @@ export async function POST(request: Request) {
       }
     });
 
-    let cartItem;
+    let cartItem: {
+      id: number;
+      userId: string;
+      productId: number;
+      quantity: number;
+      addedAt: Date;
+      product: {
+        name: string;
+        price: number;
+      };
+    };
     if (existingCartItem) {
       // 既存のアイテムを更新
       cartItem = await prisma.cartItem.update({
         where: { id: existingCartItem.id },
         data: {
           quantity: existingCartItem.quantity + quantity
-        }
+        },
+        include: { product: true }
       });
     } else {
       // 新しいカートアイテムを作成
@@ -77,7 +87,8 @@ export async function POST(request: Request) {
           userId: userId,
           productId: parseInt(productId),
           quantity: quantity
-        }
+        },
+        include: { product: true }
       });
     }
 
@@ -90,7 +101,8 @@ export async function POST(request: Request) {
       quantity: quantity,
       cartItemId: cartItem.id,
       metadata: {
-        quantity: quantity
+        productName: cartItem.product.name,
+        productPrice: cartItem.product.price
       }
     });
 
@@ -121,7 +133,8 @@ export async function DELETE(request: Request) {
       where: {
         id: parseInt(cartItemId),
         userId: userId
-      }
+      },
+      include: { product: true }
     });
 
     if (!cartItem) {
