@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { headers } from "next/headers";
 
 interface Product {
   id: number;
@@ -10,13 +9,6 @@ interface Product {
 }
 
 export default async function Page() {
-  const headersList = await headers();
-  const email = headersList.get('x-user-email');
-  const userId = headersList.get('x-user-id');
-
-  console.log("App Route - userId from header:", userId);
-  console.log("App Route - email from header:", email);
-
   const response = await fetch('http://localhost:3000/api/products', {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

@@ -1,0 +1,48 @@
+```typescript
+export const ActionLogType = {
+ Pre_Purchase: {
+   PRODUCT: {
+        VIEW: 'PRODUCT_VIEW',
+        SEARCH: 'PRODUCT_SEARCH',  // キーワード入力による検索
+        FILTER: 'PRODUCT_FILTER',  // カテゴリー、価格帯等の条件絞り込み
+        SORT: 'PRODUCT_SORT'
+   },
+   CART: {
+     ADD: 'CART_ADD',
+     REMOVE: 'CART_REMOVE',
+     UPDATE: 'CART_UPDATE',
+     SAVE_FOR_LATER: 'CART_SAVE_FOR_LATER'
+   },
+   CHECKOUT: {
+     START: 'CHECKOUT_START',
+     COMPLETE: 'COMPLETE_PURCHASE',
+     PAYMENT_ERROR: 'PAYMENT_ERROR',
+     ADDRESS_UPDATE: 'ADDRESS_UPDATE'
+   }
+ },
+ Post_Purchase: {
+   PRODUCT: {
+     BUY_AGAIN: 'PRODUCT_BUY_AGAIN',
+     CANCEL: 'PURCHASE_CANCEL',
+     REVIEW: 'PRODUCT_REVIEW',
+     RETURN: {
+       REQUEST: 'RETURN_REQUESTED',
+       COMPLETE: 'RETURN_COMPLETED',
+       CANCEL: 'RETURN_CANCELLED'
+     }
+   },
+   PURCHASE: {  
+     DELIVERY_STATUS_VIEW: 'PURCHASE_DELIVERY_STATUS_VIEW'
+   }
+ },
+ USER: {
+    LOGIN: 'USER_LOGIN',
+    LOGOUT: 'USER_LOGOUT',
+    REGISTER_START: 'USER_REGISTER_START',    // メール認証前の仮登録
+    REGISTER_COMPLETE: 'USER_REGISTER_COMPLETE',  // メール認証完了で本登録
+    PROFILE_UPDATE: 'PROFILE_UPDATE',
+    PASSWORD_CHANGE: 'PASSWORD_CHANGE',
+    DELETE_ACCOUNT: 'DELETE_ACCOUNT'
+ }
+} as const;
+```

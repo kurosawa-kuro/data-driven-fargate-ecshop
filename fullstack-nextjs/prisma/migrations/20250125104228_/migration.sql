@@ -1,21 +1,22 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'DISABLED', 'DELETED');
 
-  - You are about to drop the `Sample` table. If the table is not empty, all the data it contains will be lost.
+-- CreateEnum
+CREATE TYPE "ActionType" AS ENUM ('CART_ADD', 'CART_REMOVE', 'CART_UPDATE', 'COMPLETE_PURCHASE', 'PURCHASE_CANCEL', 'RETURN_REQUESTED', 'RETURN_COMPLETED', 'USER_REGISTER_START', 'USER_REGISTER_COMPLETE', 'PROFILE_UPDATE', 'DELETE_ACCOUNT');
 
-*/
--- DropTable
-DROP TABLE "Sample";
+-- CreateEnum
+CREATE TYPE "ReturnStatus" AS ENUM ('REQUESTED', 'APPROVED', 'REJECTED', 'COMPLETED');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
+    "cognitoId" TEXT NOT NULL,
+    "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "lastLoginAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -32,7 +33,7 @@ CREATE TABLE "Role" (
 
 -- CreateTable
 CREATE TABLE "UserRole" (
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "roleId" INTEGER NOT NULL,
     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -73,7 +74,7 @@ CREATE TABLE "ProductCategory" (
 -- CreateTable
 CREATE TABLE "ViewHistory" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "productId" INTEGER NOT NULL,
     "viewedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -83,7 +84,7 @@ CREATE TABLE "ViewHistory" (
 -- CreateTable
 CREATE TABLE "CartItem" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "productId" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -94,7 +95,7 @@ CREATE TABLE "CartItem" (
 -- CreateTable
 CREATE TABLE "Purchase" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "totalAmount" DOUBLE PRECISION NOT NULL,
     "purchasedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -112,8 +113,61 @@ CREATE TABLE "PurchaseItem" (
     CONSTRAINT "PurchaseItem_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "UserActionLog" (
+    "id" SERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "actionType" "ActionType" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "productId" INTEGER,
+    "searchQuery" TEXT,
+    "filterData" JSONB,
+    "sortData" JSONB,
+    "cartItemId" INTEGER,
+    "quantity" INTEGER,
+    "savedForLater" BOOLEAN,
+    "purchaseId" INTEGER,
+    "paymentErrorDetails" TEXT,
+    "addressData" JSONB,
+    "returnId" INTEGER,
+    "returnReason" TEXT,
+    "reviewText" TEXT,
+    "rating" DOUBLE PRECISION,
+    "deliveryStatus" TEXT,
+    "profileUpdateData" JSONB,
+    "deleteReason" TEXT,
+    "metadata" JSONB,
+
+    CONSTRAINT "UserActionLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Return" (
+    "id" SERIAL NOT NULL,
+    "purchaseId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
+    "returnedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "status" "ReturnStatus" NOT NULL DEFAULT 'REQUESTED',
+    "reason" TEXT NOT NULL,
+
+    CONSTRAINT "Return_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ReturnItem" (
+    "id" SERIAL NOT NULL,
+    "returnId" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+
+    CONSTRAINT "ReturnItem_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_cognitoId_key" ON "User"("cognitoId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
@@ -157,6 +211,30 @@ CREATE INDEX "PurchaseItem_purchaseId_idx" ON "PurchaseItem"("purchaseId");
 -- CreateIndex
 CREATE INDEX "PurchaseItem_productId_idx" ON "PurchaseItem"("productId");
 
+-- CreateIndex
+CREATE INDEX "UserActionLog_userId_actionType_createdAt_idx" ON "UserActionLog"("userId", "actionType", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "UserActionLog_productId_idx" ON "UserActionLog"("productId");
+
+-- CreateIndex
+CREATE INDEX "UserActionLog_cartItemId_idx" ON "UserActionLog"("cartItemId");
+
+-- CreateIndex
+CREATE INDEX "UserActionLog_purchaseId_idx" ON "UserActionLog"("purchaseId");
+
+-- CreateIndex
+CREATE INDEX "Return_purchaseId_idx" ON "Return"("purchaseId");
+
+-- CreateIndex
+CREATE INDEX "Return_userId_idx" ON "Return"("userId");
+
+-- CreateIndex
+CREATE INDEX "ReturnItem_returnId_idx" ON "ReturnItem"("returnId");
+
+-- CreateIndex
+CREATE INDEX "ReturnItem_productId_idx" ON "ReturnItem"("productId");
+
 -- AddForeignKey
 ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -189,3 +267,27 @@ ALTER TABLE "PurchaseItem" ADD CONSTRAINT "PurchaseItem_purchaseId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "PurchaseItem" ADD CONSTRAINT "PurchaseItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_cartItemId_fkey" FOREIGN KEY ("cartItemId") REFERENCES "CartItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "Purchase"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Return" ADD CONSTRAINT "Return_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "Purchase"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Return" ADD CONSTRAINT "Return_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ReturnItem" ADD CONSTRAINT "ReturnItem_returnId_fkey" FOREIGN KEY ("returnId") REFERENCES "Return"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ReturnItem" ADD CONSTRAINT "ReturnItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

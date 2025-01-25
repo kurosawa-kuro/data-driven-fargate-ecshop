@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 // /home/wsl/app/fullstack-nextjs/src/lib/prisma.tsx
 import { prisma } from '../src/lib/prisma';
 import { UserStatus, ActionType } from '@prisma/client';
@@ -12,6 +14,8 @@ async function cleanAllTables() {
   await prisma.$executeRaw`
     DO $$ 
     BEGIN 
+      DELETE FROM "ReturnItem";
+      DELETE FROM "Return";
       DELETE FROM "UserActionLog";
       DELETE FROM "PurchaseItem";
       DELETE FROM "Purchase";
@@ -24,6 +28,8 @@ async function cleanAllTables() {
       DELETE FROM "Role";
       DELETE FROM "User";
       
+      ALTER SEQUENCE "ReturnItem_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "Return_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "UserActionLog_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1;
@@ -383,41 +389,63 @@ async function main() {
       })
     ]);
 
-    // UserActionLogの作成
+    // Returnの作成
+    const returns = await Promise.all([
+      prisma.return.create({
+        data: {
+          purchaseId: purchases[0].id,
+          userId: users[0].id,
+          reason: "商品が破損していました",
+          status: "REQUESTED"
+        }
+      }),
+      prisma.return.create({
+        data: {
+          purchaseId: purchases[1].id,
+          userId: users[1].id,
+          reason: "サイズが合いませんでした",
+          status: "COMPLETED"
+        }
+      })
+    ]);
+
+    // ReturnItemの作成
+    await Promise.all([
+      prisma.returnItem.create({
+        data: {
+          returnId: returns[0].id,
+          productId: products[0].id,
+          quantity: 1
+        }
+      }),
+      prisma.returnItem.create({
+        data: {
+          returnId: returns[1].id,
+          productId: products[1].id,
+          quantity: 1
+        }
+      })
+    ]);
+
+    // UserActionLogの作成を更新
     await Promise.all([
       prisma.userActionLog.create({
         data: {
           userId: users[0].id,
-          actionType: ActionType.VIEW_PRODUCT,
-          productId: products[0].id
+          actionType: ActionType.CART_ADD,
+          productId: products[0].id,
+          cartItemId: 1,
+          quantity: 2,
+          metadata: { source: "product_page" }
         }
       }),
       prisma.userActionLog.create({
         data: {
           userId: users[1].id,
-          actionType: ActionType.ADD_TO_CART,
-          productId: products[1].id
-        }
-      }),
-      prisma.userActionLog.create({
-        data: {
-          userId: users[2].id,
-          actionType: ActionType.COMPLETE_PURCHASE,
-          productId: products[2].id
-        }
-      }),
-      prisma.userActionLog.create({
-        data: {
-          userId: users[3].id,
-          actionType: ActionType.VIEW_PRODUCT,
-          productId: products[3].id
-        }
-      }),
-      prisma.userActionLog.create({
-        data: {
-          userId: users[4].id,
-          actionType: ActionType.ADD_TO_CART,
-          productId: products[4].id
+          actionType: ActionType.RETURN_REQUESTED,
+          productId: products[1].id,
+          returnReason: "商品が期待と異なります",
+          metadata: { returnId: returns[0].id }
         }
       })
     ]);

@@ -1,9 +1,10 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://neondb_owner:Nrp3FfO1goiB@ep-noisy-cherry-a7rp6riz.ap-southeast-2.aws.neon.tech/neondb?sslmode=require"
+  url      = "postgresql://postgres:postgres@localhost:5432/training?sslmode=require"
 }
 
 model User {
@@ -26,7 +27,6 @@ model User {
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchases       Purchase[]
-  userActionLogs  UserActionLog[]
   returns         Return[]
 }
 
@@ -73,7 +73,6 @@ model Product {
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchaseItems   PurchaseItem[]
-  userActionLogs  UserActionLog[]
   returnItems     ReturnItem[]
 }
 // カテゴリー
@@ -126,10 +125,6 @@ model CartItem {
   // リレーション
   user        User      @relation(fields: [userId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
-  userActionLogs UserActionLog[]
-  
-  @@index([userId])
-  @@index([productId])
 }
 
 // 購入履歴（Linear Regression, PCA用）
@@ -142,8 +137,7 @@ model Purchase {
   // リレーション
   user          User            @relation(fields: [userId], references: [id])
   purchaseItems PurchaseItem[]
-  userActionLogs UserActionLog[]
-  returns         Return[]
+  returns       Return[]
   @@index([userId])
 }
 
@@ -164,35 +158,61 @@ model PurchaseItem {
 
 model UserActionLog {
   id          Int       @id @default(autoincrement())
+  requestID   String?   // リクエストIDを追加
   userId      String
   actionType  ActionType
+
+
+  // 商品関連のアクション用
   productId   Int?
+
+  // カート関連のアクション用
   cartItemId  Int?
+  quantity    Int?      // CART_UPDATE用
+  savedForLater Boolean? // CART_SAVE_FOR_LATER用
+
+  // チェックアウト関連のアクション用
   purchaseId  Int?
-  metadata    Json?     // 追加情報（価格変更、数量変更など）
+  paymentErrorDetails String? // PAYMENT_ERROR用
+
+  // 返品関連のアクション用
+  returnId    Int?
+  returnReason String? // RETURN_REQUESTED用
+
+  // レビュー関連のアクション用
+  reviewText  String?  // PRODUCT_REVIEW用
+  rating      Float?   // PRODUCT_REVIEW用
+
+  // ユーザーアクション関連
+  deleteReason String?   // DELETE_ACCOUNT用
+
+  // メタデータフィールド
+  metadata    Json?
   createdAt   DateTime  @default(now())
 
-  user        User      @relation(fields: [userId], references: [id])
-  product     Product?  @relation(fields: [productId], references: [id])
-  cartItem    CartItem? @relation(fields: [cartItemId], references: [id])
-  purchase    Purchase? @relation(fields: [purchaseId], references: [id])
-
   @@index([userId, actionType, createdAt])
-  @@index([productId])
-  @@index([cartItemId])
-  @@index([purchaseId])
+  @@index([requestID])  // リクエストIDのインデックスを追加
 }
 
 enum ActionType {
-  VIEW_PRODUCT
-  ADD_TO_CART
-  REMOVE_FROM_CART
-  UPDATE_CART
-  START_CHECKOUT
+  // カート操作（在庫影響）
+  CART_ADD
+  CART_REMOVE
+  CART_UPDATE
+
+  // 購入・返品（売上影響）
   COMPLETE_PURCHASE
-  CANCEL_PURCHASE
+  PURCHASE_CANCEL
   RETURN_REQUESTED
   RETURN_COMPLETED
+
+  // ユーザーアカウント管理
+  USER_REGISTER_START
+  USER_REGISTER_COMPLETE
+  PROFILE_UPDATE
+  USER_LOGIN
+  USER_LOGOUT
+  DELETE_ACCOUNT
 }
 
 model Return {
