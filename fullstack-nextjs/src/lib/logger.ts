@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
+import { ActionType as PrismaActionType } from '@prisma/client';
 
 // ----------------
 // アクション定義
@@ -43,45 +44,45 @@ const LOG_ONLY_ACTIONS = [
 export const ActionLogType = {
   Pre_Purchase: {
     PRODUCT: {
-      VIEW: LOG_ONLY_ACTIONS[0],      // PRODUCT_VIEW
-      SEARCH: LOG_ONLY_ACTIONS[1],    // PRODUCT_SEARCH
-      FILTER: LOG_ONLY_ACTIONS[2],    // PRODUCT_FILTER
-      SORT: LOG_ONLY_ACTIONS[3]       // PRODUCT_SORT
+      VIEW: 'PRODUCT_VIEW',
+      SEARCH: 'PRODUCT_SEARCH',
+      FILTER: 'PRODUCT_FILTER',
+      SORT: 'PRODUCT_SORT'
     },
     CART: {
-      ADD: DB_STORED_ACTIONS[0],           // CART_ADD
-      REMOVE: DB_STORED_ACTIONS[1],        // CART_REMOVE
-      UPDATE: DB_STORED_ACTIONS[2],        // CART_UPDATE
-      SAVE_FOR_LATER: LOG_ONLY_ACTIONS[5]  // CART_SAVE_FOR_LATER
+      ADD: 'CART_ADD',
+      REMOVE: 'CART_REMOVE',
+      UPDATE: 'CART_UPDATE',
+      SAVE_FOR_LATER: 'CART_SAVE_FOR_LATER'
     },
     CHECKOUT: {
-      START: LOG_ONLY_ACTIONS[6],     // CHECKOUT_START
-      COMPLETE: DB_STORED_ACTIONS[3],      // COMPLETE_PURCHASE
-      PAYMENT_ERROR: LOG_ONLY_ACTIONS[7],  // PAYMENT_ERROR
-      ADDRESS_UPDATE: LOG_ONLY_ACTIONS[8]  // ADDRESS_UPDATE
+      START: 'CHECKOUT_START',
+      COMPLETE: 'COMPLETE_PURCHASE',
+      PAYMENT_ERROR: 'PAYMENT_ERROR',
+      ADDRESS_UPDATE: 'ADDRESS_UPDATE'
     }
   },
   Post_Purchase: {
     PRODUCT: {
-      BUY_AGAIN: LOG_ONLY_ACTIONS[4],  // PRODUCT_BUY_AGAIN
-      CANCEL: DB_STORED_ACTIONS[3],         // PURCHASE_CANCEL
+      BUY_AGAIN: 'PRODUCT_BUY_AGAIN',
+      CANCEL: 'PURCHASE_CANCEL',
       RETURN: {
-        REQUEST: DB_STORED_ACTIONS[5],      // RETURN_REQUESTED
-        COMPLETE: DB_STORED_ACTIONS[6]      // RETURN_COMPLETED
+        REQUEST: 'RETURN_REQUESTED',
+        COMPLETE: 'RETURN_COMPLETED'
       }
     },
     PURCHASE: {
-      DELIVERY_STATUS_VIEW: LOG_ONLY_ACTIONS[9]  // PURCHASE_DELIVERY_STATUS_VIEW
+      DELIVERY_STATUS_VIEW: 'PURCHASE_DELIVERY_STATUS_VIEW'
     }
   },
   USER: {
-    LOGIN: DB_STORED_ACTIONS[10],           // USER_LOGIN
-    LOGOUT: DB_STORED_ACTIONS[11],          // USER_LOGOUT
-    REGISTER_START: DB_STORED_ACTIONS[7],   // USER_REGISTER_START
-    REGISTER_COMPLETE: DB_STORED_ACTIONS[8], // USER_REGISTER_COMPLETE
-    PROFILE_UPDATE: DB_STORED_ACTIONS[9],   // PROFILE_UPDATE
-    PASSWORD_CHANGE: LOG_ONLY_ACTIONS[10], // PASSWORD_CHANGE
-    DELETE_ACCOUNT: DB_STORED_ACTIONS[10]   // DELETE_ACCOUNT
+    LOGIN: 'USER_LOGIN',
+    LOGOUT: 'USER_LOGOUT',
+    REGISTER_START: 'USER_REGISTER_START',
+    REGISTER_COMPLETE: 'USER_REGISTER_COMPLETE',
+    PROFILE_UPDATE: 'PROFILE_UPDATE',
+    PASSWORD_CHANGE: 'PASSWORD_CHANGE',
+    DELETE_ACCOUNT: 'DELETE_ACCOUNT'
   }
 } as const;
 
@@ -99,8 +100,6 @@ export interface UserAction {
   productId?: number;
   cartItemId?: number;
   purchaseId?: number;
-  returnId?: number;
-  returnReason?: string;
   timestamp?: Date;
   
   // ログ専用アクション用のメタデータ
@@ -113,6 +112,7 @@ export interface LogEntry {
   timestamp: Date;
   userId?: string;
   action?: UserAction;
+  requestID?: string;
   error?: Error;
   metadata?: Record<string, unknown>;
 }
@@ -156,22 +156,42 @@ class AppLogger implements Logger {
         return;
       }
 
-      // メタデータの型安全な処理
-      const metadata: Record<string, unknown> = {
-        ...(action.metadata || {}),
-        ...(action.returnReason ? { returnReason: action.returnReason } : {})
-      };
+      // 基本データ
+      const logData = {
+        userId: action.userId,
+        actionType: action.actionType as PrismaActionType,
+        productId: action.productId,
+        cartItemId: action.cartItemId,
+        purchaseId: action.purchaseId,
+        metadata: action.metadata as Prisma.InputJsonValue
+      } satisfies Prisma.UserActionLogUncheckedCreateInput;
 
-      const data: Prisma.UserActionLogCreateInput = {
-        user: { connect: { id: action.userId } },
-        actionType: action.actionType,
-        product: action.productId ? { connect: { id: action.productId } } : undefined,
-        cartItem: action.cartItemId ? { connect: { id: action.cartItemId } } : undefined,
-        purchase: action.purchaseId ? { connect: { id: action.purchaseId } } : undefined,
-        metadata: metadata as Prisma.InputJsonValue
-      };
+      // メタデータから特定のフィールドを抽出
+      if (action.metadata) {
+        const {
+          quantity,
+          savedForLater,
+          paymentErrorDetails,
+          reviewText,
+          rating,
+          deleteReason,
+          ...restMetadata
+        } = action.metadata;
 
-      await this.prisma.userActionLog.create({ data });
+        // 型安全な代入
+        // if (typeof quantity === 'number') logData.quantity = quantity;
+        // if (typeof savedForLater === 'boolean') logData.savedForLater = savedForLater;
+        // if (typeof paymentErrorDetails === 'string') logData.paymentErrorDetails = paymentErrorDetails;
+        // if (typeof reviewText === 'string') logData.reviewText = reviewText;
+        // if (typeof rating === 'number') logData.rating = rating;
+        // if (typeof deleteReason === 'string') logData.deleteReason = deleteReason;
+
+        // 残りのメタデータを保存
+        logData.metadata = restMetadata as Prisma.InputJsonValue;
+      }
+
+      await this.prisma.userActionLog.create({ data: logData });
+
     } catch (error) {
       if (error instanceof Error) {
         console.error('Logging error:', error.message);
@@ -181,11 +201,17 @@ class AppLogger implements Logger {
     }
   }
 
+  private generateRequestID(): string {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+  }
+
   async info(message: string, metadata?: Record<string, unknown>): Promise<void> {
     const entry: LogEntry = {
       level: 'info',
       message,
       timestamp: new Date(),
+      requestID: this.generateRequestID(),
       metadata
     };
     console.log(JSON.stringify(entry));
@@ -196,6 +222,7 @@ class AppLogger implements Logger {
       level: 'warn',
       message,
       timestamp: new Date(),
+      requestID: this.generateRequestID(),
       metadata
     };
     console.warn(JSON.stringify(entry));
@@ -206,6 +233,7 @@ class AppLogger implements Logger {
       level: 'error',
       message,
       timestamp: new Date(),
+      requestID: this.generateRequestID(),
       error,
       metadata
     };
@@ -218,6 +246,7 @@ class AppLogger implements Logger {
         level: 'debug',
         message,
         timestamp: new Date(),
+        requestID: this.generateRequestID(),
         metadata
       };
       console.debug(JSON.stringify(entry));
@@ -225,22 +254,17 @@ class AppLogger implements Logger {
   }
 
   async action(action: UserAction): Promise<void> {
-    if (!action?.userId) {
-      console.warn('Invalid action: missing userId');
-      return;
-    }
-
+    const requestID = this.generateRequestID();
     const entry: LogEntry = {
       level: 'action',
       message: `User Action: ${action.actionType}`,
       timestamp: new Date(),
-      action
+      action,
+      requestID
     };
-
-    // 全アクションをコンソールに出力
     console.log('\x1b[33m%s\x1b[0m', JSON.stringify(entry));
 
-    // LOGGABLE_ACTIONSのみDBに保存
+    // DBログの処理
     if (!this.isLoggingOnlyAction(action.actionType)) {
       await this.logToDB(entry).catch(error => {
         if (error instanceof Error) {

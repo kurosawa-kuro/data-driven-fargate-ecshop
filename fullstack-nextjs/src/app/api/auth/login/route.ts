@@ -82,16 +82,25 @@ export async function POST(request: NextRequest) {
       data: { lastLoginAt: new Date() }
     });
 
-    // ログ記録
-    logger.action({
+    // ログ記録を await する
+    await logger.action({
       actionType: ActionLogType.USER.LOGIN,
       userId: user.userId
     });
 
-
     return ResponseFactory.createSuccessResponse(user, idToken);
   } catch (error) {
-    console.error('Login error:', error);
+    // エラーハンドリングもaction logを使用
+    if (error instanceof Error) {
+      await logger.action({
+        actionType: ActionLogType.USER.LOGIN,
+        userId: 'unknown',
+        metadata: {
+          error: error.message,
+          timestamp: new Date()
+        }
+      });
+    }
     return ResponseFactory.createErrorResponse('ログインに失敗しました', 500);
   }
 }

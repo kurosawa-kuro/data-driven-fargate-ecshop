@@ -50,7 +50,6 @@ export async function POST(request: Request) {
     const cognitoResponse = await signUp(email, password);
     const sub = cognitoResponse.UserSub;
 
-    // ユーザー作成
     if (!sub) {
       return NextResponse.json(
         { error: 'Cognitoの登録に失敗しました' },
@@ -59,25 +58,29 @@ export async function POST(request: Request) {
     }
 
     const userData = createUserData(email, sub);
-    const user = await prisma.user.create({ data: userData });
     
-    // ログ記録
-    logger.action({
-      actionType: ActionLogType.USER.REGISTER_START,
-      userId: sub
+    // トランザクションでユーザー作成とログ記録を行う
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({ data: userData });
+      
+      // ログ記録を確実に実行
+      await logger.action({
+        actionType: ActionLogType.USER.REGISTER_START,
+        userId: sub
+      });
+
+      return { user };
     });
 
     return NextResponse.json({ 
       success: true, 
-      user,
+      user: result.user,
       sub: cognitoResponse.UserSub 
     }, { status: 201 });
 
   } catch (error) {
-    // エラーハンドリング
-    logger.error('ユーザー登録エラー:', error as Error);
-    
     if (error instanceof Error) {
+      console.error('ユーザー登録エラー:', error);
       return NextResponse.json(
         { error: `ユーザー登録に失敗しました: ${error.message}` },
         { status: 500 }
