@@ -267,6 +267,7 @@ class AppLogger implements Logger {
       requestID,
       timestamp,
       productId: action.productId,
+      purchaseId: action.purchaseId,
       cartItemId: action.cartItemId,
       quantity: action.quantity
     };

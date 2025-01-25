@@ -2,15 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ActionType } from '@prisma/client';
 import { headers } from 'next/headers';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
     const headersList = await headers();
     const email = headersList.get('x-user-email');
     const userId = headersList.get('x-user-id');
-  
+    const requestID = headersList.get('x-request-id');
+
     console.log("Checkout Confirm - userId from header:", userId);
     console.log("Checkout Confirm - email from header:", email);
+    console.log("Checkout Confirm - requestID from header:", requestID);
 
     const body = await request.json();
 
@@ -46,15 +49,16 @@ export async function POST(request: Request) {
         where: { userId: userId || '' }
       });
 
-      // 4. UserActionLog作成
-      await tx.userActionLog.create({
-        data: {
-          userId: userId || '',
-          actionType: ActionType.COMPLETE_PURCHASE,
-          purchaseId: purchase.id,
-          metadata: body
-        }
-      });
+    // ユーザーアクションログの記録
+    await logger.action({
+      actionType: ActionType.COMPLETE_PURCHASE,
+      userId: userId || '',
+      requestID: requestID ?? undefined,
+      purchaseId: purchase.id,
+      metadata: {
+
+      }
+    });
 
       return { purchase };
     });
