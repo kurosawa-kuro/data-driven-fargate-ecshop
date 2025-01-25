@@ -54,8 +54,10 @@ export async function POST(request: Request) {
     // ログ記録
     logger.action('user_register', {
       userId: user.id,
-      metadata: { email: user.email }
-    });
+      metadata: {
+        email: email
+      }
+    }); 
 
     return NextResponse.json({ success: true, user }, { status: 201 });
 

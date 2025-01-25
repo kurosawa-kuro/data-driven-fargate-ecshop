@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 // fullstack-nextjs/src/lib/auth/cognito.ts
 import { signUp } from '@/lib/auth/cognito';
+import { logger } from '@/lib/logger';
 
 interface CognitoError extends Error {
   name: string;
@@ -23,6 +24,13 @@ export default function RegisterPage() {
     try {
       // Cognitoでユーザー登録
       await signUp(email, password);
+
+      // ログ記録
+      logger.action('user_register', {
+        metadata: {
+          email: email
+        }
+      }); 
       
       // 確認ページへリダイレクト
       router.push(`/confirm?email=${encodeURIComponent(email)}`);

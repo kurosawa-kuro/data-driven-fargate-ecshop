@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signIn } from '@/lib/auth/cognito';
 import * as jose from 'jose';
+import { logger } from "@/lib/logger";
 
 // レスポンスファクトリー
 const ResponseFactory = {
@@ -65,6 +66,12 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
     const { idToken, user } = await AuthHandler.authenticate(email, password);
+
+    logger.action('user_login', {
+      userId: user.userId,
+      metadata: { email: user.email }
+    });
+
     return ResponseFactory.createSuccessResponse(user, idToken);
   } catch (error) {
     console.error('Login error:', error);
