@@ -10,7 +10,7 @@ import {
 import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 
-// 定数の集約
+// 設定関連
 const COGNITO_CONFIG = {
   REGION: process.env.NEXT_PUBLIC_AWS_REGION,
   CLIENT_ID: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
@@ -18,95 +18,111 @@ const COGNITO_CONFIG = {
   USER_POOL_ID: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
 } as const;
 
-// クライアント設定の集約
-const clientConfig: CognitoIdentityProviderClientConfig = {
-  region: COGNITO_CONFIG.REGION,
-  credentials: {
-    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!
+// クライアント初期化
+const createCognitoClient = () => {
+  const clientConfig: CognitoIdentityProviderClientConfig = {
+    region: COGNITO_CONFIG.REGION,
+    credentials: {
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!
+    }
+  };
+  return new CognitoIdentityProviderClient(clientConfig);
+};
+
+export const client = createCognitoClient();
+
+// セキュリティユーティリティ
+const SecurityUtils = {
+  generateSecretHash: (username: string): string => {
+    const message = username + COGNITO_CONFIG.CLIENT_ID;
+    const hmac = crypto.createHmac('SHA256', COGNITO_CONFIG.CLIENT_SECRET);
+    return hmac.update(message).digest('base64');
   }
 };
 
-// シングルトンクライアントのエクスポート
-export const client = new CognitoIdentityProviderClient(clientConfig);
-
-// ユーティリティ関数
-function generateSecretHash(username: string): string {
-  const message = username + COGNITO_CONFIG.CLIENT_ID;
-  const hmac = crypto.createHmac('SHA256', COGNITO_CONFIG.CLIENT_SECRET);
-  return hmac.update(message).digest('base64');
-}
-
-// サインアップコマンド生成
-function createSignUpCommand(email: string, password: string) {
-  return new SignUpCommand({
-    ClientId: COGNITO_CONFIG.CLIENT_ID,
-    Username: email,
-    Password: password,
-    SecretHash: generateSecretHash(email),
-    UserAttributes: [{ Name: "email", Value: email }],
-  });
-}
-
-// サインアップ処理
-export async function signUp(email: string, password: string) {
-  try {
-    const command = createSignUpCommand(email, password);
-    const response = await client.send(command);
-    
-    logger.action('user_register', {
-      metadata: { email }
+// コマンドファクトリー
+const CommandFactory = {
+  createSignUpCommand: (email: string, password: string) => {
+    return new SignUpCommand({
+      ClientId: COGNITO_CONFIG.CLIENT_ID,
+      Username: email,
+      Password: password,
+      SecretHash: SecurityUtils.generateSecretHash(email),
+      UserAttributes: [{ Name: "email", Value: email }],
     });
-    
-    return { ...response, UserSub: response.UserSub };
-  } catch (error) {
-    logger.error('Cognito登録エラー:', error as Error);
-    throw error;
-  }
-}
+  },
 
-export async function confirmSignUp(email: string, code: string) {
-  const command = new ConfirmSignUpCommand({
-    ClientId: COGNITO_CONFIG.CLIENT_ID,
-    Username: email,
-    ConfirmationCode: code,
-    SecretHash: generateSecretHash(email),
-  });
-
-  try {
-    const response = await client.send(command);
-    
-    const userCommand = new AdminGetUserCommand({
-      UserPoolId: COGNITO_CONFIG.USER_POOL_ID,
-      Username: email
+  createConfirmSignUpCommand: (email: string, code: string) => {
+    return new ConfirmSignUpCommand({
+      ClientId: COGNITO_CONFIG.CLIENT_ID,
+      Username: email,
+      ConfirmationCode: code,
+      SecretHash: SecurityUtils.generateSecretHash(email),
     });
-    
-    const userResponse = await client.send(userCommand);
-    const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
-    
-    return { ...response, sub };
-  } catch (error) {
-    console.error('確認エラー:', error);
-    throw error;
-  }
-}
+  },
 
-export async function signIn(email: string, password: string) {
-  const command = new InitiateAuthCommand({
-    ClientId: COGNITO_CONFIG.CLIENT_ID,
-    AuthFlow: "USER_PASSWORD_AUTH",
-    AuthParameters: {
-      USERNAME: email,
-      PASSWORD: password,
-      SECRET_HASH: generateSecretHash(email),
-    },
-  });
-
-  try {
-    const response = await client.send(command);
-    return response;
-  } catch (error) {
-    console.error('ログインエラー:', error);
-    throw error;
+  createSignInCommand: (email: string, password: string) => {
+    return new InitiateAuthCommand({
+      ClientId: COGNITO_CONFIG.CLIENT_ID,
+      AuthFlow: "USER_PASSWORD_AUTH",
+      AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password,
+        SECRET_HASH: SecurityUtils.generateSecretHash(email),
+      },
+    });
   }
-}
+};
+
+// 認証サービス
+export const AuthService = {
+  async signUp(email: string, password: string) {
+    try {
+      const command = CommandFactory.createSignUpCommand(email, password);
+      const response = await client.send(command);
+      
+      logger.action('user_register', {
+        metadata: { email }
+      });
+      
+      return { ...response, UserSub: response.UserSub };
+    } catch (error) {
+      logger.error('Cognito登録エラー:', error as Error);
+      throw error;
+    }
+  },
+
+  async confirmSignUp(email: string, code: string) {
+    try {
+      const command = CommandFactory.createConfirmSignUpCommand(email, code);
+      const response = await client.send(command);
+      
+      const userCommand = new AdminGetUserCommand({
+        UserPoolId: COGNITO_CONFIG.USER_POOL_ID,
+        Username: email
+      });
+      
+      const userResponse = await client.send(userCommand);
+      const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
+      
+      return { ...response, sub };
+    } catch (error) {
+      logger.error('確認エラー:', error as Error);
+      throw error;
+    }
+  },
+
+  async signIn(email: string, password: string) {
+    try {
+      const command = CommandFactory.createSignInCommand(email, password);
+      return await client.send(command);
+    } catch (error) {
+      logger.error('ログインエラー:', error as Error);
+      throw error;
+    }
+  }
+};
+
+// 既存のエクスポートを維持するためのエイリアス
+export const { signUp, confirmSignUp, signIn } = AuthService;

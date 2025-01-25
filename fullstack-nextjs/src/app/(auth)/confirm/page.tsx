@@ -30,41 +30,28 @@ function ConfirmForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await confirmSignUp(email, code);
-      console.log("Confirmation successful:", response);
-
-      // Cognitoユーザー情報を取得
-      const userCommand = new AdminGetUserCommand({
-        UserPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
-        Username: email
+      const response = await fetch('/api/auth/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code }),
       });
-      
-      const userResponse = await client.send(userCommand);
-      console.log("User response:", userResponse);
-      const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
-      console.log("Got user sub:", sub);
 
-      if (sub) {
-        // ユーザー登録APIを呼び出し
-        console.log("Calling user registration API...");
-        await fetch('/api/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, sub }),
-        });
-        // console.log("User registration response:", apiResponse);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error);
       }
 
-      router.push('/login'); 
+      router.push('/login');
     } catch (err: unknown) {
       console.error('Confirmation error:', err);
-      const error = err as CognitoError;
+      const error = err as Error;
       setError(error.message || '確認コードの検証に失敗しました');
     }
   };
-
+  
   return (
     <>
       <h1 className="text-2xl font-bold mt-8 px-4">メールアドレスの確認</h1>

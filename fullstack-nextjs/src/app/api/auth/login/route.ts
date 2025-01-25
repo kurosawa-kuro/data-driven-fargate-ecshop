@@ -2,27 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { signIn } from '@/lib/auth/cognito';
 import * as jose from 'jose';
 
-export async function POST(request: NextRequest) {
-  try {
-    const { email, password } = await request.json();
-    const result = await signIn(email, password);
-    const idToken = result?.AuthenticationResult?.IdToken;
+// レスポンスファクトリー
+const ResponseFactory = {
+  createErrorResponse(message: string, status: number) {
+    return NextResponse.json({ error: message }, { status });
+  },
 
-    if (!idToken) {
-      return NextResponse.json({ error: '認証トークンがありません' }, { status: 401 });
-    }
-
-    const decoded = await jose.decodeJwt(idToken);
-    
+  createSuccessResponse(user: { email: string, userId: string }, idToken: string) {
     const response = NextResponse.json({ 
       success: true,
-      user: {
-        email: decoded.email,
-        userId: decoded.sub
-      }
+      user
     });
 
-    // サーバーサイドでCookieを設定
     response.cookies.set({
       name: 'idToken',
       value: idToken,
@@ -33,8 +24,50 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
+  }
+};
+
+interface DecodedToken {
+  email: string;
+  sub: string;
+}
+
+// 認証処理ハンドラー
+const AuthHandler = {
+  async validateToken(idToken: string | undefined) {
+    if (!idToken) {
+      throw new Error('認証トークンがありません');
+    }
+    return await jose.decodeJwt(idToken) as DecodedToken;
+  },
+
+  async authenticate(email: string, password: string) {
+    const result = await signIn(email, password);
+    const idToken = result?.AuthenticationResult?.IdToken;
+    
+    if (!idToken) {
+      throw new Error('認証トークンの取得に失敗しました');
+    }
+    
+    const decoded = await this.validateToken(idToken);
+    return {
+      idToken,
+      user: {
+        email: decoded.email,
+        userId: decoded.sub
+      }
+    };
+  }
+};
+
+// メインハンドラー
+export async function POST(request: NextRequest) {
+  try {
+    const { email, password } = await request.json();
+    const { idToken, user } = await AuthHandler.authenticate(email, password);
+    return ResponseFactory.createSuccessResponse(user, idToken);
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json({ error: 'ログインに失敗しました' }, { status: 500 });
+    return ResponseFactory.createErrorResponse('ログインに失敗しました', 500);
   }
 }

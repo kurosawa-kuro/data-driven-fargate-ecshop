@@ -4,8 +4,6 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    // ユーザー登録 引数でemail, passwordを受け取る
-    console.log("◇◇◇◇◇◇◇◇◇◇◇◇◇◇ post user api request", request);
     const body = await request.json();
     const email = body.email;
     const sub = body.sub;
