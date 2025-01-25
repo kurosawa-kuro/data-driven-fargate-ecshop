@@ -23,10 +23,6 @@ export async function POST(request: Request) {
       logger.action({
         actionType: ActionType.USER_REGISTER_COMPLETE,
         userId: response.sub,
-        metadata: {
-          email,
-          status: 'success'
-        }
       });
     }
 

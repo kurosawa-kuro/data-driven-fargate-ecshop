@@ -166,12 +166,43 @@ model UserActionLog {
   id          Int       @id @default(autoincrement())
   userId      String
   actionType  ActionType
-  productId   Int?
-  cartItemId  Int?
-  purchaseId  Int?
-  metadata    Json?     // 追加情報（価格変更、数量変更など）
   createdAt   DateTime  @default(now())
 
+  // 商品関連のアクション用
+  productId   Int?
+  searchQuery String?   // PRODUCT_SEARCH用
+  filterData  Json?     // PRODUCT_FILTER用
+  sortData    Json?     // PRODUCT_SORT用
+
+  // カート関連のアクション用
+  cartItemId  Int?
+  quantity    Int?      // CART_UPDATE用
+  savedForLater Boolean? // CART_SAVE_FOR_LATER用
+
+  // チェックアウト関連のアクション用
+  purchaseId  Int?
+  paymentErrorDetails String? // PAYMENT_ERROR用
+  addressData Json?    // ADDRESS_UPDATE用
+
+  // 返品関連のアクション用
+  returnId    Int?
+  returnReason String? // RETURN_REQUESTED用
+
+  // レビュー関連のアクション用
+  reviewText  String?  // PRODUCT_REVIEW用
+  rating      Float?   // PRODUCT_REVIEW用
+
+  // 配送関連のアクション用
+  deliveryStatus String? // PURCHASE_DELIVERY_STATUS_VIEW用
+
+  // ユーザーアクション関連
+  profileUpdateData Json? // PROFILE_UPDATE用
+  deleteReason String?   // DELETE_ACCOUNT用
+
+  // メタデータフィールドを追加
+  metadata        Json?
+
+  // リレーション
   user        User      @relation(fields: [userId], references: [id])
   product     Product?  @relation(fields: [productId], references: [id])
   cartItem    CartItem? @relation(fields: [cartItemId], references: [id])
@@ -184,42 +215,23 @@ model UserActionLog {
 }
 
 enum ActionType {
-  // Pre-Purchase - Product
-  PRODUCT_VIEW
-  PRODUCT_SEARCH
-  PRODUCT_FILTER
-  PRODUCT_SORT
-
-  // Pre-Purchase - Cart
+  // カート操作（在庫影響）
   CART_ADD
   CART_REMOVE
   CART_UPDATE
-  CART_SAVE_FOR_LATER
 
-  // Pre-Purchase - Checkout
-  CHECKOUT_START
+  // 購入・返品（売上影響）
   COMPLETE_PURCHASE
-  PAYMENT_ERROR
-  ADDRESS_UPDATE
-
-  // Post-Purchase - Product
-  PRODUCT_BUY_AGAIN
   PURCHASE_CANCEL
-  PRODUCT_REVIEW
   RETURN_REQUESTED
   RETURN_COMPLETED
-  RETURN_CANCELLED
 
-  // Post-Purchase - Purchase
-  PURCHASE_DELIVERY_STATUS_VIEW
-
-  // User Actions
-  USER_LOGIN
-  USER_LOGOUT
+  // ユーザーアカウント管理
   USER_REGISTER_START
   USER_REGISTER_COMPLETE
   PROFILE_UPDATE
-  PASSWORD_CHANGE
+  USER_LOGIN
+  USER_LOGOUT
   DELETE_ACCOUNT
 }
 
