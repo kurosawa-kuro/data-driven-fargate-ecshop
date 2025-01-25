@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { logger } from '@/lib/logger';
+import { ActionLogType, logger } from '@/lib/logger';
 import { signUp } from '@/lib/auth/cognito';
 
 interface RegisterRequestBody {
@@ -62,10 +62,10 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({ data: userData });
     
     // ログ記録
-    logger.action('user_register', {
-      userId: user.id,
-      metadata: { email }
-    }); 
+    logger.action({
+      actionType: ActionLogType.USER.REGISTER_START,
+      userId: sub
+    });
 
     return NextResponse.json({ 
       success: true, 

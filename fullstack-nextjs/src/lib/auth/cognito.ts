@@ -8,7 +8,7 @@ import {
   type CognitoIdentityProviderClientConfig
 } from "@aws-sdk/client-cognito-identity-provider";
 import crypto from 'crypto';
-import { logger } from '@/lib/logger';
+import { ActionLogType, logger } from '@/lib/logger';
 
 // 設定関連
 const COGNITO_CONFIG = {
@@ -82,10 +82,6 @@ export const AuthService = {
       const command = CommandFactory.createSignUpCommand(email, password);
       const response = await client.send(command);
       
-      logger.action('user_register', {
-        metadata: { email }
-      });
-      
       return { ...response, UserSub: response.UserSub };
     } catch (error) {
       logger.error('Cognito登録エラー:', error as Error);
@@ -116,6 +112,7 @@ export const AuthService = {
   async signIn(email: string, password: string) {
     try {
       const command = CommandFactory.createSignInCommand(email, password);
+      
       return await client.send(command);
     } catch (error) {
       logger.error('ログインエラー:', error as Error);

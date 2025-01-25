@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signIn } from '@/lib/auth/cognito';
 import * as jose from 'jose';
-import { logger } from "@/lib/logger";
+import { ActionLogType, logger } from "@/lib/logger";
 import { prisma } from '@/lib/prisma';
 
 interface LoginResponse {
@@ -75,17 +75,19 @@ const AuthHandler = {
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
-    const { idToken, user } = await AuthHandler.authenticate(email, password);
+    const { idToken, user} = await AuthHandler.authenticate(email, password);
 
     await prisma.user.update({
       where: { email: email },
       data: { lastLoginAt: new Date() }
     });
 
-    logger.action('user_login', {
-      userId: user.userId,
-      metadata: { email: user.email }
+    // ログ記録
+    logger.action({
+      actionType: ActionLogType.USER.LOGIN,
+      userId: user.userId
     });
+
 
     return ResponseFactory.createSuccessResponse(user, idToken);
   } catch (error) {

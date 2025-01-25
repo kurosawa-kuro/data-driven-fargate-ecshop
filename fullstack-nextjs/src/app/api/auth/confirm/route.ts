@@ -3,6 +3,7 @@ import { confirmSignUp } from '@/lib/auth/cognito';
 import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { client } from '@/lib/auth/cognito';
 import { prisma } from '@/lib/prisma';
+import { ActionLogType, logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -10,13 +11,16 @@ export async function POST(request: Request) {
 
     // メール確認
     const response = await confirmSignUp(email, code);
-    console.log("confirmSignUp response", response.sub);
-    console.log("confirmSignUp response.UserSub", response.sub);
 
     if (response.sub) {
       await prisma.user.update({
         where: { id: response.sub },
         data: { emailVerified: true }
+      });
+      // ログ記録
+      logger.action({
+        actionType: ActionLogType.USER.REGISTER_COMPLETE,
+        userId: response.sub
       });
     }
 
