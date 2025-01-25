@@ -96,8 +96,10 @@ export type ActionType = DBStoredAction | LogOnlyAction;
 export interface UserAction {
   actionType: ActionType;
   userId: string;
+  requestID?: string;
   // DB保存対象のフィールド
   productId?: number;
+  quantity?: number;
   cartItemId?: number;
   purchaseId?: number;
   timestamp?: Date;
@@ -159,9 +161,11 @@ class AppLogger implements Logger {
       // 基本データ
       const logData = {
         userId: action.userId,
+        requestID: action.requestID,
         actionType: action.actionType as PrismaActionType,
         productId: action.productId,
         cartItemId: action.cartItemId,
+        quantity: action.metadata?.quantity as number | undefined,
         purchaseId: action.purchaseId,
         metadata: action.metadata as Prisma.InputJsonValue
       } satisfies Prisma.UserActionLogUncheckedCreateInput;
@@ -255,18 +259,30 @@ class AppLogger implements Logger {
 
   async action(action: UserAction): Promise<void> {
     const requestID = this.generateRequestID();
-    const entry: LogEntry = {
+    const timestamp = new Date();
+    const logData = {
       level: 'action',
-      message: `User Action: ${action.actionType}`,
-      timestamp: new Date(),
-      action,
-      requestID
+      type: action.actionType,
+      userId: action.userId,
+      requestID,
+      timestamp,
+      productId: action.productId,
+      cartItemId: action.cartItemId,
+      quantity: action.quantity
     };
-    console.log('\x1b[33m%s\x1b[0m', JSON.stringify(entry));
+
+    // オレンジ色で簡潔なログ出力
+    console.log('\x1b[33m%s\x1b[0m', JSON.stringify(logData));
 
     // DBログの処理
     if (!this.isLoggingOnlyAction(action.actionType)) {
-      await this.logToDB(entry).catch(error => {
+      await this.logToDB({
+        level: 'action',
+        message: `User Action: ${action.actionType}`,
+        timestamp,
+        action,
+        requestID
+      }).catch(error => {
         if (error instanceof Error) {
           console.error('Failed to log action:', error.message);
         } else {

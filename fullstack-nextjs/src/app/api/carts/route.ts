@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import { ActionType } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -30,6 +31,8 @@ export async function POST(request: Request) {
   try {
     const headersList = await headers();
     const userId = headersList.get('x-user-id');
+    const requestID = headersList.get('x-request-id');
+    console.log("cart requestID ２", requestID);
 
     // ユーザーIDがDBに存在しない場合はエラーを返す
     const user = await prisma.user.findUnique({ 
@@ -79,15 +82,15 @@ export async function POST(request: Request) {
     }
 
     // ユーザーアクションログの記録
-    await prisma.userActionLog.create({
-      data: {
-        userId: userId,
-        actionType: ActionType.CART_ADD,
-        productId: parseInt(productId),
-        cartItemId: cartItem.id,
-        metadata: {
-          quantity: quantity
-        }
+    await logger.action({
+      actionType: ActionType.CART_ADD,
+      userId: userId,
+      requestID: requestID ?? undefined,
+      productId: parseInt(productId),
+      quantity: quantity,
+      cartItemId: cartItem.id,
+      metadata: {
+        quantity: quantity
       }
     });
 

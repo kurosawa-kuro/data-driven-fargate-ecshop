@@ -60,6 +60,10 @@ class HeaderManager {
     this.headers = new Headers(originalHeaders);
   }
 
+  setRequestId(requestID: string): void {
+    this.headers.set('x-request-id', requestID);
+  }
+
   // ユーザー情報をヘッダーに設定
   setUserInfo(email: string, userId: string): void {
     this.headers.set('x-user-email', email);
@@ -73,15 +77,22 @@ class HeaderManager {
 
 // メインのミドルウェア関数
 export async function middleware(request: NextRequest) {
+  // console.log("hit middleware");
+
+  // ランダムでリクエストIDを生成
+  const requestID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  // console.log("middleware requestID", requestID);
+
   const tokenProcessor = new TokenProcessor(request);
   const headerManager = new HeaderManager(request.headers);
+  headerManager.setRequestId(requestID);
 
   const idToken = tokenProcessor.getIdToken();
   
   if (idToken) {
     const userInfo = await tokenProcessor.decodeToken(idToken);
     if (userInfo?.email && userInfo.sub) {
-      headerManager.setUserInfo(userInfo.email, userInfo.sub);
+      headerManager.setUserInfo(userInfo.email, userInfo.sub);    
     }
   }
 
