@@ -6,7 +6,6 @@ export async function GET() {
   try {
     const headersList = headers();
     const userId = (await headersList).get('x-user-id');
-    console.log("Cart API - UserId:", userId);
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

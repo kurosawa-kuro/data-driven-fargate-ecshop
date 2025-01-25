@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const userResponse = await client.send(userCommand);
     const sub = userResponse.UserAttributes?.find(attr => attr.Name === 'sub')?.Value;
 
+    // Todo フロー自体見直し ユーザー登録APIを二回呼び出すのはダメ、メール認証した事をUpdateするのは有り。ここでDB操作すれば良い
     if (sub) {
       // ユーザー登録APIを呼び出し
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {

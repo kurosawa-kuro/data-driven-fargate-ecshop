@@ -8,7 +8,9 @@ export type ActionType =
   | 'product_view'
   | 'user_login'
   | 'user_logout'
-  | 'user_register';
+  | 'user_register'
+  | 'product_buy_again'
+  | 'product_return';
 
 export interface UserAction {
   actionType: ActionType;
@@ -46,7 +48,7 @@ export interface Logger {
   warn(message: string, meta?: Partial<LogEntry>): void;
   error(message: string, error?: Error, meta?: Partial<LogEntry>): void;
   debug(message: string, meta?: Partial<LogEntry>): void;
-  action(actionType: ActionType, data: Partial<UserAction>): void;  // アクション用メソッドを追加
+  action(actionType: ActionType, data: Partial<UserAction>): void;
 }
 
 class AppLogger implements Logger {
