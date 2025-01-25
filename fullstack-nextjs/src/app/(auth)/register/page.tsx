@@ -23,7 +23,17 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       // Cognitoでユーザー登録
-      await signUp(email, password);
+      const response =  await signUp(email, password);
+      console.log("response", response);
+      console.log("response.UserSub", response.UserSub);
+
+      await fetch(`/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, sub: response.UserSub }),
+      });
 
       // ログ記録
       logger.action('user_register', {

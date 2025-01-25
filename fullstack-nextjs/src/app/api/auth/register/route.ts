@@ -14,7 +14,7 @@ interface UserCreationData {
   cognitoId: string;
   status: "ACTIVE";
   emailVerified: boolean;
-  lastLoginAt: Date;
+  lastLoginAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,8 +27,8 @@ function createUserData(email: string, sub: string): UserCreationData {
     email,
     cognitoId: sub,
     status: "ACTIVE",
-    emailVerified: true,
-    lastLoginAt: now,
+    emailVerified: false,
+    lastLoginAt: null,
     createdAt: now,
     updatedAt: now,
   };
