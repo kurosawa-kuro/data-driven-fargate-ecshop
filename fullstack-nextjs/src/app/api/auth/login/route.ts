@@ -3,13 +3,25 @@ import { signIn } from '@/lib/auth/cognito';
 import * as jose from 'jose';
 import { logger } from "@/lib/logger";
 import { prisma } from '@/lib/prisma';
-// レスポンスファクトリー
+
+interface LoginResponse {
+  success: boolean;
+  user?: {
+    email: string;
+    userId: string;
+  };
+  error?: string;
+}
+
 const ResponseFactory = {
-  createErrorResponse(message: string, status: number) {
-    return NextResponse.json({ error: message }, { status });
+  createErrorResponse(message: string, status: number): NextResponse<LoginResponse> {
+    return NextResponse.json({ 
+      success: false, 
+      error: message 
+    }, { status });
   },
 
-  createSuccessResponse(user: { email: string, userId: string }, idToken: string) {
+  createSuccessResponse(user: { email: string, userId: string }, idToken: string): NextResponse<LoginResponse> {
     const response = NextResponse.json({ 
       success: true,
       user
@@ -33,7 +45,6 @@ interface DecodedToken {
   sub: string;
 }
 
-// 認証処理ハンドラー
 const AuthHandler = {
   async validateToken(idToken: string | undefined) {
     if (!idToken) {
@@ -61,7 +72,6 @@ const AuthHandler = {
   }
 };
 
-// メインハンドラー
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();

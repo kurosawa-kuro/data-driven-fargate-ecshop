@@ -4,20 +4,23 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 
-// 認証ロジックの分離
-interface LoginResponse {
-  success: boolean;
-  user?: {
-    email: string;
-    userId: string;
-  };
-  error?: string;
+interface LoginFormProps {
+  onSubmit: (e: React.FormEvent) => Promise<void>;
+  email: string;
+  setEmail: (email: string) => void;
+  password: string;
+  setPassword: (password: string) => void;
+  error: string | null;
 }
 
-const useAuth = () => {
+const useLoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  
-  const login = async (email: string, password: string): Promise<LoginResponse> => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -31,29 +34,11 @@ const useAuth = () => {
       if (data.success) {
         useAuthStore.getState().setUser(data.user);
         router.push('/products');
+      } else {
+        setError(data.error || 'ログインに失敗しました');
       }
-      
-      return data;
     } catch (err) {
-      return { success: false, error: 'ログインに失敗しました' };
-    }
-  };
-
-  return { login };
-};
-
-// フォームロジックの分離
-const useLoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await login(email, password);
-    if (!result.success) {
-      setError(result.error || 'ログインに失敗しました');
+      setError('ログインに失敗しました');
     }
   };
 
@@ -67,78 +52,84 @@ const useLoginForm = () => {
   };
 };
 
-// UI コンポーネント
-const LoginForm = ({
+const LoginForm: React.FC<LoginFormProps> = ({
+  onSubmit,
   email,
   setEmail,
   password,
   setPassword,
-  error,
-  handleSubmit
-}: {
-  email: string;
-  setEmail: (value: string) => void;
-  password: string;
-  setPassword: (value: string) => void;
-  error: string | null;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
-}) => (
-  <form onSubmit={handleSubmit} className="mt-8 px-4 max-w-md">
-    <div className="space-y-6">
+  error
+}) => {
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-white">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
           メールアドレス
         </label>
         <input
-          type="email"
           id="email"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black placeholder-gray-300"
-          placeholder="example@example.com"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           required
         />
       </div>
-
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-white">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
           パスワード
         </label>
         <input
-          type="password"
           id="password"
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black placeholder-gray-300"
-          placeholder="********"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           required
         />
       </div>
-
       {error && (
-        <div className="text-red-500 text-sm">
-          {error}
-        </div>
+        <div className="text-red-500 text-sm">{error}</div>
       )}
-
       <button
         type="submit"
-        className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         ログイン
       </button>
-    </div>
-  </form>
-);
+    </form>
+  );
+};
 
-// メインコンポーネント
-export default function LoginPage() {
-  const formProps = useLoginForm();
+const LoginPage = () => {
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    error,
+    handleSubmit
+  } = useLoginForm();
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mt-8 px-4">ログイン</h1>
-      <LoginForm {...formProps} />
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            ログイン
+          </h2>
+        </div>
+        <LoginForm
+          onSubmit={handleSubmit}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          error={error}
+        />
+      </div>
+    </div>
   );
-}
+};
+
+export default LoginPage;

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import { signUp } from '@/lib/auth/cognito';
 
 interface RegisterRequestBody {
   email: string;
-  sub: string;
+  password: string;
 }
 
-// ユーザー作成のインターフェース
 interface UserCreationData {
   id: string;
   email: string;
@@ -19,7 +19,6 @@ interface UserCreationData {
   updatedAt: Date;
 }
 
-// ユーザー作成データの生成
 function createUserData(email: string, sub: string): UserCreationData {
   const now = new Date();
   return {
@@ -37,29 +36,42 @@ function createUserData(email: string, sub: string): UserCreationData {
 export async function POST(request: Request) {
   try {
     const body = await request.json() as RegisterRequestBody;
-    const { email, sub } = body;
+    const { email, password } = body;
 
     // バリデーション
-    if (!email || !sub) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'メールアドレスとsubは必須です' },
+        { error: 'メールアドレスとパスワードは必須です' },
         { status: 400 }
       );
     }
 
+    // Cognitoでユーザー登録
+    const cognitoResponse = await signUp(email, password);
+    const sub = cognitoResponse.UserSub;
+
     // ユーザー作成
+    if (!sub) {
+      return NextResponse.json(
+        { error: 'Cognitoの登録に失敗しました' },
+        { status: 500 }
+      );
+    }
+
     const userData = createUserData(email, sub);
     const user = await prisma.user.create({ data: userData });
-
+    
     // ログ記録
     logger.action('user_register', {
       userId: user.id,
-      metadata: {
-        email: email
-      }
+      metadata: { email }
     }); 
 
-    return NextResponse.json({ success: true, user }, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      user,
+      sub: cognitoResponse.UserSub 
+    }, { status: 201 });
 
   } catch (error) {
     // エラーハンドリング
