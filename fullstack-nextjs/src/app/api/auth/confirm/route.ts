@@ -4,6 +4,7 @@ import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { client } from '@/lib/auth/cognito';
 import { prisma } from '@/lib/prisma';
 import { ActionLogType, logger } from '@/lib/logger';
+import { ActionType } from '@prisma/client';
 
 export async function POST(request: Request) {
   try {
@@ -17,10 +18,15 @@ export async function POST(request: Request) {
         where: { id: response.sub },
         data: { emailVerified: true }
       });
+      
       // ログ記録
       logger.action({
-        actionType: ActionLogType.USER.REGISTER_COMPLETE,
-        userId: response.sub
+        actionType: ActionType.USER_REGISTER_COMPLETE,
+        userId: response.sub,
+        metadata: {
+          email,
+          status: 'success'
+        }
       });
     }
 

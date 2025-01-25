@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 // /home/wsl/app/fullstack-nextjs/src/lib/prisma.tsx
 import { prisma } from '../src/lib/prisma';
 import { UserStatus, ActionType } from '@prisma/client';
@@ -388,14 +390,14 @@ async function main() {
       prisma.userActionLog.create({
         data: {
           userId: users[0].id,
-          actionType: ActionType.VIEW_PRODUCT,
+          actionType: ActionType.PRODUCT_VIEW,
           productId: products[0].id
         }
       }),
       prisma.userActionLog.create({
         data: {
           userId: users[1].id,
-          actionType: ActionType.ADD_TO_CART,
+          actionType: ActionType.CART_ADD,
           productId: products[1].id
         }
       }),
@@ -409,14 +411,14 @@ async function main() {
       prisma.userActionLog.create({
         data: {
           userId: users[3].id,
-          actionType: ActionType.VIEW_PRODUCT,
+          actionType: ActionType.PRODUCT_VIEW,
           productId: products[3].id
         }
       }),
       prisma.userActionLog.create({
         data: {
           userId: users[4].id,
-          actionType: ActionType.ADD_TO_CART,
+          actionType: ActionType.CART_ADD,
           productId: products[4].id
         }
       })

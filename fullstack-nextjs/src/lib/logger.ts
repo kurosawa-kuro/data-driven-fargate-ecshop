@@ -83,12 +83,17 @@ export interface Logger {
   action(action: UserAction): Promise<void>;
 }
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, ActionType as PrismaActionType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class AppLogger implements Logger {
   private async logToDB(entry: LogEntry): Promise<void> {
-    if (entry.action) {
+    try {
+      if (!entry?.action?.userId) {
+        console.warn('Invalid log entry: missing userId');
+        return;
+      }
+
       await prisma.userActionLog.create({
         data: {
           userId: entry.action.userId,
@@ -96,27 +101,40 @@ class AppLogger implements Logger {
           productId: entry.action.productId,
           cartItemId: entry.action.cartItemId,
           purchaseId: entry.action.purchaseId,
-          metadata: entry.action.metadata as Prisma.InputJsonValue,
+          metadata: entry.action.metadata as Prisma.InputJsonValue || {},
           createdAt: entry.timestamp || new Date()
         }
       });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Logging error:', error.message);
+      } else {
+        console.error('Unexpected logging error');
+      }
     }
   }
 
-  private mapActionTypeToEnum(actionType: ActionType): any {
-    const mapping: Record<string, any> = {
-      'PRODUCT_VIEW': 'VIEW_PRODUCT',
-      'CART_ADD': 'ADD_TO_CART',
-      'CART_REMOVE': 'REMOVE_FROM_CART',
-      'CART_UPDATE': 'UPDATE_CART',
-      'CHECKOUT_START': 'START_CHECKOUT',
-      'COMPLETE_PURCHASE': 'COMPLETE_PURCHASE',
-      'PURCHASE_CANCEL': 'CANCEL_PURCHASE',
-      'RETURN_REQUESTED': 'RETURN_REQUESTED',
-      'RETURN_COMPLETED': 'RETURN_COMPLETED',
-      'RETURN_CANCELLED': 'RETURN_CANCELLED'
-    };
-    return mapping[actionType] || actionType;
+  private mapActionTypeToEnum(actionType: ActionType): PrismaActionType {
+    const mapping: Record<string, PrismaActionType> = {
+      'PRODUCT_VIEW': PrismaActionType.PRODUCT_VIEW,
+      'CART_ADD': PrismaActionType.CART_ADD,
+      'CART_REMOVE': PrismaActionType.CART_REMOVE,
+      'CART_UPDATE': PrismaActionType.CART_UPDATE,
+      'CHECKOUT_START': PrismaActionType.CHECKOUT_START,
+      'COMPLETE_PURCHASE': PrismaActionType.COMPLETE_PURCHASE,
+      'PURCHASE_CANCEL': PrismaActionType.PURCHASE_CANCEL,
+      'RETURN_REQUESTED': PrismaActionType.RETURN_REQUESTED,
+      'RETURN_COMPLETED': PrismaActionType.RETURN_COMPLETED,
+      'USER_REGISTER_START': PrismaActionType.USER_REGISTER_START,
+      'USER_REGISTER_COMPLETE': PrismaActionType.USER_REGISTER_COMPLETE,
+      'USER_LOGIN': PrismaActionType.USER_LOGIN,
+      'USER_LOGOUT': PrismaActionType.USER_LOGOUT,
+      'PROFILE_UPDATE': PrismaActionType.PROFILE_UPDATE,
+      'PASSWORD_CHANGE': PrismaActionType.PASSWORD_CHANGE,
+      'DELETE_ACCOUNT': PrismaActionType.DELETE_ACCOUNT
+    } as const;
+    
+    return mapping[actionType] || actionType as unknown as PrismaActionType;
   }
 
   async info(message: string, metadata?: Record<string, unknown>): Promise<void> {
@@ -163,14 +181,27 @@ class AppLogger implements Logger {
   }
 
   async action(action: UserAction): Promise<void> {
+    if (!action?.userId) {
+      console.warn('Invalid action: missing userId');
+      return;
+    }
+
     const entry: LogEntry = {
       level: 'action',
       message: `User Action: ${action.actionType}`,
       timestamp: new Date(),
       action
     };
-    await this.logToDB(entry);
+
     console.log('\x1b[33m%s\x1b[0m', JSON.stringify(entry));
+
+    await this.logToDB(entry).catch(error => {
+      if (error instanceof Error) {
+        console.error('Failed to log action:', error.message);
+      } else {
+        console.error('Unexpected error while logging action');
+      }
+    });
   }
 }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
+import { ActionType } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
     await prisma.userActionLog.create({
       data: {
         userId: userId,
-        actionType: 'ADD_TO_CART',
+        actionType: ActionType.CART_ADD,
         productId: parseInt(productId),
         cartItemId: cartItem.id,
         metadata: {
@@ -132,7 +133,7 @@ export async function DELETE(request: Request) {
     await prisma.userActionLog.create({
       data: {
         userId: userId,
-        actionType: 'REMOVE_FROM_CART',
+        actionType: ActionType.CART_REMOVE,
         productId: cartItem.productId,
         metadata: {
           quantity: cartItem.quantity
