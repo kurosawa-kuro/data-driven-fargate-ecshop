@@ -14,14 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <Navigation />
-        <main className="container mx-auto px-4">
+    <main className="container mx-auto px-4">
           {children}
-        </main>
-        <DebugPanel />
-      </body>
-    </html>
+    </main>
   );
 }

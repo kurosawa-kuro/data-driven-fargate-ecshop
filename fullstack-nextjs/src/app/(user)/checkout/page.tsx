@@ -44,7 +44,7 @@ export default function Page() {
       try {
         const response = await fetch('/api/carts/summary');
         const data = await response.json();
-        console.log("カート情報の取得に成功しました", data);
+        
         setOrderSummary({
           subtotal: data.subtotal,
           shippingFee: 550,
