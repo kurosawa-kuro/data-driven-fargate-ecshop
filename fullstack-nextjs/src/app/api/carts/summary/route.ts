@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma';
-import { BaseApiHandler } from '@/lib/api/baseHandler';
+import { prisma } from '@/lib/database/prisma';
+import { BaseApiHandler } from '@/lib/api/handler';
 
 class CartSummaryHandler extends BaseApiHandler {
   async GET() {

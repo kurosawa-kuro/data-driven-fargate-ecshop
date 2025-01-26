@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import { ActionLogType, logger } from '@/lib/logger';
 import { signUp } from '@/lib/auth/cognito';
-import { BaseApiHandler } from '@/lib/api/baseHandler';
+import { BaseApiHandler } from '@/lib/api/handler';
 
 interface RegisterRequestBody {
   email: string;

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 
 // /home/wsl/app/fullstack-nextjs/src/lib/prisma.tsx
-import { prisma } from '../src/lib/prisma';
+import { prisma } from '../src/lib/database/prisma';
 import { UserStatus, ActionType } from '@prisma/client';
 
 

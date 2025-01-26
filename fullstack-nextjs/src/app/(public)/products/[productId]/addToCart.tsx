@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { cartAPI } from '@/lib/api';
+import { cartAPI } from '@/lib/api/client';
 
 interface ProductData {
   id: number;

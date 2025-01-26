@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth.store';
-import { authAPI } from '@/lib/api';
+import { authAPI } from '@/lib/api/client';
 
 interface LoginFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;

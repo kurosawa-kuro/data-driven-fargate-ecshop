@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import { signIn } from '@/lib/auth/cognito';
 import * as jose from 'jose';
 import { ActionLogType, logger } from "@/lib/logger";
-import { prisma } from '@/lib/prisma';
-import { BaseApiHandler } from '@/lib/api/baseHandler';
+import { prisma } from '@/lib/database/prisma';
+import { BaseApiHandler } from '@/lib/api/handler';
 
 interface LoginResponse {
   success: boolean;

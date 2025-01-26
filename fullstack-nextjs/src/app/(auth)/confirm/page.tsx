@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authAPI } from '@/lib/api';
+import { authAPI } from '@/lib/api/client';
 
 interface CognitoError extends Error {
   name: string;

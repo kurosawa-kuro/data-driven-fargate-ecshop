@@ -1,5 +1,5 @@
 import { CartActions } from './addToCart';
-import { productAPI, historyAPI } from '@/lib/api';
+import { productAPI, historyAPI } from '@/lib/api/client';
 import { Product } from "@prisma/client";
 
 // 型定義

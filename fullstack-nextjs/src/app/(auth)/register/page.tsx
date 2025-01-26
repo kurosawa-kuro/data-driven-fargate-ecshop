@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { authAPI } from '@/lib/api';
+import { authAPI } from '@/lib/api/client';
 
 function RegisterForm() {
   const [email, setEmail] = useState('');

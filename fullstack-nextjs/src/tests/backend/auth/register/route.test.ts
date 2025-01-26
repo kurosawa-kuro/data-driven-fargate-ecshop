@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { POST } from '@/app/api/users/route'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/database/prisma'
 
 describe('Users API', () => {
   beforeEach(async () => {

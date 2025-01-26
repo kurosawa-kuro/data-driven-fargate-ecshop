@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
-import { checkoutAPI } from '@/lib/api';
+import { checkoutAPI } from '@/lib/api/client';
 
 interface OrderFormData {
   name: string;

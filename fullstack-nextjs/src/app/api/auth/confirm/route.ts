@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { confirmSignUp } from '@/lib/auth/cognito';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import { ActionLogType, logger } from '@/lib/logger';
 import { ActionType } from '@prisma/client';
-import { BaseApiHandler } from '@/lib/api/baseHandler';
+import { BaseApiHandler } from '@/lib/api/handler';
 
 class ConfirmHandler extends BaseApiHandler {
   async POST(request: Request) {

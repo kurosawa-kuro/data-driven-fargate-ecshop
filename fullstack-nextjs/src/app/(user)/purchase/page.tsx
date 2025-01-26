@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
-import { fetchPurchases } from '@/lib/api';
+import { purchaseAPI } from '@/lib/api/client';
 
 // 型定義をまとめて管理
 type ActionType = 'return_request' | 'repurchase' | 'review_start';
@@ -41,7 +41,7 @@ export default function Page() {
   useEffect(() => {
     const loadPurchases = async () => {
       try {
-        const data = await fetchPurchases();
+        const data = await purchaseAPI.fetchPurchases();
         setPurchases(data.purchases);
       } catch (error) {
         logger.error('購入履歴取得エラー:', error as Error);
@@ -61,12 +61,6 @@ export default function Page() {
 
   const handleRepurchase = async (products: { id: string; quantity: number }[]) => {
     try {
-      // await apiClient.addToCart(
-      //   products.map(p => ({
-      //     productId: parseInt(p.id),
-      //     quantity: p.quantity
-      //   }))
-      // );
       router.push('/cart');
     } catch (error) {
       logger.error('再購入処理に失敗しました', error as Error);
