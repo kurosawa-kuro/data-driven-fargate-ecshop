@@ -1,6 +1,21 @@
 import { Purchase } from "@prisma/client";
 import { Product } from "@prisma/client";
 
+interface CartItem {
+  id: number;
+  userId: string;
+  productId: number;
+  quantity: number;
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    image: string;
+    description: string;
+  };
+  addedAt?: Date;
+}
+
 // 認証関連API
 export const authAPI = {
   register: async (email: string, password: string) => {
@@ -11,6 +26,9 @@ export const authAPI = {
   },
   confirm: async (email: string, code: string) => {
     return executeRequest('/api/auth/confirm', 'POST', { email, code });
+  },
+  logout: async () => {
+    return executeRequest('/api/auth/logout', 'POST', null, { credentials: 'include' });
   }
 };
 
@@ -18,6 +36,18 @@ export const authAPI = {
 export const cartAPI = {
   addToCart: async (productId: string) => {
     return executeRequest('/api/carts', 'POST', { productId });
+  },
+  getCartItems: async (): Promise<{ cartItems: CartItem[] }> => {
+    return executeRequest('/api/carts', 'GET');
+  },
+  updateCartItemQuantity: async (cartItemId: number, quantity: number) => {
+    return executeRequest(`/api/carts/${cartItemId}`, 'PATCH', { quantity });
+  },
+  removeCartItem: async (cartItemId: number) => {
+    return executeRequest(`/api/carts/${cartItemId}`, 'DELETE');
+  },
+  getCartSummary: async (): Promise<{ subtotal: number }> => {
+    return executeRequest('/api/carts/summary', 'GET');
   }
 };
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
+import { cartAPI } from '@/lib/api/client';
 
 interface CartItem {
   id: number;
@@ -16,6 +17,7 @@ interface CartItem {
     image: string;
     description: string;
   };
+  addedAt?: Date; // オプショナルに追加
 }
 
 // カート操作の結果型
@@ -45,13 +47,7 @@ export default function Page() {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.CART, {
-          headers: { 
-            'Content-Type': 'application/json'
-          },
-        });
-        if (!response.ok) throw new Error('カートの取得に失敗しました');
-        const data = await response.json();
+        const data = await cartAPI.getCartItems();
         setCartItems(data.cartItems);
       } catch (error) {
         handleApiError(error as Error, 'カート一覧の取得に失敗しました');
@@ -64,7 +60,7 @@ export default function Page() {
   const cartOperations = {
     async updateQuantity(productId: number, newQuantity: number): Promise<CartOperationResult> {
       try {
-        // 数量更新のAPIコールをここに追加予定
+        await cartAPI.updateCartItemQuantity(productId, newQuantity);
         setCartItems(prevItems =>
           prevItems.map(item =>
             item.id === productId
@@ -81,13 +77,7 @@ export default function Page() {
 
     async removeItem(productId: number): Promise<CartOperationResult> {
       try {
-        const response = await fetch(API_ENDPOINTS.LOG, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ actionType: 'cart_remove' })
-        });
-        if (!response.ok) throw new Error('ログの記録に失敗しました');
-        
+        await cartAPI.removeCartItem(productId);
         setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
         return { success: true };
       } catch (error) {

@@ -10,6 +10,7 @@ class CartHandler extends BaseApiHandler {
       const authError = this.checkAuth(userId);
       if (authError) return authError;
 
+      // 戻り値にプロダクトの価格等は含まれますか
       const cartItems = await prisma.cartItem.findMany({
         where: { userId: userId! },
         include: { product: true }

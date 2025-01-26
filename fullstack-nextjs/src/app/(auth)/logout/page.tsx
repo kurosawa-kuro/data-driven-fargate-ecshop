@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEffect } from 'react';
+import { authAPI } from '@/lib/api/client';
 
 export default function LogoutPage() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function LogoutPage() {
       // 認証状態をクリア
       clearUser();
 
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await authAPI.logout();
 
       // トップページにリダイレクト
       router.push('/');

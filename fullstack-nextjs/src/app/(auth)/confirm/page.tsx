@@ -75,7 +75,7 @@ function ConfirmForm() {
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-300"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-500"
               placeholder="123456"
               required
             />
