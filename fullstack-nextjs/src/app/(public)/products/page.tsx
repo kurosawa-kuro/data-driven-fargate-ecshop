@@ -9,7 +9,10 @@ interface Product {
   rating: number;
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
+  
   const { products } = await productAPI.getProducts();
 
   return (

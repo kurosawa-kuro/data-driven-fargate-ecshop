@@ -32,7 +32,7 @@ export const authAPI = {
   }
 };
 
-// カート関連API
+// カート管理API
 export const cartAPI = {
   addToCart: async (productId: string) => {
     return executeRequest('/api/carts', 'POST', { productId });
@@ -51,7 +51,7 @@ export const cartAPI = {
   }
 };
 
-// チェックアウト関連API
+// 決済処理API
 export const checkoutAPI = {
   confirmCheckout: async (
     name: string,
@@ -74,35 +74,23 @@ export const checkoutAPI = {
   }
 };
 
-// 購入履歴関連API
+// 購入履歴管理API
 export const purchaseAPI = {
   fetchPurchases: async (): Promise<{ purchases: Purchase[] }> => {
     return executeRequest('/api/purchase', 'GET');
   },
   return: async (orderId: string, productId: string) => {
-    const response = await fetch('/api/purchase/return', {
-      method: 'POST',
-      body: JSON.stringify({ orderId, productId })
-    });
-    return response.json();
+    return executeRequest('/api/purchase/return', 'POST', { orderId, productId });
   },
   repurchase: async (products: { id: string; quantity: number }[]) => {
-    const response = await fetch('/api/purchase/repurchase', {
-      method: 'POST',
-      body: JSON.stringify({ products })
-    });
-    return response.json();
+    return executeRequest('/api/purchase/repurchase', 'POST', { products });
   },
   review: async (orderId: string, productId: string) => {
-    const response = await fetch('/api/purchase/review', {
-      method: 'POST',
-      body: JSON.stringify({ orderId, productId })
-    });
-    return response.json();
+    return executeRequest('/api/purchase/review', 'POST', { orderId, productId });
   }
 };
 
-// 商品関連API
+// 商品情報API
 export const productAPI = {
   getProducts: async (): Promise<{ products: Product[] }> => {
     return executeRequest('/api/products', 'GET', null, { cache: 'no-store' });
@@ -112,7 +100,7 @@ export const productAPI = {
   }
 };
 
-// 閲覧履歴関連API
+// 閲覧履歴API
 export const historyAPI = {
   recordView: async (productId: string, userId: string) => {
     return executeRequest('/api/view-history', 'POST', { productId }, {
@@ -121,7 +109,7 @@ export const historyAPI = {
   }
 };
 
-// 共通リクエスト実行関数
+// リクエスト実行ユーティリティ
 const executeRequest = async (
   endpoint: string,
   method: string,

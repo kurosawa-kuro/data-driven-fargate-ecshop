@@ -30,12 +30,12 @@ export default function Navigation() {
       <ul className="flex flex-wrap gap-4 list-none p-4 items-center">
         {menuItems.map((item) => (
           <li key={item.href}>
+  
             <Link 
-              href={item.href} 
+              href={item.href}
               className="hover:text-blue-500 transition-colors"
-            >
-              {item.label}
-            </Link>
+              prefetch={true} // プリフェッチを有効化
+            >{item.label}</Link>
           </li>
         ))}
         {email && (

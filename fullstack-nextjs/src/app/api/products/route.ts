@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/database/prisma';
 import { BaseApiHandler } from '@/lib/api/handler';
+import { NextResponse } from 'next/server';
 
 class ProductsHandler extends BaseApiHandler {
   async GET() {
@@ -9,10 +10,14 @@ class ProductsHandler extends BaseApiHandler {
       // 商品一覧を取得
       const products = await prisma.product.findMany();
 
-      return this.successResponse({ 
-        products,
-        user: { userId } // ユーザーIDをレスポンスに含める
-      });
+      return NextResponse.json(
+        { products, user: { userId } },
+        {
+          headers: {
+            'Cache-Control': 'no-store, max-age=0'
+          }
+        }
+      );
     } catch (error) {
       return this.handleError(error, '商品一覧の取得に失敗しました');
     }
