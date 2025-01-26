@@ -25,9 +25,16 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       ...initialState,
       setUser: (user) => set(() => ({ user })),
-      clearUser: () => set(() => initialState),
+      clearUser: () => {
+        // ローカルストレージのクリア
+        localStorage.removeItem('auth-storage');
+        // クッキーのクリア
+        document.cookie = 'idToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        set(() => initialState);
+      },
       resetStore: () => {
         localStorage.removeItem('auth-storage');
+        document.cookie = 'idToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         set(() => initialState);
       }
     }),

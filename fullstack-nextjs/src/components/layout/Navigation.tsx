@@ -10,11 +10,20 @@ export default function Navigation() {
     { href: '/', label: 'ロゴ/TOP' },
     { href: '/products', label: 'products' },
     { href: '/search', label: '検索バー' },
-    { href: '/cart', label: 'カート' },
-    { href: '/login', label: 'ログイン/アカウント' },
-    { href: '/register', label: '登録' },
-    { href: '/logout', label: 'ログアウト' },
   ];
+
+  // ログインしていない場合のみログイン/登録リンクを追加
+  if (!email) {
+    menuItems.push(
+      { href: '/login', label: 'ログイン' },
+      { href: '/register', label: 'ユーザー登録' }
+    );
+    menuItems.push({ href: '/carts', label: 'カート' });
+  } else {
+    // ログイン済みの場合のみログアウトリンクを追加
+    menuItems.push({ href: '/carts', label: 'カート' });
+    menuItems.push({ href: '/logout', label: 'ログアウト' });
+  }
 
   return (
     <nav className="container mx-auto bg-gray-900">

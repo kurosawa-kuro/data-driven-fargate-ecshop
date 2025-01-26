@@ -77,11 +77,11 @@ class HeaderManager {
 
 // メインのミドルウェア関数
 export async function middleware(request: NextRequest) {
-  // console.log("hit middleware");
+  console.log("hit middleware");
 
   // ランダムでリクエストIDを生成
   const requestID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  // console.log("middleware requestID", requestID);
+  
 
   const tokenProcessor = new TokenProcessor(request);
   const headerManager = new HeaderManager(request.headers);
@@ -89,11 +89,20 @@ export async function middleware(request: NextRequest) {
 
   const idToken = tokenProcessor.getIdToken();
   
+  // ログイン済みかを確認
   if (idToken) {
     const userInfo = await tokenProcessor.decodeToken(idToken);
     if (userInfo?.email && userInfo.sub) {
       headerManager.setUserInfo(userInfo.email, userInfo.sub);    
     }
+  }
+
+  console.log("request.nextUrl.pathname",request.nextUrl.pathname);
+  console.log("headerManager.getHeaders().get('x-user-id')",headerManager.getHeaders().get('x-user-id'));
+  // ログイン済みでないと入れないページ(/carts)にアクセスする場合の対処
+  if (request.nextUrl.pathname === '/carts' && !headerManager.getHeaders().get('x-user-id')) {
+    console.log("request.nextUrl.pathname",request.nextUrl.pathname);
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next({
