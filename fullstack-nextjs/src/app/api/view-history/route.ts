@@ -5,8 +5,13 @@ class ViewHistoryHandler extends BaseApiHandler {
   async POST(request: Request) {
     try {
       const { userId } = await this.getHeaders();
+      
+      // 認証チェック
       const authError = this.checkAuth(userId);
-      if (authError) return authError;
+      if (authError) {
+        console.error('認証エラー: ユーザーIDがありません');
+        return authError;
+      }
 
       const { productId } = await request.json();
 

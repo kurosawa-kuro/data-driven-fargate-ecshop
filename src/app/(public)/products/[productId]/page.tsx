@@ -109,4 +109,4 @@ export default async function Page({ params }: ProductPageProps) {
       </div>
     </div>
   );
-}
+} 
