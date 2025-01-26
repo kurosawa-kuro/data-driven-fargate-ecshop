@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEffect } from 'react';
 import { authAPI } from '@/lib/api/client';
 
+export const dynamic = 'force-dynamic';
+
 export default function LogoutPage() {
   const router = useRouter();
   const clearUser = useAuthStore((state) => state.clearUser);
