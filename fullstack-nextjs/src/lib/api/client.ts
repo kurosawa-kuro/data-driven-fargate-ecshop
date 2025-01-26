@@ -48,6 +48,27 @@ export const checkoutAPI = {
 export const purchaseAPI = {
   fetchPurchases: async (): Promise<{ purchases: Purchase[] }> => {
     return executeRequest('/api/purchase', 'GET');
+  },
+  return: async (orderId: string, productId: string) => {
+    const response = await fetch('/api/purchase/return', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, productId })
+    });
+    return response.json();
+  },
+  repurchase: async (products: { id: string; quantity: number }[]) => {
+    const response = await fetch('/api/purchase/repurchase', {
+      method: 'POST',
+      body: JSON.stringify({ products })
+    });
+    return response.json();
+  },
+  review: async (orderId: string, productId: string) => {
+    const response = await fetch('/api/purchase/review', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, productId })
+    });
+    return response.json();
   }
 };
 

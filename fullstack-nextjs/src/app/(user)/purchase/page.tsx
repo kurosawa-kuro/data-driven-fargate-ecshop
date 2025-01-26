@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { purchaseAPI } from '@/lib/api/client';
@@ -35,7 +35,7 @@ interface Purchase {
 
 // メインコンポーネント
 export default function Page() {
-  const router = useRouter();
+  // const router = useRouter();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
 
   useEffect(() => {
@@ -50,10 +50,9 @@ export default function Page() {
     loadPurchases();
   }, []);
 
-  // アクションハンドラーをリファクタリング
   const handleReturn = async (orderId: string, productId: string) => {
     try {
-      alert('返品リクエストを受け付けました。カスタマーサービスからご連絡いたします。');
+      await purchaseAPI.return(orderId, productId);
     } catch (error) {
       logger.error('返品処理に失敗しました', error as Error);
     }
@@ -61,17 +60,17 @@ export default function Page() {
 
   const handleRepurchase = async (products: { id: string; quantity: number }[]) => {
     try {
-      router.push('/cart');
+      await purchaseAPI.repurchase(products);
     } catch (error) {
-      logger.error('再購入処理に失敗しました', error as Error);
+      logger.error('再度購入処理に失敗しました', error as Error);
     }
   };
 
-  const handleReview = async (orderId: string, productId: string) => {
+    const handleReview = async (orderId: string, productId: string) => {
     try {
-      router.push(`/reviews/new?orderId=${orderId}&productId=${productId}`);
+      await purchaseAPI.review(orderId, productId);
     } catch (error) {
-      logger.error('レビュー画面への遷移に失敗しました', error as Error);
+      logger.error('レビュー投稿リクエストに失敗しました', error as Error);
     }
   };
 
