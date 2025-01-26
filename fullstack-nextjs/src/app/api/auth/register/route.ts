@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/database/prisma';
 import { ActionLogType, logger } from '@/lib/logger';
 import { signUp } from '@/lib/auth/cognito';

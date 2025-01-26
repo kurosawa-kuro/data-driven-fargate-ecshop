@@ -41,6 +41,10 @@ setup-app:  # アプリケーション環境のセットアップ
 ###################
 # Docker/Fargate操作
 ###################
+# pnpm run build
+build:
+	cd fullstack-nextjs && pnpm run build
+
 fargate-local:  # ローカルでのFargate環境構築
 	chmod u+x ./infrastructure/docker/local/01_local-dev.sh
 	./infrastructure/docker/local/01_local-dev.sh

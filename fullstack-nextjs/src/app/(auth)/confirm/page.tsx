@@ -4,12 +4,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authAPI } from '@/lib/api/client';
 
-interface CognitoError extends Error {
-  name: string;
-  message: string;
-  code?: string;
-}
-
 // 確認フォームのコンポーネントを分離
 function ConfirmForm() {
   const [code, setCode] = useState('');

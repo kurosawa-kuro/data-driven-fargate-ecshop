@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
 import { confirmSignUp } from '@/lib/auth/cognito';
 import { prisma } from '@/lib/database/prisma';
-import { ActionLogType, logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { ActionType } from '@prisma/client';
 import { BaseApiHandler } from '@/lib/api/handler';
 
@@ -27,10 +26,10 @@ class ConfirmHandler extends BaseApiHandler {
       }
 
       return this.successResponse({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Confirmation error:', error);
       return this.errorResponse(
-        error.message || '確認コードの検証に失敗しました',
+        error instanceof Error ? error.message : '確認コードの検証に失敗しました',
         400
       );
     }

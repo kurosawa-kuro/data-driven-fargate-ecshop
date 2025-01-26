@@ -5,9 +5,6 @@ import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { purchaseAPI } from '@/lib/api/client';
 
-// 型定義をまとめて管理
-type ActionType = 'return_request' | 'repurchase' | 'review_start';
-
 interface Product {
   id: number;
   name: string;

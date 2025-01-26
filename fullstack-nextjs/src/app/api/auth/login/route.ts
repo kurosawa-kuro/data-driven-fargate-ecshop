@@ -5,15 +5,6 @@ import { ActionLogType, logger } from "@/lib/logger";
 import { prisma } from '@/lib/database/prisma';
 import { BaseApiHandler } from '@/lib/api/handler';
 
-interface LoginResponse {
-  success: boolean;
-  user?: {
-    email: string;
-    userId: string;
-  };
-  error?: string;
-}
-
 interface DecodedToken {
   email: string;
   sub: string;
@@ -75,13 +66,13 @@ class LoginHandler extends BaseApiHandler {
       });
 
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Error) {
         await logger.action({
           actionType: ActionLogType.USER.LOGIN,
           userId: 'unknown',
           metadata: {
-            error: error.message,
+            error: error instanceof Error ? error.message : 'ログインに失敗しました',
             timestamp: new Date()
           }
         });

@@ -4,13 +4,11 @@ import { ActionType } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 class CheckoutConfirmHandler extends BaseApiHandler {
-  async POST(request: Request) {
+  async POST( ) {
     try {
       const { userId, requestId } = await this.getHeaders();
       const authError = this.checkAuth(userId);
       if (authError) return authError;
-
-      const body = await request.json();
 
       // トランザクション処理
       const result = await prisma.$transaction(async (tx) => {

@@ -28,7 +28,7 @@ export const authAPI = {
     return executeRequest('/api/auth/confirm', 'POST', { email, code });
   },
   logout: async () => {
-    return executeRequest('/api/auth/logout', 'POST', null, { credentials: 'include' });
+    return executeRequest('/api/auth/logout', 'POST', undefined, { credentials: 'include' });
   }
 };
 
@@ -38,7 +38,7 @@ export const cartAPI = {
     return executeRequest('/api/carts', 'POST', { productId });
   },
   getCartItems: async (): Promise<{ cartItems: CartItem[] }> => {
-    return executeRequest('/api/carts', 'GET');
+    return executeRequest<{ cartItems: CartItem[] }>('/api/carts', 'GET');
   },
   updateCartItemQuantity: async (cartItemId: number, quantity: number) => {
     return executeRequest(`/api/carts/${cartItemId}`, 'PATCH', { quantity });
@@ -93,10 +93,10 @@ export const purchaseAPI = {
 // 商品情報API
 export const productAPI = {
   getProducts: async (): Promise<{ products: Product[] }> => {
-    return executeRequest('/api/products', 'GET', null, { cache: 'no-store' });
+    return executeRequest('/api/products', 'GET', undefined, { cache: 'no-store' });
   },
   getProduct: async (productId: string): Promise<{ product: Product }> => {
-    return executeRequest(`/api/products/${productId}`, 'GET', null, { cache: 'no-store' });
+    return executeRequest(`/api/products/${productId}`, 'GET', undefined, { cache: 'no-store' });
   }
 };
 
@@ -110,12 +110,12 @@ export const historyAPI = {
 };
 
 // リクエスト実行ユーティリティ
-const executeRequest = async (
+const executeRequest = async <T = Record<string, unknown>>(
   endpoint: string,
   method: string,
-  body?: any,
+  body?: Record<string, unknown>,
   options?: RequestInit
-): Promise<any> => {
+): Promise<T> => {
   const baseUrl = typeof window !== 'undefined' 
     ? window.location.origin 
     : process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';

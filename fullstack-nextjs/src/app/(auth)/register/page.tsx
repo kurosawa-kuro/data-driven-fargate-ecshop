@@ -14,7 +14,7 @@ const useRegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const data = await authAPI.register(email, password);
+      await authAPI.register(email, password);
       router.push(`/confirm?email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'ユーザー登録に失敗しました');

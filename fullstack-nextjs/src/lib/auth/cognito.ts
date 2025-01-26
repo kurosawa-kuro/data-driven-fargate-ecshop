@@ -8,7 +8,7 @@ import {
   type CognitoIdentityProviderClientConfig
 } from "@aws-sdk/client-cognito-identity-provider";
 import crypto from 'crypto';
-import { ActionLogType, logger } from '@/lib/logger';
+import {  logger } from '@/lib/logger';
 
 // 設定関連
 const COGNITO_CONFIG = {

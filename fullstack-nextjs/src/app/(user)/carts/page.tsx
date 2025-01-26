@@ -26,11 +26,6 @@ type CartOperationResult = {
   error?: string;
 };
 
-// APIエンドポイント定数
-const API_ENDPOINTS = {
-  CART: '/api/carts',
-  LOG: '/api/log',
-} as const;
 
 export default function Page() {
   const router = useRouter();

@@ -25,7 +25,7 @@ export class BaseApiHandler {
       return this.errorResponse(defaultMessage, 500);
     }
 
-    protected successResponse(data: any, status: number = 200) {
+    protected successResponse(data: Record<string, unknown>, status: number = 200) {
       return NextResponse.json({ success: true, ...data }, { status });
     }
 

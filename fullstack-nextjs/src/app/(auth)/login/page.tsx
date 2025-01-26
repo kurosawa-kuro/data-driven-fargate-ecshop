@@ -6,6 +6,11 @@ import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth.store';
 import { authAPI } from '@/lib/api/client';
 
+interface User {
+  userId: string;
+  email: string;
+}
+
 const useLoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,10 +26,10 @@ const useLoginForm = () => {
       console.log("Login response:", data);
 
       if (data.success) {
-        useAuthStore.getState().setUser(data.user);
+        useAuthStore.getState().setUser(data.user as User);
         router.push('/products');
       } else {
-        setError(data.error || 'ログインに失敗しました');
+        setError(data.error as string || 'ログインに失敗しました');
       }
     } catch (err) {
       console.error("Login error:", err);

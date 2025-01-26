@@ -7,32 +7,6 @@ type ProductPageProps = {
   params: Promise<{ productId: string }>
 };
 
-// 定数
-const MAX_RATING_STARS = 5;
-const API_BASE_URL = 'http://localhost:3000/api';
-
-// コンポーネント
-const RatingStars = ({ rating, reviews }: { rating: number; reviews: number }) => (
-  <div className="flex items-center">
-    <div className="flex items-center">
-      {[...Array(MAX_RATING_STARS)].map((_, index) => (
-        <span 
-          key={index}
-          className={`${
-            index < Math.floor(rating)
-              ? "text-yellow-400"
-              : "text-gray-600"
-          } text-lg`}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-    <span className="ml-2 text-sm text-gray-300">{rating}</span>
-    <span className="ml-2 text-sm text-gray-400">({reviews}件のレビュー)</span>
-  </div>
-);
-
 // メインページコンポーネント
 export default async function Page({ params }: ProductPageProps) {
   const resolvedParams = await params;
