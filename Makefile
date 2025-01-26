@@ -69,3 +69,11 @@ cloudwatch-log:  # CloudWatchログの監視
 commit-success:  # タイムスタンプ付きの成功コミット
 	chmod +x  ./infrastructure/script/commit_success.sh
 	./infrastructure/script/commit_success.sh
+
+###################
+# Dockerクリーンアップ
+###################
+docker-clean:  # Dockerコンテナとイメージを強制削除
+	docker stop $(docker ps -aq) || true
+	docker rm $(docker ps -aq) || true
+	docker rmi -f $(docker images -q) || true
