@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { productAPI } from "@/lib/api";
 
 interface Product {
   id: number;
@@ -9,13 +10,7 @@ interface Product {
 }
 
 export default async function Page() {
-  const response = await fetch('http://localhost:3000/api/products', {
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    cache: 'no-store'
-  });
-
-  const { products } = await response.json();
+  const { products } = await productAPI.getProducts();
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/auth.store';
 import { cartAPI } from '@/lib/api';
 
 interface ProductData {
@@ -11,7 +10,6 @@ interface ProductData {
 
 export function CartActions({ productData }: { productData: ProductData }) {
   const router = useRouter();
-  // const { user } = useAuthStore();
 
   const handleAddToCart = async () => {
     try {

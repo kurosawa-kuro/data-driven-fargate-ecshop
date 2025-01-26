@@ -1,17 +1,10 @@
 import { CartActions } from './addToCart';
+import { productAPI, historyAPI } from '@/lib/api';
+import { Product } from "@prisma/client";
 
 // 型定義
 type ProductPageProps = {
   params: Promise<{ productId: string }>
-};
-
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  rating: number;
-  reviews: number;
-  description: string;
 };
 
 // 定数
@@ -47,18 +40,8 @@ export default async function Page({ params }: ProductPageProps) {
   // データフェッチング
   let product: Product | null = null;
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${resolvedParams.productId}`, {
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      throw new Error('商品情報の取得に失敗しました');
-    }
-
-    const data = await response.json();
-    product = data.product;
+    const { product: fetchedProduct } = await productAPI.getProduct(resolvedParams.productId);
+    product = fetchedProduct;
   } catch (error) {
     console.error('商品情報の取得エラー:', error);
     return <div className="container mx-auto px-4 py-8 text-white">商品情報を取得できませんでした</div>;
@@ -70,16 +53,7 @@ export default async function Page({ params }: ProductPageProps) {
 
   // 閲覧履歴の記録
   try {
-    await fetch(`${API_BASE_URL}/view-history`, {
-      credentials: 'include',
-      cache: 'no-store',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': 'auth0|user1' // 仮のユーザーIDを設定（実際のユーザーIDに置き換える）
-      },
-      body: JSON.stringify({ productId: resolvedParams.productId })
-    });
+    await historyAPI.recordView(resolvedParams.productId, 'auth0|user1');
   } catch (error) {
     console.error('閲覧履歴の記録に失敗しました:', error);
   }
@@ -100,8 +74,8 @@ export default async function Page({ params }: ProductPageProps) {
           <p className="text-xl font-semibold text-white">
             ¥{product.price.toLocaleString()}
           </p>
-          <RatingStars rating={product.rating} reviews={product.reviews} />
-          <p className="text-gray-300">{product.description}</p>
+          {/* <RatingStars rating={product.rating} reviews={product.reviews} />
+          <p className="text-gray-300">{product.description}</p> */}
         </div>
 
         {/* 右ペイン: カートコンポーネント */}
