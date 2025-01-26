@@ -1,35 +1,30 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { BaseApiHandler } from '@/lib/api/baseHandler';
 
+class ViewHistoryHandler extends BaseApiHandler {
+  async POST(request: Request) {
+    try {
+      const { userId } = await this.getHeaders();
+      const authError = this.checkAuth(userId);
+      if (authError) return authError;
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    // const userId = body.userId;
-    const productId = body.productId;
-    
-    const user = await prisma.viewHistory.create({
-      data: {
-        userId: "auth0|user1",
-        productId: parseInt(productId),
-        viewedAt: new Date(),
-      },
-    });
+      const { productId } = await request.json();
 
-    // 成功時のレスポンスを追加
-    return NextResponse.json({ success: true, user }, { status: 201 });
+      // 閲覧履歴を作成
+      const viewHistory = await prisma.viewHistory.create({
+        data: {
+          userId: userId!,
+          productId: parseInt(productId),
+          viewedAt: new Date(),
+        },
+      });
 
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error creating sample:', error.message);
-      return NextResponse.json(
-        { error: 'Failed to create sample: ' + error.message },
-        { status: 500 }
-      );
+      return this.successResponse({ viewHistory }, 201);
+    } catch (error) {
+      return this.handleError(error, '閲覧履歴の作成に失敗しました');
     }
-    return NextResponse.json(
-      { error: 'Failed to create sample' },
-      { status: 500 }
-    );
   }
 }
+
+const handler = new ViewHistoryHandler();
+export const POST = handler.POST.bind(handler);
