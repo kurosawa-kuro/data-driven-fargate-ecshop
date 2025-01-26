@@ -114,7 +114,7 @@ export default function Page() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8 text-white">ショッピングカート</h1>
+      <h1 className="text-2xl font-bold mb-6 text-white">ショッピングカート</h1>
       
       {error && (
         <div className="bg-red-500 text-white p-4 mb-4 rounded">
@@ -122,20 +122,20 @@ export default function Page() {
         </div>
       )}
       
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* 商品リスト */}
-        <div className="md:w-2/3">
-          {cartItems.map((item) => (
-            <div key={item.id} className="flex border-b border-gray-700 py-4 gap-4">
+      <div className="space-y-6">
+        {cartItems.map((item) => (
+          <div key={item.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow">
+            <div className="flex items-center gap-4">
               {/* 商品画像 */}
-              <div className="w-[180px]">
+              <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 relative">
                 Image
               </div>
               
               {/* 商品情報 */}
               <div className="flex-grow">
-                <h3 className="text-lg font-semibold text-white">{item.product.name}</h3>
-                <p className="text-gray-300">{item.product.description}</p>
+                <h3 className="font-medium text-white">{item.product.name}</h3>
+                <p className="text-sm text-gray-300">{item.product.description}</p>
+                
                 <div className="mt-2 flex items-center gap-4">
                   <div>
                     <label className="text-gray-300">数量：</label>
@@ -149,9 +149,10 @@ export default function Page() {
                       ))}
                     </select>
                   </div>
+                  
                   <button
                     onClick={() => cartOperations.removeItem(item.id)}
-                    className="text-red-500 hover:text-red-400"
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                   >
                     削除
                   </button>
@@ -166,24 +167,24 @@ export default function Page() {
                 </p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* 小計 */}
-        <div className="md:w-1/3">
-          <div className="bg-gray-800 p-6 rounded-lg shadow">
-            <h2 className="text-xl font-bold mb-4 text-white">注文概要</h2>
-            <div className="flex justify-between mb-4 text-white">
-              <span>小計</span>
-              <span>¥{cartOperations.calculateTotal().toLocaleString()}</span>
-            </div>
-            <button 
-              onClick={handleProceedToCheckout}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-            >
-              レジに進む
-            </button>
           </div>
+        ))}
+      </div>
+
+      {/* 小計 */}
+      <div className="mt-8">
+        <div className="bg-gray-800 p-6 rounded-lg shadow">
+          <h2 className="text-xl font-bold mb-4 text-white">注文概要</h2>
+          <div className="flex justify-between mb-4 text-white">
+            <span>小計</span>
+            <span>¥{cartOperations.calculateTotal().toLocaleString()}</span>
+          </div>
+          <button 
+            onClick={handleProceedToCheckout}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+          >
+            レジに進む
+          </button>
         </div>
       </div>
     </div>
