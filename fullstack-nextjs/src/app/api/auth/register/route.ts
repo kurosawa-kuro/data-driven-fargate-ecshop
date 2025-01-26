@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ActionLogType, logger } from '@/lib/logger';
 import { signUp } from '@/lib/auth/cognito';
+import { BaseApiHandler } from '@/lib/api/baseHandler';
 
 interface RegisterRequestBody {
   email: string;
@@ -33,63 +34,48 @@ function createUserData(email: string, sub: string): UserCreationData {
   };
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json() as RegisterRequestBody;
-    const { email, password } = body;
+class RegisterHandler extends BaseApiHandler {
+  async POST(request: Request) {
+    try {
+      const body = await request.json() as RegisterRequestBody;
+      const { email, password } = body;
 
-    // バリデーション
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'メールアドレスとパスワードは必須です' },
-        { status: 400 }
-      );
-    }
+      if (!email || !password) {
+        return this.errorResponse('メールアドレスとパスワードは必須です', 400);
+      }
 
-    // Cognitoでユーザー登録
-    const cognitoResponse = await signUp(email, password);
-    const sub = cognitoResponse.UserSub;
+      const cognitoResponse = await signUp(email, password);
+      const sub = cognitoResponse.UserSub;
 
-    if (!sub) {
-      return NextResponse.json(
-        { error: 'Cognitoの登録に失敗しました' },
-        { status: 500 }
-      );
-    }
+      if (!sub) {
+        return this.errorResponse('Cognitoの登録に失敗しました', 500);
+      }
 
-    const userData = createUserData(email, sub);
-    
-    // トランザクションでユーザー作成とログ記録を行う
-    const result = await prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({ data: userData });
+      const userData = createUserData(email, sub);
       
-      // ログ記録を確実に実行
-      await logger.action({
-        actionType: ActionLogType.USER.REGISTER_START,
-        userId: sub
+      const result = await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({ data: userData });
+        
+        await logger.action({
+          actionType: ActionLogType.USER.REGISTER_START,
+          userId: sub
+        });
+
+        return { user };
       });
 
-      return { user };
-    });
+      return this.successResponse({ 
+        success: true, 
+        user: result.user,
+        sub: cognitoResponse.UserSub 
+      }, 201);
 
-    return NextResponse.json({ 
-      success: true, 
-      user: result.user,
-      sub: cognitoResponse.UserSub 
-    }, { status: 201 });
-
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error('ユーザー登録エラー:', error);
-      return NextResponse.json(
-        { error: `ユーザー登録に失敗しました: ${error.message}` },
-        { status: 500 }
-      );
+    } catch (error) {
+      return this.handleError(error, 'ユーザー登録に失敗しました');
     }
-    
-    return NextResponse.json(
-      { error: 'ユーザー登録に失敗しました' },
-      { status: 500 }
-    );
   }
 }
+
+const handler = new RegisterHandler();
+
+export const POST = handler.POST.bind(handler);
