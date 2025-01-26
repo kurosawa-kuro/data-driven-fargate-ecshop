@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { signIn } from '@/lib/auth/cognito';
 import * as jose from 'jose';
 import { ActionLogType, logger } from "@/lib/logger";
 import { prisma } from '@/lib/prisma';
+import { BaseApiHandler } from '@/lib/api/baseHandler';
 
 interface LoginResponse {
   success: boolean;
@@ -13,47 +14,20 @@ interface LoginResponse {
   error?: string;
 }
 
-const ResponseFactory = {
-  createErrorResponse(message: string, status: number): NextResponse<LoginResponse> {
-    return NextResponse.json({ 
-      success: false, 
-      error: message 
-    }, { status });
-  },
-
-  createSuccessResponse(user: { email: string, userId: string }, idToken: string): NextResponse<LoginResponse> {
-    const response = NextResponse.json({ 
-      success: true,
-      user
-    });
-
-    response.cookies.set({
-      name: 'idToken',
-      value: idToken,
-      path: '/',
-      secure: false,
-      sameSite: 'lax',
-      httpOnly: true,
-    });
-
-    return response;
-  }
-};
-
 interface DecodedToken {
   email: string;
   sub: string;
 }
 
-const AuthHandler = {
-  async validateToken(idToken: string | undefined) {
+class LoginHandler extends BaseApiHandler {
+  private async validateToken(idToken: string | undefined): Promise<DecodedToken> {
     if (!idToken) {
       throw new Error('認証トークンがありません');
     }
     return await jose.decodeJwt(idToken) as DecodedToken;
-  },
+  }
 
-  async authenticate(email: string, password: string) {
+  private async authenticate(email: string, password: string) {
     const result = await signIn(email, password);
     const idToken = result?.AuthenticationResult?.IdToken;
     
@@ -70,37 +44,52 @@ const AuthHandler = {
       }
     };
   }
-};
 
-export async function POST(request: NextRequest) {
-  try {
-    const { email, password } = await request.json();
-    const { idToken, user} = await AuthHandler.authenticate(email, password);
+  async POST(request: NextRequest) {
+    try {
+      const { email, password } = await request.json();
+      const { idToken, user} = await this.authenticate(email, password);
 
-    await prisma.user.update({
-      where: { email: email },
-      data: { lastLoginAt: new Date() }
-    });
+      await prisma.user.update({
+        where: { email: email },
+        data: { lastLoginAt: new Date() }
+      });
 
-    // ログ記録を await する
-    await logger.action({
-      actionType: ActionLogType.USER.LOGIN,
-      userId: user.userId
-    });
-
-    return ResponseFactory.createSuccessResponse(user, idToken);
-  } catch (error) {
-    // エラーハンドリングもaction logを使用
-    if (error instanceof Error) {
       await logger.action({
         actionType: ActionLogType.USER.LOGIN,
-        userId: 'unknown',
-        metadata: {
-          error: error.message,
-          timestamp: new Date()
-        }
+        userId: user.userId
       });
+
+      const response = this.successResponse({ 
+        success: true,
+        user
+      });
+
+      response.cookies.set({
+        name: 'idToken',
+        value: idToken,
+        path: '/',
+        secure: false,
+        sameSite: 'lax',
+        httpOnly: true,
+      });
+
+      return response;
+    } catch (error) {
+      if (error instanceof Error) {
+        await logger.action({
+          actionType: ActionLogType.USER.LOGIN,
+          userId: 'unknown',
+          metadata: {
+            error: error.message,
+            timestamp: new Date()
+          }
+        });
+      }
+      return this.errorResponse('ログインに失敗しました', 500);
     }
-    return ResponseFactory.createErrorResponse('ログインに失敗しました', 500);
   }
 }
+
+const handler = new LoginHandler();
+export const POST = handler.POST.bind(handler);
