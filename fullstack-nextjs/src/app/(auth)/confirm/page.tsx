@@ -53,44 +53,43 @@ function ConfirmForm() {
   };
   
   return (
-    <>
-      <h1 className="text-2xl font-bold mt-8 px-4">メールアドレスの確認</h1>
-      <p className="mt-2 px-4 text-gray-300">
-        {email} に送信された確認コードを入力してください
-      </p>
+    <div className="container mx-auto px-4 py-8 flex justify-center items-center">
+      {error && (
+        <div className="bg-red-500 text-white p-4 mb-4 rounded">
+          {error}
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} className="mt-8 px-4 max-w-md">
-        <div className="space-y-6">
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow w-1/2">
+        <h1 className="text-2xl font-bold mb-6 text-white">メールアドレスの確認</h1>
+        <p className="text-gray-300 mb-6">
+          {email} に送信された確認コードを入力してください
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="code" className="block text-sm font-medium text-white">
+            <label className="block text-sm font-medium text-white mb-2">
               確認コード
             </label>
             <input
               type="text"
-              id="code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-black placeholder-gray-300"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-300"
               placeholder="123456"
               required
             />
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm">
-              {error}
-            </div>
-          )}
-
           <button
             type="submit"
-            className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
           >
             確認
           </button>
-        </div>
-      </form>
-    </>
+        </form>
+      </div>
+    </div>
   );
 }
 

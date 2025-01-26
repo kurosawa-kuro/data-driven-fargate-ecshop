@@ -48,14 +48,12 @@ const LoginPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 flex justify-center items-center">
       
-      
       {error && (
         <div className="bg-red-500 text-white p-4 mb-4 rounded">
           {error}
         </div>
       )}
 
-        {/* widthを指定したい */}
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow w-1/2">
         <h1 className="text-2xl font-bold mb-6 text-white">ログイン</h1>
         <p className="text-gray-300 mb-6">アカウントにログインしてください</p>
