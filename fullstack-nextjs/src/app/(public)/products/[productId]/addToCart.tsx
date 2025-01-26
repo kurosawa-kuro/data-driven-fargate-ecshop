@@ -11,8 +11,7 @@ interface ProductData {
 
 export function CartActions({ productData }: { productData: ProductData }) {
   const router = useRouter();
-  const { user } = useAuthStore();
-  console.log("addToCart - user:", user);
+  // const { user } = useAuthStore();
 
   const handleAddToCart = async () => {
     try {
