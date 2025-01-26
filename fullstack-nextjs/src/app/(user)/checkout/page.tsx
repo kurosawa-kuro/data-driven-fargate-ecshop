@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
+import { checkoutAPI } from '@/lib/api';
 
 interface OrderFormData {
   name: string;
@@ -61,21 +62,15 @@ export default function Page() {
     e.preventDefault();
 
     try {
-      await fetch('/api/checkout/confirm', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          address: formData.address,
-          cardNumber: formData.cardNumber,
-          expiryDate: formData.expiryDate,
-          securityCode: formData.securityCode,
-          deliveryDate: formData.deliveryDate,
-          paymentMethod: formData.paymentMethod
-        })
-      });
+      await checkoutAPI.confirmCheckout(
+        formData.name,
+        formData.address,
+        formData.cardNumber,
+        formData.expiryDate,
+        formData.securityCode,
+        formData.deliveryDate,
+        formData.paymentMethod
+      );
       router.push('/purchase');
     } catch (error) {
       logger.error('注文の確定に失敗しました', error as Error);

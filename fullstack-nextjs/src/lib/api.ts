@@ -1,3 +1,5 @@
+import { Purchase } from "@prisma/client";
+
 export const authAPI = {
   async register(email: string, password: string) {
     const response = await fetch('/api/auth/register', {
@@ -45,4 +47,40 @@ export const cartAPI = {
     });
     return response;
   }
+};
+
+export const checkoutAPI = {
+  async confirmCheckout(
+    name: string,
+    address: string,
+    cardNumber: string,
+    expiryDate: string,
+    securityCode: string,
+    deliveryDate: string,
+    paymentMethod: 'credit_card' | 'bank_transfer'
+  ) {
+    const response = await fetch('/api/checkout/confirm', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        address,
+        cardNumber,
+        expiryDate,
+        securityCode,
+        deliveryDate,
+        paymentMethod
+      })
+    });
+    return response;
+  }
+};
+
+export const fetchPurchases = async (): Promise<{ purchases: Purchase[] }> => {
+  const response = await fetch('/api/purchase', {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return response.json();
 }; 

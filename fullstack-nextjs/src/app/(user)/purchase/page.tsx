@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
+import { fetchPurchases } from '@/lib/api';
 
 // 型定義をまとめて管理
 type ActionType = 'return_request' | 'repurchase' | 'review_start';
@@ -28,27 +29,9 @@ interface Purchase {
   userId: string;
   totalAmount: number;
   purchasedAt: Date;
-  purchaseItems: PurchaseItem[];
+  purchaseItems?: PurchaseItem[];
 }
 
-// API通信用のユーティリティ関数
-const apiClient = {
-  // async logAction(actionType: ActionType, payload: Record<string, string>) {
-  //   return fetch('/api/log', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ actionType, ...payload })
-  //   });
-  // },
-
-  async addToCart(products: { productId: number; quantity: number }[]) {
-    return fetch('/api/cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ products })
-    });
-  }
-};
 
 // メインコンポーネント
 export default function Page() {
@@ -56,26 +39,20 @@ export default function Page() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
 
   useEffect(() => {
-    const fetchPurchases = async () => {
+    const loadPurchases = async () => {
       try {
-        const response = await fetch('/api/purchase',
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        const data = await response.json();
+        const data = await fetchPurchases();
         setPurchases(data.purchases);
       } catch (error) {
         logger.error('購入履歴取得エラー:', error as Error);
       }
     };
-    fetchPurchases();
+    loadPurchases();
   }, []);
 
   // アクションハンドラーをリファクタリング
   const handleReturn = async (orderId: string, productId: string) => {
     try {
-      // await apiClient.logAction('return_request', { orderId, productId });
       alert('返品リクエストを受け付けました。カスタマーサービスからご連絡いたします。');
     } catch (error) {
       logger.error('返品処理に失敗しました', error as Error);
@@ -84,15 +61,12 @@ export default function Page() {
 
   const handleRepurchase = async (products: { id: string; quantity: number }[]) => {
     try {
-      await apiClient.addToCart(
-        products.map(p => ({
-          productId: parseInt(p.id),
-          quantity: p.quantity
-        }))
-      );
-      // await apiClient.logAction('repurchase', {
-      //   products: products.map(p => p.id).join(',')
-      // });
+      // await apiClient.addToCart(
+      //   products.map(p => ({
+      //     productId: parseInt(p.id),
+      //     quantity: p.quantity
+      //   }))
+      // );
       router.push('/cart');
     } catch (error) {
       logger.error('再購入処理に失敗しました', error as Error);
@@ -101,7 +75,6 @@ export default function Page() {
 
   const handleReview = async (orderId: string, productId: string) => {
     try {
-      // await apiClient.logAction('review_start', { orderId, productId });
       router.push(`/reviews/new?orderId=${orderId}&productId=${productId}`);
     } catch (error) {
       logger.error('レビュー画面への遷移に失敗しました', error as Error);
@@ -124,7 +97,7 @@ export default function Page() {
             
             {/* 商品リスト */}
             <div className="space-y-4">
-              {order.purchaseItems.map((item) => (
+              {order.purchaseItems?.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
                   {/* 商品画像 */}
                   <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 relative">
