@@ -2,9 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { confirmSignUp} from '@/lib/auth/cognito';
-import { AdminGetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
-import { client } from '@/lib/auth/cognito';
+import { authAPI } from '@/lib/api';
 
 interface CognitoError extends Error {
   name: string;
@@ -30,14 +28,7 @@ function ConfirmForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/confirm', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, code }),
-      });
-
+      const response = await authAPI.confirm(email, code);
       const data = await response.json();
       
       if (!response.ok) {

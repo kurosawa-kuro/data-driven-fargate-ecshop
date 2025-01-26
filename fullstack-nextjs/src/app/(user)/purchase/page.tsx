@@ -33,13 +33,13 @@ interface Purchase {
 
 // API通信用のユーティリティ関数
 const apiClient = {
-  async logAction(actionType: ActionType, payload: Record<string, string>) {
-    return fetch('/api/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ actionType, ...payload })
-    });
-  },
+  // async logAction(actionType: ActionType, payload: Record<string, string>) {
+  //   return fetch('/api/log', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ actionType, ...payload })
+  //   });
+  // },
 
   async addToCart(products: { productId: number; quantity: number }[]) {
     return fetch('/api/cart', {
@@ -75,7 +75,7 @@ export default function Page() {
   // アクションハンドラーをリファクタリング
   const handleReturn = async (orderId: string, productId: string) => {
     try {
-      await apiClient.logAction('return_request', { orderId, productId });
+      // await apiClient.logAction('return_request', { orderId, productId });
       alert('返品リクエストを受け付けました。カスタマーサービスからご連絡いたします。');
     } catch (error) {
       logger.error('返品処理に失敗しました', error as Error);
@@ -90,9 +90,9 @@ export default function Page() {
           quantity: p.quantity
         }))
       );
-      await apiClient.logAction('repurchase', {
-        products: products.map(p => p.id).join(',')
-      });
+      // await apiClient.logAction('repurchase', {
+      //   products: products.map(p => p.id).join(',')
+      // });
       router.push('/cart');
     } catch (error) {
       logger.error('再購入処理に失敗しました', error as Error);
@@ -101,7 +101,7 @@ export default function Page() {
 
   const handleReview = async (orderId: string, productId: string) => {
     try {
-      await apiClient.logAction('review_start', { orderId, productId });
+      // await apiClient.logAction('review_start', { orderId, productId });
       router.push(`/reviews/new?orderId=${orderId}&productId=${productId}`);
     } catch (error) {
       logger.error('レビュー画面への遷移に失敗しました', error as Error);

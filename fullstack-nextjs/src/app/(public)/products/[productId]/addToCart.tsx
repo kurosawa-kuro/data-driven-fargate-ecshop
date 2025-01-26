@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
+import { cartAPI } from '@/lib/api';
 
 interface ProductData {
   id: number;
@@ -15,18 +16,7 @@ export function CartActions({ productData }: { productData: ProductData }) {
 
   const handleAddToCart = async () => {
     try {
-
-      const response = await fetch('/api/carts', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          productId: productData?.id
-        })
-      });
-
-      await response.json();
+      await cartAPI.addToCart(productData.id.toString());
     } catch (error) {
       console.error('Connection error:', error);
     }
