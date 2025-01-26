@@ -271,7 +271,7 @@ async function main() {
         }
       })
     ]);
-
+    
 
     // UserActionLogの作成を更新
     await Promise.all([
