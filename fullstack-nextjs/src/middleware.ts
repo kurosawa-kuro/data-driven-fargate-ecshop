@@ -16,25 +16,26 @@ export const config = {
   ],
 }
 
-// トークン取得とデコード処理を担当
-class TokenProcessor {
+// トークン取得専用クラス
+class TokenExtractor {
   private request: NextRequest;
 
   constructor(request: NextRequest) {
     this.request = request;
   }
 
-  // Cookieからトークンを取得
   getIdToken(): string | undefined {
-    const idToken = this.request.cookies.get('idToken')?.value || 
-                   this.request.headers.get('cookie')?.split(';')
-                     .find(c => c.trim().startsWith('idToken='))
-                     ?.split('=')[1];
+    const cookieToken = this.request.cookies.get('idToken')?.value;
+    const headerToken = this.request.headers.get('cookie')?.split(';')
+      .find(c => c.trim().startsWith('idToken='))
+      ?.split('=')[1];
 
-    return idToken;
+    return cookieToken || headerToken;
   }
+}
 
-  // トークンをデコードしてユーザー情報を取得
+// トークン検証専用クラス
+class TokenValidator {
   async decodeToken(idToken: string): Promise<{ email?: string, sub?: string } | null> {
     try {
       const decodedIdToken = await jose.decodeJwt(idToken);
@@ -52,7 +53,7 @@ class TokenProcessor {
   }
 }
 
-// ヘッダー処理を担当
+// ヘッダー管理専用クラス
 class HeaderManager {
   private headers: Headers;
 
@@ -64,7 +65,6 @@ class HeaderManager {
     this.headers.set('x-request-id', requestID);
   }
 
-  // ユーザー情報をヘッダーに設定
   setUserInfo(email: string, userId: string): void {
     this.headers.set('x-user-email', email);
     this.headers.set('x-user-id', userId);
@@ -75,37 +75,41 @@ class HeaderManager {
   }
 }
 
-// ログインが必要なページのパス
-const PROTECTED_PATHS = ['/carts', '/checkout', '/purchase'];
+// 認証チェック専用クラス
+class AuthGuard {
+  private static readonly PROTECTED_PATHS = ['/carts', '/checkout', '/purchase'];
+
+  static isProtectedPath(path: string): boolean {
+    return this.PROTECTED_PATHS.includes(path);
+  }
+
+  static redirectToLogin(request: NextRequest): NextResponse {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+}
 
 // メインのミドルウェア関数
 export async function middleware(request: NextRequest) {
-  console.log("hit middleware");
+  const requestID = Math.random().toString(36).substring(2, 15) + 
+                    Math.random().toString(36).substring(2, 15);
 
-  // ランダムでリクエストIDを生成
-  const requestID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  
-
-  const tokenProcessor = new TokenProcessor(request);
+  const tokenExtractor = new TokenExtractor(request);
+  const tokenValidator = new TokenValidator();
   const headerManager = new HeaderManager(request.headers);
   headerManager.setRequestId(requestID);
 
-  const idToken = tokenProcessor.getIdToken();
+  const idToken = tokenExtractor.getIdToken();
   
-  // ログイン済みかを確認
   if (idToken) {
-    const userInfo = await tokenProcessor.decodeToken(idToken);
+    const userInfo = await tokenValidator.decodeToken(idToken);
     if (userInfo?.email && userInfo.sub) {
       headerManager.setUserInfo(userInfo.email, userInfo.sub);    
     }
   }
 
-  // ログイン済みでないと入れないページにアクセスする場合の対処
-  const isProtectedPath = PROTECTED_PATHS.includes(request.nextUrl.pathname);
-  const isLoggedIn = headerManager.getHeaders().get('x-user-id');
-
-  if (isProtectedPath && !isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (AuthGuard.isProtectedPath(request.nextUrl.pathname) && 
+      !headerManager.getHeaders().get('x-user-id')) {
+    return AuthGuard.redirectToLogin(request);
   }
 
   return NextResponse.next({
