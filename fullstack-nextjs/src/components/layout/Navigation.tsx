@@ -18,10 +18,10 @@ export default function Navigation() {
       { href: '/login', label: 'ログイン' },
       { href: '/register', label: 'ユーザー登録' }
     );
-    menuItems.push({ href: '/carts', label: 'カート' });
   } else {
     // ログイン済みの場合のみログアウトリンクを追加
     menuItems.push({ href: '/carts', label: 'カート' });
+    menuItems.push({ href: '/purchase', label: '注文履歴' });
     menuItems.push({ href: '/logout', label: 'ログアウト' });
   }
 

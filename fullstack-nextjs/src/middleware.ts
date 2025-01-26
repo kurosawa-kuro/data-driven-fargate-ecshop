@@ -75,6 +75,9 @@ class HeaderManager {
   }
 }
 
+// ログインが必要なページのパス
+const PROTECTED_PATHS = ['/carts', '/checkout', '/purchase'];
+
 // メインのミドルウェア関数
 export async function middleware(request: NextRequest) {
   console.log("hit middleware");
@@ -97,11 +100,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  console.log("request.nextUrl.pathname",request.nextUrl.pathname);
-  console.log("headerManager.getHeaders().get('x-user-id')",headerManager.getHeaders().get('x-user-id'));
-  // ログイン済みでないと入れないページ(/carts)にアクセスする場合の対処
-  if (request.nextUrl.pathname === '/carts' && !headerManager.getHeaders().get('x-user-id')) {
-    console.log("request.nextUrl.pathname",request.nextUrl.pathname);
+  // ログイン済みでないと入れないページにアクセスする場合の対処
+  const isProtectedPath = PROTECTED_PATHS.includes(request.nextUrl.pathname);
+  const isLoggedIn = headerManager.getHeaders().get('x-user-id');
+
+  if (isProtectedPath && !isLoggedIn) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
