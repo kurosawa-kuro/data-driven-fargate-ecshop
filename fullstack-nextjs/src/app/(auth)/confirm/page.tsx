@@ -27,19 +27,28 @@ function ConfirmForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await authAPI.confirm(email, code);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
+    
+    // 確認コードのバリデーション
+    if (!/^\d{6}$/.test(code)) {
+      setError('確認コードは6桁の数字で入力してください');
+      return;
+    }
 
+    try {
+      await authAPI.confirm(email, code);
       router.push('/login');
     } catch (err: unknown) {
       console.error('Confirmation error:', err);
-      const error = err as Error;
-      setError(error.message || '確認コードの検証に失敗しました');
+      if (err instanceof Error) {
+        // Cognitoのエラーメッセージをユーザーフレンドリーに変換
+        if (err.name === 'CodeMismatchException') {
+          setError('確認コードが正しくありません。再度お試しください。');
+        } else {
+          setError(err.message || '確認コードの検証に失敗しました');
+        }
+      } else {
+        setError('予期せぬエラーが発生しました');
+      }
     }
   };
   

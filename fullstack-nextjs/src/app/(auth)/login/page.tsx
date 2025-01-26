@@ -24,9 +24,11 @@ const useLoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await authAPI.login(email, password);
-      const data = await response.json();
+      console.log("Attempting login with:", { email, password });
+      const data = await authAPI.login(email, password);
       
+      console.log("Login response:", data);
+
       if (data.success) {
         useAuthStore.getState().setUser(data.user);
         router.push('/products');
@@ -34,6 +36,7 @@ const useLoginForm = () => {
         setError(data.error || 'ログインに失敗しました');
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError('ログインに失敗しました');
     }
   };

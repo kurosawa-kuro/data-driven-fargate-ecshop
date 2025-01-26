@@ -14,12 +14,7 @@ function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await authAPI.register(email, password);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
+      const data = await authAPI.register(email, password);
       
       // 確認ページへリダイレクト
       router.push(`/confirm?email=${encodeURIComponent(email)}`);

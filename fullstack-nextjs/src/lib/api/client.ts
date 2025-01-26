@@ -89,7 +89,10 @@ const executeRequest = async (
     ...options
   });
 
-  return response.headers.get('content-type')?.includes('application/json')
-    ? response.json()
-    : response;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Request failed');
+  }
+
+  return response.json();
 }; 
