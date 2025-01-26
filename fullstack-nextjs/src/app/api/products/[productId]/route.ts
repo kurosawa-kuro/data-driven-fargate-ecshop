@@ -1,18 +1,35 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { BaseApiHandler } from '@/lib/api/baseHandler';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ productId: string }> }
-) {
-  try {
-    const { productId } = await params;
-    const product = await prisma.product.findUnique({
-      where: { id: parseInt(productId) }
-    });
-    return NextResponse.json({ product });
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 });
+class ProductDetailHandler extends BaseApiHandler {
+  async GET(
+    request: Request,
+    { params }: { params: Promise<{ productId: string }> }
+  ) {
+    try {
+      const { userId } = await this.getHeaders();
+      
+      // paramsをawaitしてから商品IDを取得
+      const { productId } = await params;
+
+      // 商品詳細を取得
+      const product = await prisma.product.findUnique({
+        where: { id: parseInt(productId) }
+      });
+
+      if (!product) {
+        return this.errorResponse('商品が見つかりません', 404);
+      }
+
+      return this.successResponse({ 
+        product,
+        user: { userId } // ユーザーIDをレスポンスに含める
+      });
+    } catch (error) {
+      return this.handleError(error, '商品詳細の取得に失敗しました');
+    }
   }
 }
+
+const handler = new ProductDetailHandler();
+export const GET = handler.GET.bind(handler);
