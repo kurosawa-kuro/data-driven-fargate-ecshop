@@ -1,35 +1,48 @@
 generator client {
   provider = "prisma-client-js"
 }
-
-//  url      = "postgresql://dbmasteruser:><hM[$nYWYo9IiLwjLSw*tJ]QCoClhF8@ls-c5dca5e45b3069dcb242e4c62d9d49109e066d84.cne06q42yf5d.ap-northeast-1.rds.amazonaws.com:5432/dbmaster?sslmode=require"
-
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://dbmasteruser:><hM[$nYWYo9IiLwjLSw*tJ]QCoClhF8@ls-c5dca5e45b3069dcb242e4c62d9d49109e066d84.cne06q42yf5d.ap-northeast-1.rds.amazonaws.com:5432/dbmaster?sslmode=require"
+  url      = "postgresql://postgres:postgres@localhost:5432/training?sslmode=require"
 }
 
 model User {
-  // Cognitoとの連携のため修正
-  id              String    @id           // CognitoのsubをIDとして使用
+  id              String    @id
   email           String    @unique
-  cognitoId       String    @unique      // Cognito User Pool IDとの紐付け
-  
-  // 認証関連の情報追加
+  cognitoId       String    @unique
   emailVerified   Boolean   @default(false)
   lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-
-  // ステータス管理
-  status          UserStatus @default(ACTIVE)  // ACTIVE, DISABLED, DELETED など
-
-  // リレーション（既存）
+  status          UserStatus @default(ACTIVE)
   userRoles       UserRole[]
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchases       Purchase[]
   returns         Return[]
+}
+
+model TopPage {
+  id          Int       @id @default(autoincrement())
+  productId   Int
+  displayType DisplayType
+  sortOrder   Int       @default(0)
+  saleStartAt DateTime?
+  saleEndAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@index([displayType, sortOrder])
+  @@index([productId])
+  @@index([saleStartAt, saleEndAt])
+}
+
+enum DisplayType {
+  FEATURE_SALE
+  RECOMMENDED
+  TIME_SALE
 }
 
 enum UserStatus {
@@ -43,7 +56,6 @@ model Role {
   name            String    @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
   userRoles       UserRole[]
 }
 
@@ -51,39 +63,36 @@ model UserRole {
   userId          String
   roleId          Int
   assignedAt      DateTime  @default(now())
-  
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
+  
   @@id([userId, roleId])
   @@index([userId])
   @@index([roleId])
 }
 
-
-// 商品関連
 model Product {
   id              Int       @id @default(autoincrement())
   name            String
   price           Float
+  discountRate    Float?
   rating          Float
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
-  // リレーション
+  topPage         TopPage[]
   productCategories ProductCategory[]
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
   purchaseItems   PurchaseItem[]
   returnItems     ReturnItem[]
 }
-// カテゴリー
+
 model Category {
   id              Int       @id @default(autoincrement())
   name            String    @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
   productCategories ProductCategory[]
 }
 
@@ -94,121 +103,95 @@ model ProductCategory {
   
   product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
+  
   @@id([productId, categoryId])
   @@index([productId])
   @@index([categoryId])
 }
 
-
-// 閲覧履歴（Random Forest, Logistic Regression用）
 model ViewHistory {
   id          Int       @id @default(autoincrement())
   userId      String
   productId   Int
   viewedAt    DateTime  @default(now())
-
-  // リレーション
+  
   user        User      @relation(fields: [userId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
+  
   @@index([userId])
   @@index([productId])
   @@unique([userId, productId, viewedAt])
 }
 
-// カート（K-means用）
 model CartItem {
   id          Int       @id @default(autoincrement())
   userId      String
   productId   Int
   quantity    Int       @default(1)
   addedAt     DateTime  @default(now())
-
-  // リレーション
+  
   user        User      @relation(fields: [userId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
 }
 
-// 購入履歴（Linear Regression, PCA用）
 model Purchase {
   id          Int       @id @default(autoincrement())
   userId      String
   totalAmount Float
   purchasedAt DateTime  @default(now())
-
-  // リレーション
+  
   user          User            @relation(fields: [userId], references: [id])
   purchaseItems PurchaseItem[]
   returns       Return[]
+  
   @@index([userId])
 }
 
-// 購入商品詳細
 model PurchaseItem {
   id          Int       @id @default(autoincrement())
   purchaseId  Int
   productId   Int
   quantity    Int
-  price       Float     // 購入時の価格を保存
-
-  // リレーション
+  price       Float
+  
   purchase    Purchase  @relation(fields: [purchaseId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
+  
   @@index([purchaseId])
   @@index([productId])
 }
 
 model UserActionLog {
   id          Int       @id @default(autoincrement())
-  requestID   String?   // リクエストIDを追加
+  requestID   String?
   userId      String
   actionType  ActionType
-
-
-  // 商品関連のアクション用
   productId   Int?
-
-  // カート関連のアクション用
   cartItemId  Int?
-  quantity    Int?      // CART_UPDATE用
-  savedForLater Boolean? // CART_SAVE_FOR_LATER用
-
-  // チェックアウト関連のアクション用
+  quantity    Int?
+  savedForLater Boolean?
   purchaseId  Int?
-  paymentErrorDetails String? // PAYMENT_ERROR用
-
-  // 返品関連のアクション用
+  paymentErrorDetails String?
   returnId    Int?
-  returnReason String? // RETURN_REQUESTED用
-
-  // レビュー関連のアクション用
-  reviewText  String?  // PRODUCT_REVIEW用
-  rating      Float?   // PRODUCT_REVIEW用
-
-  // ユーザーアクション関連
-  deleteReason String?   // DELETE_ACCOUNT用
-
-  // メタデータフィールド
+  returnReason String?
+  reviewText  String?
+  rating      Float?
+  deleteReason String?
   metadata    Json?
   createdAt   DateTime  @default(now())
-
+  
   @@index([userId, actionType, createdAt])
-  @@index([requestID])  // リクエストIDのインデックスを追加
+  @@index([requestID])
 }
 
 enum ActionType {
-  // カート操作（在庫影響）
   CART_ADD
   CART_REMOVE
   CART_UPDATE
-
-  // 購入・返品（売上影響）
   COMPLETE_PURCHASE
   PURCHASE_CANCEL
   RETURN_REQUESTED
   RETURN_COMPLETED
-
-  // ユーザーアカウント管理
   USER_REGISTER_START
   USER_REGISTER_COMPLETE
   PROFILE_UPDATE
@@ -228,7 +211,7 @@ model Return {
   purchase     Purchase  @relation(fields: [purchaseId], references: [id])
   returnItems  ReturnItem[]
   user         User      @relation(fields: [userId], references: [id])
-
+  
   @@index([purchaseId])
   @@index([userId])
 }
@@ -241,7 +224,7 @@ model ReturnItem {
   
   return      Return    @relation(fields: [returnId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
-
+  
   @@index([returnId])
   @@index([productId])
 }
