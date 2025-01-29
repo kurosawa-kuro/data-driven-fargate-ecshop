@@ -4,8 +4,6 @@ from awsglue.utils import getResolvedOptions
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.context import SparkContext
-from awsglue.dynamicframe import DynamicFrame
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 import boto3
 
 # JOB_NAME のみを取得
@@ -16,9 +14,9 @@ DATABASE_NAME = "anshin-db"
 TABLE_NAME = "anshin_sales"
 SOURCE_PATH = "s3://anshin-bucket-mini-01/formatted-data/sales"
 
+# Sparkコンテキストの初期化
 sc = SparkContext()
 glueContext = GlueContext(sc)
-spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
@@ -69,27 +67,5 @@ def create_table():
 # テーブルが存在しない場合は作成
 create_table()
 
-# データの読み込み
-dynamic_frame = glueContext.create_dynamic_frame.from_options(
-    connection_type="s3",
-    connection_options={"paths": [SOURCE_PATH]},
-    format="csv",
-    format_options={
-        "withHeader": True,
-        "separator": ","
-    }
-)
-
-# テーブル更新
-glueContext.write_dynamic_frame.from_catalog(
-    frame=dynamic_frame,
-    database=DATABASE_NAME,
-    table_name=TABLE_NAME,
-    transformation_ctx="write_catalog",
-    additional_options={
-        "enableUpdateCatalog": True,
-        "updateBehavior": "UPDATE_IN_DATABASE"
-    }
-)
-
+# ジョブを完了
 job.commit()

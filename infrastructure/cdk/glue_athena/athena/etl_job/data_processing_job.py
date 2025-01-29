@@ -72,14 +72,24 @@ def rename_columns(df):
     )
 
 def save_data(glueContext, df, target_bucket):
+    # 必要なカラムのみを選択し、順序を保証
+    df = df.select(
+        "order_date",
+        "category",
+        "name",
+        "unit_price",
+        "amount"
+    )
+    
     transformed_dynamic_frame = DynamicFrame.fromDF(df, glueContext, "transformed_dynamic_frame")
+    
     glueContext.write_dynamic_frame.from_options(
         frame=transformed_dynamic_frame,
         connection_type="s3",
         connection_options={"path": target_bucket},
         format="csv",
         format_options={
-            "writeHeader": True,
+            "writeHeader": False,  # ヘッダーを書き込まない
             "quoteChar": -1
         }
     )
