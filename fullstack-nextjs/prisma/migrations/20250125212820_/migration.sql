@@ -16,7 +16,7 @@ ALTER TABLE "UserActionLog" DROP CONSTRAINT "UserActionLog_cartItemId_fkey";
 ALTER TABLE "UserActionLog" DROP CONSTRAINT "UserActionLog_productId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "UserActionLog" DROP CONSTRAINT "UserActionLog_purchaseId_fkey";
+ALTER TABLE "UserActionLog" DROP CONSTRAINT "UserActionLog_orderId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "UserActionLog" DROP CONSTRAINT "UserActionLog_userId_fkey";
@@ -34,7 +34,7 @@ DROP INDEX "UserActionLog_cartItemId_idx";
 DROP INDEX "UserActionLog_productId_idx";
 
 -- DropIndex
-DROP INDEX "UserActionLog_purchaseId_idx";
+DROP INDEX "UserActionLog_orderId_idx";
 
 -- AlterTable
 ALTER TABLE "UserActionLog" DROP COLUMN "addressData",

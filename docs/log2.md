@@ -18,7 +18,7 @@ interface AthenaLogEntry {
 
   // アクション情報
   action: {
-    category: string;       // Pre_Purchase/Post_Purchase/USER
+    category: string;       // Pre_Order/Post_Order/USER
     type: string;          // VIEW/SEARCH等
     sub_type: string;      // 詳細アクション
   };
@@ -49,8 +49,8 @@ interface AthenaLogEntry {
   };
 
   // 購入関連
-  purchase_data?: {
-    purchase_id: string;
+  Order_data?: {
+    Order_id: string;
     total_amount: number;
     payment_method: string;
     shipping_method: string;
@@ -84,21 +84,21 @@ WITH product_views AS (
   WHERE action.type = 'PRODUCT_VIEW'
   GROUP BY product_data.product_id
 ),
-product_purchases AS (
+product_orders AS (
   SELECT 
     product_data.product_id,
-    COUNT(*) as purchase_count
+    COUNT(*) as Order_count
   FROM logs
-  WHERE action.type = 'COMPLETE_PURCHASE'
+  WHERE action.type = 'COMPLETE_ORDER'
   GROUP BY product_data.product_id
 )
 SELECT 
   pv.product_id,
   pv.view_count,
-  COALESCE(pp.purchase_count, 0) as purchase_count,
-  (CAST(pp.purchase_count AS DOUBLE) / pv.view_count) * 100 as conversion_rate
+  COALESCE(pp.Order_count, 0) as Order_count,
+  (CAST(pp.Order_count AS DOUBLE) / pv.view_count) * 100 as conversion_rate
 FROM product_views pv
-LEFT JOIN product_purchases pp ON pv.product_id = pp.product_id;
+LEFT JOIN product_orders pp ON pv.product_id = pp.product_id;
 
 -- ユーザーのファネル分析
 SELECT 
@@ -106,7 +106,7 @@ SELECT
   COUNT(CASE WHEN action.type = 'PRODUCT_VIEW' THEN 1 END) as view_count,
   COUNT(CASE WHEN action.type = 'CART_ADD' THEN 1 END) as cart_add_count,
   COUNT(CASE WHEN action.type = 'CHECKOUT_START' THEN 1 END) as checkout_starts,
-  COUNT(CASE WHEN action.type = 'COMPLETE_PURCHASE' THEN 1 END) as purchases
+  COUNT(CASE WHEN action.type = 'COMPLETE_ORDER' THEN 1 END) as orders
 FROM logs
 GROUP BY user_id;
 ```

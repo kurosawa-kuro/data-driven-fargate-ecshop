@@ -17,8 +17,8 @@ async function cleanAllTables() {
       DELETE FROM "ReturnItem";
       DELETE FROM "Return";
       DELETE FROM "UserActionLog";
-      DELETE FROM "PurchaseItem";
-      DELETE FROM "Purchase";
+      DELETE FROM "OrderItem";
+      DELETE FROM "Order";
       DELETE FROM "CartItem";
       DELETE FROM "ViewHistory";
       DELETE FROM "ProductCategory";
@@ -31,8 +31,8 @@ async function cleanAllTables() {
       ALTER SEQUENCE "ReturnItem_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "Return_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "UserActionLog_id_seq" RESTART WITH 1;
-      ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1;
-      ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "OrderItem_id_seq" RESTART WITH 1;
+      ALTER SEQUENCE "Order_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "CartItem_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "ViewHistory_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "Category_id_seq" RESTART WITH 1;
@@ -295,6 +295,22 @@ async function main() {
         }
       })
     ]);
+
+    // OrderとOrderItemの作成例
+    const order = await prisma.order.create({
+      data: {
+        userId: users[0].id,
+        totalAmount: 999.99,
+        orderedAt: new Date(),
+        orderItems: {
+          create: {
+            productId: products[0].id,
+            quantity: 1,
+            price: 999.99
+          }
+        }
+      }
+    });
 
     console.log("シードプロセスが完了しました");
   } catch (error: unknown) {

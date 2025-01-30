@@ -48,7 +48,7 @@ Content-Type: application/json
 GET {{localBaseUrl}}/api/cart
 
 ### 購入履歴取得
-GET {{localBaseUrl}}/api/purchase
+GET {{localBaseUrl}}/api/Order
 
 ### 閲覧履歴取得
 POST {{localBaseUrl}}/api/view-history

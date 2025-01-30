@@ -49,10 +49,10 @@ AWS Athenaでの分析を前提としたログ設計を提案します：
 ```json
 {
   "timestamp": "2024-01-22T10:05:00.000Z",
-  "event_type": "purchase",
+  "event_type": "Order",
   "user_id": "123",
   "session_id": "abc123xyz",
-  "purchase_id": "order_789",
+  "Order_id": "order_789",
   "total_amount": 3000,
   "items": [
     {
@@ -62,7 +62,7 @@ AWS Athenaでの分析を前提としたログ設計を提案します：
       "category_ids": [1, 3]
     }
   ],
-  "cart_to_purchase_duration": 180  // カート追加から購入までの秒数
+  "cart_to_Order_duration": 180  // カート追加から購入までの秒数
 }
 ```
 
@@ -92,11 +92,11 @@ WITH product_views AS (
   WHERE date_trunc('month', timestamp) = '2024-01-01'
   GROUP BY category_ids
 ),
-purchases AS (
+orders AS (
   SELECT 
     i.category_ids,
-    COUNT(*) as purchase_count
-  FROM purchase_logs p
+    COUNT(*) as Order_count
+  FROM Order_logs p
   CROSS JOIN UNNEST(items) AS i
   WHERE date_trunc('month', timestamp) = '2024-01-01'
   GROUP BY i.category_ids
@@ -104,10 +104,10 @@ purchases AS (
 SELECT 
   pv.category_ids,
   pv.view_count,
-  p.purchase_count,
-  (p.purchase_count::float / pv.view_count) as conversion_rate
+  p.Order_count,
+  (p.Order_count::float / pv.view_count) as conversion_rate
 FROM product_views pv
-LEFT JOIN purchases p ON pv.category_ids = p.category_ids;
+LEFT JOIN orders p ON pv.category_ids = p.category_ids;
 ```
 
 ログ実装例：

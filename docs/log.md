@@ -23,7 +23,7 @@
         {"Name": "product_id", "Type": "bigint"},
         {"Name": "quantity", "Type": "int"},
         {"Name": "cart_item_id", "Type": "bigint"},
-        {"Name": "purchase_id", "Type": "bigint"},
+        {"Name": "Order_id", "Type": "bigint"},
         {"Name": "search_query", "Type": "string"},
         {"Name": "filter_conditions", "Type": "map<string,string>"},
         {"Name": "sort_order", "Type": "string"},
@@ -76,7 +76,7 @@
 | **アクションコンテキスト** | product_id       | BIGINT         | 関連商品ID                                                          |
 |                | quantity             | INT            | 数量（カート操作など）                                              |
 |                | cart_item_id         | BIGINT         | カートアイテムID                                                    |
-|                | purchase_id          | BIGINT         | 購入ID                                                              |
+|                | Order_id          | BIGINT         | 購入ID                                                              |
 |                | search_query         | STRING         | 検索クエリ                                                          |
 |                | filter_conditions    | MAP<STRING,STRING> | フィルタ条件（価格範囲、カテゴリ等）                             |
 |                | sort_order           | STRING         | ソート順（例: price_asc）                                            |
@@ -108,7 +108,7 @@ s3://your-log-bucket/path/
 | CART_ADD                 | product_id, quantity                     | cart_total_amount                        |
 | CHECKOUT_START           | cart_item_ids（配列）, payment_method    | applied_coupons                          |
 | PAYMENT_ERROR            | error_code, payment_method               | retry_count, failure_reason              |
-| PURCHASE_DELIVERY_STATUS | purchase_id, delivery_status             | estimated_delivery_date                  |
+| Order_DELIVERY_STATUS | Order_id, delivery_status             | estimated_delivery_date                  |
 
 ### 5. Athena向け最適化ポイント
 1. **ネスト構造の最小化**: MAP/ARRAY型は分析クエリのパフォーマンスに影響するため、重要なフィールドはトップレベルに展開

@@ -1,6 +1,6 @@
 import { BaseApiHandler } from '@/lib/api/handler';
 
-class RepurchaseHandler extends BaseApiHandler {
+class ReOrderHandler extends BaseApiHandler {
   async POST() {
     try {
       console.log("再度購入リクエストを受け付けました");
@@ -12,5 +12,5 @@ class RepurchaseHandler extends BaseApiHandler {
   }
 }
 
-const handler = new RepurchaseHandler();
+const handler = new ReOrderHandler();
 export const POST = handler.POST.bind(handler);

@@ -2,7 +2,7 @@
 CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'DISABLED', 'DELETED');
 
 -- CreateEnum
-CREATE TYPE "ActionType" AS ENUM ('CART_ADD', 'CART_REMOVE', 'CART_UPDATE', 'COMPLETE_PURCHASE', 'PURCHASE_CANCEL', 'RETURN_REQUESTED', 'RETURN_COMPLETED', 'USER_REGISTER_START', 'USER_REGISTER_COMPLETE', 'PROFILE_UPDATE', 'DELETE_ACCOUNT');
+CREATE TYPE "ActionType" AS ENUM ('CART_ADD', 'CART_REMOVE', 'CART_UPDATE', 'COMPLETE_ORDER', 'ORDER_CANCEL', 'RETURN_REQUESTED', 'RETURN_COMPLETED', 'USER_REGISTER_START', 'USER_REGISTER_COMPLETE', 'PROFILE_UPDATE', 'DELETE_ACCOUNT');
 
 -- CreateEnum
 CREATE TYPE "ReturnStatus" AS ENUM ('REQUESTED', 'APPROVED', 'REJECTED', 'COMPLETED');
@@ -93,24 +93,24 @@ CREATE TABLE "CartItem" (
 );
 
 -- CreateTable
-CREATE TABLE "Purchase" (
+CREATE TABLE "Order" (
     "id" SERIAL NOT NULL,
     "userId" TEXT NOT NULL,
     "totalAmount" DOUBLE PRECISION NOT NULL,
-    "purchasedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "orderedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Purchase_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "PurchaseItem" (
+CREATE TABLE "OrderItem" (
     "id" SERIAL NOT NULL,
-    "purchaseId" INTEGER NOT NULL,
+    "orderId" INTEGER NOT NULL,
     "productId" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
 
-    CONSTRAINT "PurchaseItem_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -126,7 +126,7 @@ CREATE TABLE "UserActionLog" (
     "cartItemId" INTEGER,
     "quantity" INTEGER,
     "savedForLater" BOOLEAN,
-    "purchaseId" INTEGER,
+    "orderId" INTEGER,
     "paymentErrorDetails" TEXT,
     "addressData" JSONB,
     "returnId" INTEGER,
@@ -144,7 +144,7 @@ CREATE TABLE "UserActionLog" (
 -- CreateTable
 CREATE TABLE "Return" (
     "id" SERIAL NOT NULL,
-    "purchaseId" INTEGER NOT NULL,
+    "orderId" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
     "returnedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" "ReturnStatus" NOT NULL DEFAULT 'REQUESTED',
@@ -203,13 +203,13 @@ CREATE INDEX "CartItem_userId_idx" ON "CartItem"("userId");
 CREATE INDEX "CartItem_productId_idx" ON "CartItem"("productId");
 
 -- CreateIndex
-CREATE INDEX "Purchase_userId_idx" ON "Purchase"("userId");
+CREATE INDEX "Order_userId_idx" ON "Order"("userId");
 
 -- CreateIndex
-CREATE INDEX "PurchaseItem_purchaseId_idx" ON "PurchaseItem"("purchaseId");
+CREATE INDEX "OrderItem_orderId_idx" ON "OrderItem"("orderId");
 
 -- CreateIndex
-CREATE INDEX "PurchaseItem_productId_idx" ON "PurchaseItem"("productId");
+CREATE INDEX "OrderItem_productId_idx" ON "OrderItem"("productId");
 
 -- CreateIndex
 CREATE INDEX "UserActionLog_userId_actionType_createdAt_idx" ON "UserActionLog"("userId", "actionType", "createdAt");
@@ -221,10 +221,10 @@ CREATE INDEX "UserActionLog_productId_idx" ON "UserActionLog"("productId");
 CREATE INDEX "UserActionLog_cartItemId_idx" ON "UserActionLog"("cartItemId");
 
 -- CreateIndex
-CREATE INDEX "UserActionLog_purchaseId_idx" ON "UserActionLog"("purchaseId");
+CREATE INDEX "UserActionLog_orderId_idx" ON "UserActionLog"("orderId");
 
 -- CreateIndex
-CREATE INDEX "Return_purchaseId_idx" ON "Return"("purchaseId");
+CREATE INDEX "Return_orderId_idx" ON "Return"("orderId");
 
 -- CreateIndex
 CREATE INDEX "Return_userId_idx" ON "Return"("userId");
@@ -260,13 +260,13 @@ ALTER TABLE "CartItem" ADD CONSTRAINT "CartItem_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "CartItem" ADD CONSTRAINT "CartItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Purchase" ADD CONSTRAINT "Purchase_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PurchaseItem" ADD CONSTRAINT "PurchaseItem_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "Purchase"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PurchaseItem" ADD CONSTRAINT "PurchaseItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -278,10 +278,10 @@ ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_productId_fkey" FOREIG
 ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_cartItemId_fkey" FOREIGN KEY ("cartItemId") REFERENCES "CartItem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "Purchase"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "UserActionLog" ADD CONSTRAINT "UserActionLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Return" ADD CONSTRAINT "Return_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "Purchase"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Return" ADD CONSTRAINT "Return_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Return" ADD CONSTRAINT "Return_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

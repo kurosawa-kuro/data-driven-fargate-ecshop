@@ -18,7 +18,7 @@ model User {
   userRoles       UserRole[]
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
-  purchases       Purchase[]
+  orders       Order[]
   returns         Return[]
 }
 
@@ -84,7 +84,7 @@ model Product {
   productCategories ProductCategory[]
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
-  purchaseItems   PurchaseItem[]
+  orderItems   OrderItem[]
   returnItems     ReturnItem[]
 }
 
@@ -134,30 +134,30 @@ model CartItem {
   product     Product   @relation(fields: [productId], references: [id])
 }
 
-model Purchase {
+model Order {
   id          Int       @id @default(autoincrement())
   userId      String
   totalAmount Float
-  purchasedAt DateTime  @default(now())
+  orderedAt DateTime  @default(now())
   
   user          User            @relation(fields: [userId], references: [id])
-  purchaseItems PurchaseItem[]
+  orderItems OrderItem[]
   returns       Return[]
   
   @@index([userId])
 }
 
-model PurchaseItem {
+model OrderItem {
   id          Int       @id @default(autoincrement())
-  purchaseId  Int
+  orderId  Int
   productId   Int
   quantity    Int
   price       Float
   
-  purchase    Purchase  @relation(fields: [purchaseId], references: [id])
+  Order    Order  @relation(fields: [orderId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
   
-  @@index([purchaseId])
+  @@index([orderId])
   @@index([productId])
 }
 
@@ -170,7 +170,7 @@ model UserActionLog {
   cartItemId  Int?
   quantity    Int?
   savedForLater Boolean?
-  purchaseId  Int?
+  orderId  Int?
   paymentErrorDetails String?
   returnId    Int?
   returnReason String?
@@ -188,8 +188,8 @@ enum ActionType {
   CART_ADD
   CART_REMOVE
   CART_UPDATE
-  COMPLETE_PURCHASE
-  PURCHASE_CANCEL
+  COMPLETE_ORDER
+  ORDER_CANCEL
   RETURN_REQUESTED
   RETURN_COMPLETED
   USER_REGISTER_START
@@ -202,17 +202,17 @@ enum ActionType {
 
 model Return {
   id           Int       @id @default(autoincrement())
-  purchaseId   Int
+  orderId   Int
   userId       String
   returnedAt   DateTime  @default(now())
   status       ReturnStatus @default(REQUESTED)
   reason       String
   
-  purchase     Purchase  @relation(fields: [purchaseId], references: [id])
+  Order     Order  @relation(fields: [orderId], references: [id])
   returnItems  ReturnItem[]
   user         User      @relation(fields: [userId], references: [id])
   
-  @@index([purchaseId])
+  @@index([orderId])
   @@index([userId])
 }
 

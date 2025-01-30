@@ -16,7 +16,7 @@ model User {
   // リレーション
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
-  purchases       Purchase[]
+  orders       Order[]
 }
 // 商品関連
 model Product {
@@ -31,7 +31,7 @@ model Product {
   category        Category      @relation(fields: [categoryId], references: [id])
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
-  purchaseItems   PurchaseItem[]
+  orderItems   OrderItem[]
   @@index([categoryId])
 }
 // カテゴリー
@@ -68,34 +68,34 @@ model CartItem {
   @@index([productId])
 }
 // 購入履歴（Linear Regression, PCA用）
-model Purchase {
+model Order {
   id          Int       @id @default(autoincrement())
   userId      Int
   totalAmount Float
-  purchasedAt DateTime  @default(now())
+  orderedAt DateTime  @default(now())
 
   // リレーション
   user          User            @relation(fields: [userId], references: [id])
-  purchaseItems PurchaseItem[]
+  orderItems OrderItem[]
   @@index([userId])
 }
 // 購入商品詳細
-model PurchaseItem {
+model OrderItem {
   id          Int       @id @default(autoincrement())
-  purchaseId  Int
+  orderId  Int
   productId   Int
   quantity    Int
   price       Float     // 購入時の価格を保存
 
   // リレーション
-  purchase    Purchase  @relation(fields: [purchaseId], references: [id])
+  Order    Order  @relation(fields: [orderId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
-  @@index([purchaseId])
+  @@index([orderId])
   @@index([productId])
 }
 このスキーマで収集できるデータと対応する機械学習モデル：
 ランダムフォレスト：
-ViewHistory + Product + Purchase テーブルから
+ViewHistory + Product + Order テーブルから
 特徴量：閲覧回数、商品属性
 目的変数：購入有無
 ロジスティック回帰：
@@ -107,10 +107,10 @@ ViewHistory テーブルから
 特徴量：時間帯、商品属性
 目的変数：閲覧数推移
 K-means：
-CartItem + Purchase テーブルから
+CartItem + Order テーブルから
 ユーザーの購買行動クラスタリング
 PCA：
-Product + ViewHistory + Purchase テーブルから
+Product + ViewHistory + Order テーブルから
 商品特性の次元削減
 主要な特徴：
 必要最小限のテーブル構成

@@ -9,8 +9,8 @@ const DB_STORED_ACTIONS = [
   'CART_ADD',
   'CART_REMOVE', 
   'CART_UPDATE',
-  'COMPLETE_PURCHASE',
-  'PURCHASE_CANCEL',
+  'COMPLETE_ORDER',
+  'ORDER_CANCEL',
   'RETURN_REQUESTED',
   'RETURN_COMPLETED',
   // ユーザー関連
@@ -36,13 +36,13 @@ const LOG_ONLY_ACTIONS = [
   'PAYMENT_ERROR',
   'ADDRESS_UPDATE',
   // その他
-  'PURCHASE_DELIVERY_STATUS_VIEW',
+  'Order_DELIVERY_STATUS_VIEW',
   'PASSWORD_CHANGE'
 ] as const;
 
 // この動的に生成する方のみを残す
 export const ActionLogType = {
-  Pre_Purchase: {
+  Pre_Order: {
     PRODUCT: {
       VIEW: 'PRODUCT_VIEW',
       SEARCH: 'PRODUCT_SEARCH',
@@ -57,22 +57,22 @@ export const ActionLogType = {
     },
     CHECKOUT: {
       START: 'CHECKOUT_START',
-      COMPLETE: 'COMPLETE_PURCHASE',
+      COMPLETE: 'COMPLETE_ORDER',
       PAYMENT_ERROR: 'PAYMENT_ERROR',
       ADDRESS_UPDATE: 'ADDRESS_UPDATE'
     }
   },
-  Post_Purchase: {
+  Post_Order: {
     PRODUCT: {
       BUY_AGAIN: 'PRODUCT_BUY_AGAIN',
-      CANCEL: 'PURCHASE_CANCEL',
+      CANCEL: 'ORDER_CANCEL',
       RETURN: {
         REQUEST: 'RETURN_REQUESTED',
         COMPLETE: 'RETURN_COMPLETED'
       }
     },
-    PURCHASE: {
-      DELIVERY_STATUS_VIEW: 'PURCHASE_DELIVERY_STATUS_VIEW'
+    Order: {
+      DELIVERY_STATUS_VIEW: 'Order_DELIVERY_STATUS_VIEW'
     }
   },
   USER: {
@@ -101,7 +101,7 @@ export interface UserAction {
   productId?: number;
   quantity?: number;
   cartItemId?: number;
-  purchaseId?: number;
+  orderId?: number;
   timestamp?: Date;
   
   // ログ専用アクション用のメタデータ
@@ -166,7 +166,7 @@ class AppLogger implements Logger {
         productId: action.productId,
         cartItemId: action.cartItemId,
         quantity: action.quantity,
-        purchaseId: action.purchaseId,
+        orderId: action.orderId,
         metadata: action.metadata as Prisma.InputJsonValue
       } satisfies Prisma.UserActionLogUncheckedCreateInput;
 
@@ -243,7 +243,7 @@ class AppLogger implements Logger {
       requestID,
       timestamp,
       productId: action.productId,
-      purchaseId: action.purchaseId,
+      orderId: action.orderId,
       cartItemId: action.cartItemId,
       quantity: action.quantity,
       metadata: action.metadata
