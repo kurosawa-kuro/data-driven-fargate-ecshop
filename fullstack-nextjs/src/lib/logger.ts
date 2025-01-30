@@ -251,23 +251,23 @@ class AppLogger implements Logger {
 
     console.log('\x1b[33m%s\x1b[0m', JSON.stringify(logData));
 
-    // DBログの処理
-    if (!this.isLoggingOnlyAction(action.actionType)) {
-      await this.logToDB({
-        level: 'action',
-        message: `User Action: ${action.actionType}`,
-        timestamp,
-        action,
-        requestID,
-        metadata: action.metadata
-      }).catch(error => {
-        if (error instanceof Error) {
-          console.error('Failed to log action:', error.message);
-        } else {
-          console.error('Unexpected error while logging action');
-        }
-      });
-    }
+    // // DBログの処理
+    // if (!this.isLoggingOnlyAction(action.actionType)) {
+    //   await this.logToDB({
+    //     level: 'action',
+    //     message: `User Action: ${action.actionType}`,
+    //     timestamp,
+    //     action,
+    //     requestID,
+    //     metadata: action.metadata
+    //   }).catch(error => {
+    //     if (error instanceof Error) {
+    //       console.error('Failed to log action:', error.message);
+    //     } else {
+    //       console.error('Unexpected error while logging action');
+    //     }
+    //   });
+    // }
   }
 }
 

@@ -29,24 +29,8 @@ interface Order {
   orderItems?: OrderItem[];
 }
 
-
-// メインコンポーネント
-export default function Page() {
-  // const router = useRouter();
-  const [orders, setorders] = useState<Order[]>([]);
-
-  useEffect(() => {
-    const loadorders = async () => {
-      try {
-        const data = await OrderAPI.fetchorders();
-        setorders(data.orders);
-      } catch (error) {
-        logger.error('購入履歴取得エラー:', error as Error);
-      }
-    };
-    loadorders();
-  }, []);
-
+// アクション処理を集約
+const useOrderActions = () => {
   const handleReturn = async (orderId: string, productId: string) => {
     try {
       await OrderAPI.return(orderId, productId);
@@ -55,21 +39,48 @@ export default function Page() {
     }
   };
 
-  const handleReOrder = async (products: { id: string; quantity: number }[]) => {
+  const handleReaddToCart = async (products: { id: string; quantity: number }[]) => {
     try {
-      await OrderAPI.reOrder(products);
+      await OrderAPI.readdToCart(products);
     } catch (error) {
-      logger.error('再度購入処理に失敗しました', error as Error);
+      logger.error('カートへの再追加に失敗しました', error as Error);
     }
   };
 
-    const handleReview = async (orderId: string, productId: string) => {
+  const handleReview = async (orderId: string, productId: string) => {
     try {
       await OrderAPI.review(orderId, productId);
     } catch (error) {
       logger.error('レビュー投稿リクエストに失敗しました', error as Error);
     }
   };
+
+  return { handleReturn, handleReaddToCart, handleReview };
+};
+
+// 注文履歴取得ロジック
+const useOrderData = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const data = await OrderAPI.fetchorders();
+        setOrders(data.orders);
+      } catch (error) {
+        logger.error('購入履歴取得エラー:', error as Error);
+      }
+    };
+    loadOrders();
+  }, []);
+
+  return { orders };
+};
+
+// メインコンポーネント
+export default function Page() {
+  const { orders } = useOrderData();
+  const { handleReturn, handleReaddToCart, handleReview } = useOrderActions();
 
   // UI描画
   return (
@@ -113,7 +124,7 @@ export default function Page() {
                         返品
                       </button>
                       <button 
-                        onClick={() => handleReOrder([{
+                        onClick={() => handleReaddToCart([{
                           id: item.product.id.toString(),
                           quantity: item.quantity
                         }])}

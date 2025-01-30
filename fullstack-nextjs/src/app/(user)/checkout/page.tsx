@@ -71,7 +71,7 @@ export default function Page() {
         formData.deliveryDate,
         formData.paymentMethod
       );
-      router.push('/purchase');
+      router.push('/order');
     } catch (error) {
       logger.error('注文の確定に失敗しました', error as Error);
     }

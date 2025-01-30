@@ -82,8 +82,8 @@ export const OrderAPI = {
   return: async (orderId: string, productId: string) => {
     return executeRequest('/api/order/return', 'POST', { orderId, productId });
   },
-  reOrder: async (products: { id: string; quantity: number }[]) => {
-    return executeRequest('/api/order/reorder', 'POST', { products });
+  readdToCart: async (products: { id: string; quantity: number }[]) => {
+    return executeRequest('/api/carts/readd-items', 'POST', { products });
   },
   review: async (orderId: string, productId: string) => {
     return executeRequest('/api/order/review', 'POST', { orderId, productId });

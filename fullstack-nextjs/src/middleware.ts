@@ -77,7 +77,7 @@ class HeaderManager {
 
 // 認証チェック専用クラス
 class AuthGuard {
-  private static readonly PROTECTED_PATHS = ['/carts', '/checkout', '/Order'];
+  private static readonly PROTECTED_PATHS = ['/carts', '/checkout', '/order'];
 
   static isProtectedPath(path: string): boolean {
     return this.PROTECTED_PATHS.includes(path);
