@@ -3,7 +3,7 @@
 // import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
-import { OrderAPI } from '@/lib/api/client';
+import { orderAPI, cartAPI } from '@/lib/api/client';
 
 interface Product {
   id: number;
@@ -33,7 +33,7 @@ interface Order {
 const useOrderActions = () => {
   const handleReturn = async (orderId: string, productId: string) => {
     try {
-      await OrderAPI.return(orderId, productId);
+      await orderAPI.return(orderId, productId);
     } catch (error) {
       logger.error('返品処理に失敗しました', error as Error);
     }
@@ -41,7 +41,7 @@ const useOrderActions = () => {
 
   const handleReaddToCart = async (products: { id: string; quantity: number }[]) => {
     try {
-      await OrderAPI.readdToCart(products);
+      await cartAPI.readdToCart(products);
     } catch (error) {
       logger.error('カートへの再追加に失敗しました', error as Error);
     }
@@ -49,7 +49,7 @@ const useOrderActions = () => {
 
   const handleReview = async (orderId: string, productId: string) => {
     try {
-      await OrderAPI.review(orderId, productId);
+      await orderAPI.review(orderId, productId);
     } catch (error) {
       logger.error('レビュー投稿リクエストに失敗しました', error as Error);
     }
@@ -65,7 +65,7 @@ const useOrderData = () => {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        const data = await OrderAPI.fetchorders();
+        const data = await orderAPI.fetchorders();
         setOrders(data.orders);
       } catch (error) {
         logger.error('購入履歴取得エラー:', error as Error);
