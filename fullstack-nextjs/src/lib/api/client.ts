@@ -1,4 +1,4 @@
-import { Purchase } from "@prisma/client";
+import { Order } from "@prisma/client";
 import { Product } from "@prisma/client";
 
 interface CartItem {
@@ -36,6 +36,9 @@ export const authAPI = {
 export const cartAPI = {
   addToCart: async (productId: string) => {
     return executeRequest('/api/carts', 'POST', { productId });
+  },
+  readdToCart: async (products: { id: string; quantity: number }[]) => {
+    return executeRequest('/api/carts/readd-items', 'POST', { products });
   },
   getCartItems: async (): Promise<{ cartItems: CartItem[] }> => {
     return executeRequest<{ cartItems: CartItem[] }>('/api/carts', 'GET');
@@ -75,18 +78,16 @@ export const checkoutAPI = {
 };
 
 // 購入履歴管理API
-export const purchaseAPI = {
-  fetchPurchases: async (): Promise<{ purchases: Purchase[] }> => {
-    return executeRequest('/api/purchase', 'GET');
+export const orderAPI = {
+  fetchorders: async (): Promise<{ orders: Order[] }> => {
+    return executeRequest('/api/order', 'GET');
   },
   return: async (orderId: string, productId: string) => {
-    return executeRequest('/api/purchase/return', 'POST', { orderId, productId });
+    return executeRequest('/api/order/return', 'POST', { orderId, productId });
   },
-  repurchase: async (products: { id: string; quantity: number }[]) => {
-    return executeRequest('/api/purchase/repurchase', 'POST', { products });
-  },
+
   review: async (orderId: string, productId: string) => {
-    return executeRequest('/api/purchase/review', 'POST', { orderId, productId });
+    return executeRequest('/api/order/review', 'POST', { orderId, productId });
   }
 };
 

@@ -17,7 +17,7 @@ model User {
   role            Role        @relation(fields: [roleId], references: [id])     
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
-  purchases       Purchase[]
+  orders       Order[]
 }
 
 model Role {
@@ -47,7 +47,7 @@ model Product {
   category        Category      @relation(fields: [categoryId], references: [id])
   viewHistories   ViewHistory[]
   cartItems       CartItem[]
-  purchaseItems   PurchaseItem[]
+  orderItems   OrderItem[]
   @@index([categoryId])
 }
 // カテゴリー
@@ -93,28 +93,28 @@ model CartItem {
   @@index([productId])
 }
 // 購入履歴（Linear Regression, PCA用）
-model Purchase {
+model Order {
   id          Int       @id @default(autoincrement())
   userId      Int
   totalAmount Float
-  purchasedAt DateTime  @default(now())
+  orderedAt DateTime  @default(now())
 
   // リレーション
   user          User            @relation(fields: [userId], references: [id])
-  purchaseItems PurchaseItem[]
+  orderItems OrderItem[]
   @@index([userId])
 }
 // 購入商品詳細
-model PurchaseItem {
+model OrderItem {
   id          Int       @id @default(autoincrement())
-  purchaseId  Int
+  orderId  Int
   productId   Int
   quantity    Int
   price       Float     // 購入時の価格を保存
 
   // リレーション
-  purchase    Purchase  @relation(fields: [purchaseId], references: [id])
+  Order    Order  @relation(fields: [orderId], references: [id])
   product     Product   @relation(fields: [productId], references: [id])
-  @@index([purchaseId])
+  @@index([orderId])
   @@index([productId])
 }

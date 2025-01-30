@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/database/prisma';
 import { BaseApiHandler } from '@/lib/api/handler';
 
-class PurchaseHandler extends BaseApiHandler {
+class OrderHandler extends BaseApiHandler {
   async GET() {
     try {
       const { userId } = await this.getHeaders();
@@ -9,11 +9,11 @@ class PurchaseHandler extends BaseApiHandler {
       if (authError) return authError;
 
       // 購入履歴を取得（最新順）
-      const purchases = await prisma.purchase.findMany({
+      const orders = await prisma.Order.findMany({
         where: { userId: userId! },
-        orderBy: { purchasedAt: 'desc' },
+        orderBy: { orderedAt: 'desc' },
         include: {
-          purchaseItems: {
+          orderItems: {
             include: {
               product: true
             }
@@ -21,12 +21,12 @@ class PurchaseHandler extends BaseApiHandler {
         }
       });
 
-      return this.successResponse({ purchases });
+      return this.successResponse({ orders });
     } catch (error) {
       return this.handleError(error, '購入履歴の取得に失敗しました');
     }
   }
 }
 
-const handler = new PurchaseHandler();
+const handler = new OrderHandler();
 export const GET = handler.GET.bind(handler);

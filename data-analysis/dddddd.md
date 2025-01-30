@@ -1,7 +1,7 @@
 
 このスキーマで収集できるデータと対応する機械学習モデル：
 ランダムフォレスト：
-ViewHistory + Product + Purchase テーブルから
+ViewHistory + Product + Order テーブルから
 特徴量：閲覧回数、商品属性
 目的変数：購入有無
 ロジスティック回帰：
@@ -13,10 +13,10 @@ ViewHistory テーブルから
 特徴量：時間帯、商品属性
 目的変数：閲覧数推移
 K-means：
-CartItem + Purchase テーブルから
+CartItem + Order テーブルから
 ユーザーの購買行動クラスタリング
 PCA：
-Product + ViewHistory + Purchase テーブルから
+Product + ViewHistory + Order テーブルから
 商品特性の次元削減
 主要な特徴：
 必要最小限のテーブル構成

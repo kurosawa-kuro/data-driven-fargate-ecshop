@@ -3,7 +3,7 @@
 // import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
-import { purchaseAPI } from '@/lib/api/client';
+import { orderAPI, cartAPI } from '@/lib/api/client';
 
 interface Product {
   id: number;
@@ -12,64 +12,75 @@ interface Product {
   imageUrl: string;
 }
 
-interface PurchaseItem {
+interface OrderItem {
   id: number;
-  purchaseId: number;
+  orderId: number;
   productId: number;
   quantity: number;
   price: number;
   product: Product;
 }
 
-interface Purchase {
+interface Order {
   id: number;
   userId: string;
   totalAmount: number;
-  purchasedAt: Date;
-  purchaseItems?: PurchaseItem[];
+  orderedAt: Date;
+  orderItems?: OrderItem[];
 }
 
-
-// メインコンポーネント
-export default function Page() {
-  // const router = useRouter();
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-
-  useEffect(() => {
-    const loadPurchases = async () => {
-      try {
-        const data = await purchaseAPI.fetchPurchases();
-        setPurchases(data.purchases);
-      } catch (error) {
-        logger.error('購入履歴取得エラー:', error as Error);
-      }
-    };
-    loadPurchases();
-  }, []);
-
+// アクション処理を集約
+const useOrderActions = () => {
   const handleReturn = async (orderId: string, productId: string) => {
     try {
-      await purchaseAPI.return(orderId, productId);
+      await orderAPI.return(orderId, productId);
     } catch (error) {
       logger.error('返品処理に失敗しました', error as Error);
     }
   };
 
-  const handleRepurchase = async (products: { id: string; quantity: number }[]) => {
+  const handleReaddToCart = async (products: { id: string; quantity: number }[]) => {
     try {
-      await purchaseAPI.repurchase(products);
+      await cartAPI.readdToCart(products);
     } catch (error) {
-      logger.error('再度購入処理に失敗しました', error as Error);
+      logger.error('カートへの再追加に失敗しました', error as Error);
     }
   };
 
-    const handleReview = async (orderId: string, productId: string) => {
+  const handleReview = async (orderId: string, productId: string) => {
     try {
-      await purchaseAPI.review(orderId, productId);
+      await orderAPI.review(orderId, productId);
     } catch (error) {
       logger.error('レビュー投稿リクエストに失敗しました', error as Error);
     }
   };
+
+  return { handleReturn, handleReaddToCart, handleReview };
+};
+
+// 注文履歴取得ロジック
+const useOrderData = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const data = await orderAPI.fetchorders();
+        setOrders(data.orders);
+      } catch (error) {
+        logger.error('購入履歴取得エラー:', error as Error);
+      }
+    };
+    loadOrders();
+  }, []);
+
+  return { orders };
+};
+
+// メインコンポーネント
+export default function Page() {
+  const { orders } = useOrderData();
+  const { handleReturn, handleReaddToCart, handleReview } = useOrderActions();
 
   // UI描画
   return (
@@ -77,17 +88,17 @@ export default function Page() {
       <h1 className="text-2xl font-bold mb-6 text-white">注文履歴</h1>
       
       <div className="space-y-6">
-        {purchases.map((order) => (
+        {orders.map((order) => (
           <div key={order.id} className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow">
             {/* 注文情報ヘッダー */}
             <div className="flex justify-between items-center mb-4 text-sm text-gray-300">
-              <div>注文日: {new Date(order.purchasedAt).toLocaleDateString('ja-JP')}</div>
+              <div>注文日: {new Date(order.orderedAt).toLocaleDateString('ja-JP')}</div>
               <div>合計: ¥{order.totalAmount.toLocaleString()}</div>
             </div>
             
             {/* 商品リスト */}
             <div className="space-y-4">
-              {order.purchaseItems?.map((item) => (
+              {order.orderItems?.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
                   {/* 商品画像 */}
                   <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 relative">
@@ -113,7 +124,7 @@ export default function Page() {
                         返品
                       </button>
                       <button 
-                        onClick={() => handleRepurchase([{
+                        onClick={() => handleReaddToCart([{
                           id: item.product.id.toString(),
                           quantity: item.quantity
                         }])}

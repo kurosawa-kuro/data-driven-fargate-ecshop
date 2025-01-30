@@ -22,12 +22,12 @@ class CheckoutConfirmHandler extends BaseApiHandler {
           throw new Error('カートが空です');
         }
 
-        // 2. Purchase作成
-        const purchase = await tx.purchase.create({
+        // 2. Order作成
+        const Order = await tx.Order.create({
           data: {
             userId: userId!,
             totalAmount: cartItems.reduce((sum, item) => sum + (item.quantity * item.product.price), 0),
-            purchaseItems: {
+            orderItems: {
               create: cartItems.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -44,14 +44,14 @@ class CheckoutConfirmHandler extends BaseApiHandler {
 
         // ユーザーアクションログの記録
         await logger.action({
-          actionType: ActionType.COMPLETE_PURCHASE,
+          actionType: ActionType.COMPLETE_ORDER,
           userId: userId!,
           requestID: requestId ?? undefined,
-          purchaseId: purchase.id,
+          orderId: Order.id,
           metadata: {}
         });
 
-        return { purchase };
+        return { Order };
       });
 
       return this.successResponse({ data: result });

@@ -1,6 +1,6 @@
 ```typescript
 export const ActionLogType = {
- Pre_Purchase: {
+ Pre_Order: {
    PRODUCT: {
         VIEW: 'PRODUCT_VIEW',
         SEARCH: 'PRODUCT_SEARCH',  // キーワード入力による検索
@@ -15,15 +15,15 @@ export const ActionLogType = {
    },
    CHECKOUT: {
      START: 'CHECKOUT_START',
-     COMPLETE: 'COMPLETE_PURCHASE',
+     COMPLETE: 'COMPLETE_ORDER',
      PAYMENT_ERROR: 'PAYMENT_ERROR',
      ADDRESS_UPDATE: 'ADDRESS_UPDATE'
    }
  },
- Post_Purchase: {
+ Post_Order: {
    PRODUCT: {
      BUY_AGAIN: 'PRODUCT_BUY_AGAIN',
-     CANCEL: 'PURCHASE_CANCEL',
+     CANCEL: 'ORDER_CANCEL',
      REVIEW: 'PRODUCT_REVIEW',
      RETURN: {
        REQUEST: 'RETURN_REQUESTED',
@@ -31,8 +31,8 @@ export const ActionLogType = {
        CANCEL: 'RETURN_CANCELLED'
      }
    },
-   PURCHASE: {  
-     DELIVERY_STATUS_VIEW: 'PURCHASE_DELIVERY_STATUS_VIEW'
+   Order: {  
+     DELIVERY_STATUS_VIEW: 'Order_DELIVERY_STATUS_VIEW'
    }
  },
  USER: {
