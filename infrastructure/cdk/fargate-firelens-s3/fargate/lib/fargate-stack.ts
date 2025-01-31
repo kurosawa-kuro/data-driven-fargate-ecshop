@@ -28,7 +28,7 @@ const CONFIG = {
     DELIVERY_STREAM_NAME: "log-delivery-stream-01"
   },
   ECR: {
-    ACCOUNT_ID: "985539793438",
+    ACCOUNT_ID: "503561449641",
     REGION: "ap-northeast-1",
     APP_REPOSITORY: "nextjs-app"
   },

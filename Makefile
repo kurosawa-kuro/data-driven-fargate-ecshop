@@ -27,7 +27,7 @@ db-migrate:  # データベースマイグレーションの実行
 
 db-update: db-migrate db-generate  # マイグレーションとクライアント生成を順次実行
 
-db-reset: db-migrate db-generate  # データベースのリセット
+db-reset: db-update  # データベースのリセット
 	cd fullstack-nextjs && pnpm run prisma:seed
 
 ###################
@@ -74,7 +74,7 @@ cloudwatch-log:  # CloudWatchログの監視
 # Git操作
 ###################
 commit-success:  # タイムスタンプ付きの成功コミット
-	chmod +x  ./infrastructure/script/commit_success.sh
+	chmod +x ./infrastructure/script/commit_success.sh
 	./infrastructure/script/commit_success.sh
 
 ###################

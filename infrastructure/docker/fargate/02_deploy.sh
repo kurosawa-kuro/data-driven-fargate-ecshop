@@ -2,7 +2,7 @@
 
 # 変数定義
 REGION="ap-northeast-1"
-ACCOUNT_ID="985539793438"
+ACCOUNT_ID="503561449641"
 REPOSITORY_NAME="nextjs-app"
 IMAGE_TAG="latest"
 DOCKERFILE_PATH="./fullstack-nextjs"
