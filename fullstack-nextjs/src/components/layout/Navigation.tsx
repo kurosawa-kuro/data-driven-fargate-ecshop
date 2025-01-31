@@ -24,8 +24,7 @@ const handleSearch = async (e: React.FormEvent) => {
   e.preventDefault();
   if (searchQuery.trim()) {
     try {
-      const response = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}`);
-      const data = await response.json();
+     await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}`);
       // 検索結果の処理
     } catch (error) {
       console.error('検索エラー:', error);

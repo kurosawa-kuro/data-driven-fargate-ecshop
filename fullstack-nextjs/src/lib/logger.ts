@@ -1,9 +1,7 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { ActionType as PrismaActionType } from '@prisma/client';
 
-// ----------------
-// アクション定義
-// ----------------
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DB_STORED_ACTIONS = [
   // 売上・在庫関連
   'CART_ADD',
