@@ -4,15 +4,13 @@ import { ActionType } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 class CheckoutConfirmHandler extends BaseApiHandler {
-  async POST( ) {
+  async POST() {
     try {
       const { userId, requestId } = await this.getHeaders();
       const authError = this.checkAuth(userId);
       if (authError) return authError;
 
-      // トランザクション処理
       const result = await prisma.$transaction(async (tx) => {
-        // 1. CartItems取得
         const cartItems = await tx.cartItem.findMany({
           where: { userId: userId! },
           include: { product: true }
@@ -22,7 +20,6 @@ class CheckoutConfirmHandler extends BaseApiHandler {
           throw new Error('カートが空です');
         }
 
-        // 2. Order作成
         const order = await tx.order.create({
           data: {
             userId: userId!,
@@ -37,19 +34,27 @@ class CheckoutConfirmHandler extends BaseApiHandler {
           }
         });
 
-        // 3. CartItems削除
         await tx.cartItem.deleteMany({
           where: { userId: userId! }
         });
 
-        // ユーザーアクションログの記録
-        await logger.action({
-          actionType: ActionType.COMPLETE_ORDER,
-          userId: userId!,
-          requestID: requestId ?? undefined,
-          orderId: order.id,
-          metadata: {}
-        });
+        // 各カートアイテムに対してログを記録
+        for (const cartItem of cartItems) {
+          await logger.action({
+            actionType: ActionType.ORDER_COMPLETE,
+            userId: userId!,
+            requestID: requestId ?? undefined,
+            orderId: order.id,
+            productId: cartItem.productId,
+            productName: cartItem.product.name,
+            productPrice: cartItem.product.price,
+            quantity: cartItem.quantity,
+            cartItemId: cartItem.id,
+            metadata: {
+              source: 'checkout'
+            }
+          });
+        }
 
         return { order };
       });

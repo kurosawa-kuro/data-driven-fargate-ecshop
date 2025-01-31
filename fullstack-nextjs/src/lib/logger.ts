@@ -9,7 +9,7 @@ const DB_STORED_ACTIONS = [
   'CART_ADD',
   'CART_REMOVE', 
   'CART_UPDATE',
-  'COMPLETE_ORDER',
+  'ORDER_COMPLETE',
   'ORDER_CANCEL',
   'RETURN_REQUESTED',
   'RETURN_COMPLETED',
@@ -162,6 +162,7 @@ interface AthenaLogEntry {
     product_id: number;
     product_name: string;
     product_price: number;
+    quantity: number;
     category_id: number;
     category_name: string;
   };
@@ -369,6 +370,7 @@ class AppLogger implements Logger {
         product_id: action.productId,
         product_name: action.productName || '',
         product_price: action.productPrice || 0,
+        quantity: action.quantity || 0,
         category_id: action.categoryId || 0,
         category_name: action.categoryName || ''
       } : undefined,
