@@ -197,6 +197,7 @@ model UserActionLog {
   // 製品情報
   productId   Int?
   productName String?
+  productPrice Float?
   categoryId  Int?
   categoryName String?
   

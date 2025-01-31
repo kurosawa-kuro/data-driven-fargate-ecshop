@@ -69,11 +69,12 @@ class CartHandler extends BaseApiHandler {
         userId: userId!,
         requestID: requestId ?? undefined,
         productId: parseInt(productId),
+        productName: cartItem.product.name,
+        productPrice: cartItem.product.price,
         quantity: quantity,
         cartItemId: cartItem.id,
         metadata: {
-          productName: cartItem.product.name,
-          productPrice: cartItem.product.price
+          source: 'product_page'
         }
       });
 
