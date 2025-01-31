@@ -2,12 +2,10 @@
 
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth.store';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Navigation() {
   const email = useAuthStore((state) => state.user.email);
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
   const menuItems = [

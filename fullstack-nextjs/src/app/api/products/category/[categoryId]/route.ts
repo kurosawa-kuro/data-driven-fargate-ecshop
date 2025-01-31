@@ -8,7 +8,6 @@ class ProductsByCategoryHandler extends BaseApiHandler {
     context: { params: Promise<{ categoryId: string }> }
   ) {
     try {
-      const { userId } = await this.getHeaders();
       const { categoryId } = await context.params;
       console.log("categoryId", categoryId);
       const categoryIdNum = parseInt(categoryId);
