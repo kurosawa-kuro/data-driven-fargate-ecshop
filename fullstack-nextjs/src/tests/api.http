@@ -36,6 +36,9 @@ GET {{localBaseUrl}}/api/products
 ### 商品詳細取得
 GET {{localBaseUrl}}/api/products/1
 
+### カテゴリー別商品一覧取得
+GET {{localBaseUrl}}/api/products/category/1
+
 ### カート追加
 POST {{localBaseUrl}}/api/cart
 Content-Type: application/json
