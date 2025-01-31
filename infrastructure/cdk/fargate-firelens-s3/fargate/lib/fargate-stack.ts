@@ -25,7 +25,7 @@ const CONFIG = {
     IMAGE: "public.ecr.aws/aws-observability/aws-for-fluent-bit:init-latest"
   },
   FIREHOSE: {
-    DELIVERY_STREAM_NAME: "log-delivery-stream02"
+    DELIVERY_STREAM_NAME: "log-delivery-stream-01"
   },
   ECR: {
     ACCOUNT_ID: "985539793438",
