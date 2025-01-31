@@ -37,8 +37,8 @@ export const cartAPI = {
   addToCart: async (productId: string) => {
     return executeRequest('/api/carts', 'POST', { productId });
   },
-  readdToCart: async (products: { id: string; quantity: number }[]) => {
-    return executeRequest('/api/carts/readd-items', 'POST', { products });
+  readdToCart: async (productId: string) => {
+    return executeRequest('/api/carts/readd-items', 'POST', { productId });
   },
   getCartItems: async (): Promise<{ cartItems: CartItem[] }> => {
     return executeRequest<{ cartItems: CartItem[] }>('/api/carts', 'GET');
