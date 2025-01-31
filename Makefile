@@ -4,6 +4,9 @@
 dev:  # ローカル開発サーバー起動
 	cd fullstack-nextjs && pnpm run dev
 
+build:  # ビルド
+	cd fullstack-nextjs && pnpm run build
+
 lint:  # コードのチェック
 	cd fullstack-nextjs && pnpm run lint
 
@@ -38,13 +41,13 @@ setup-app:  # アプリケーション環境のセットアップ
 	chmod u+x ./infrastructure/install/setup-app.sh
 	sudo ./infrastructure/install/setup-app.sh
 
+setup-aws-credentials:  # AWS認証情報のセットアップ
+	chmod u+x ./infrastructure/install/setup-aws-credentials.sh
+	./infrastructure/install/setup-aws-credentials.sh
+
 ###################
 # Docker/Fargate操作
 ###################
-# pnpm run build
-build:
-	cd fullstack-nextjs && pnpm run build
-
 fargate-local:  # ローカルでのFargate環境構築
 	chmod u+x ./infrastructure/docker/local/01_local-dev.sh
 	./infrastructure/docker/local/01_local-dev.sh
