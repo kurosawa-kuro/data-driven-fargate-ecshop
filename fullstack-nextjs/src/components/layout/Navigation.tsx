@@ -9,7 +9,6 @@ export default function Navigation() {
   const menuItems = [
     { href: '/', label: 'ロゴ/TOP' },
     { href: '/products', label: 'products' },
-    { href: '/search', label: '検索バー' },
   ];
 
   // ログインしていない場合のみログイン/登録リンクを追加
