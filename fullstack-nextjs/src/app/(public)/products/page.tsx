@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { productAPI } from "@/lib/api/client";
+import CategoryButtons from "./CategoryButtons";
 
 interface Product {
   id: number;
@@ -26,17 +27,7 @@ export default async function Page() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* カテゴリー一覧 */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {dummyCategories.map((category) => (
-          <Link
-            key={category.id}
-            href={`/categories/${category.id}`}
-            className="px-4 py-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors"
-          >
-            {category.name}
-          </Link>
-        ))}
-      </div>
+      <CategoryButtons categories={dummyCategories} />
 
       {/* 商品一覧 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
