@@ -45,11 +45,35 @@ def process_logs_with_partition(rec):
            
        # タイムスタンプのパース
        timestamp = datetime.strptime(parsed_json['timestamp'].replace('Z', '+00:00'), "%Y-%m-%dT%H:%M:%S.%f%z")
-       parsed_json['year'] = timestamp.year
-       parsed_json['month'] = timestamp.month
-       parsed_json['day'] = timestamp.day
        
-       return parsed_json
+       # フラットなデータ構造に変換
+       flat_data = {
+           "timestamp": parsed_json['timestamp'],
+           "year": timestamp.year,
+           "month": timestamp.month,
+           "day": timestamp.day,
+           "request_id": parsed_json.get('request_id', ''),
+           "action": parsed_json.get('action', ''),
+           "source": parsed_json.get('source', ''),
+           "device_type": parsed_json.get('device_type', ''),
+           "log_type": parsed_json.get('log_type', ''),
+           "environment": parsed_json.get('environment', ''),
+           "client_ip": parsed_json.get('client_ip', ''),
+           "user_id": parsed_json.get('user_id', ''),
+           "user_agent": parsed_json.get('user_agent', ''),
+           "country_code": parsed_json.get('country_code', ''),
+           "product_id": parsed_json.get('product_data', {}).get('product_id', ''),
+           "product_name": parsed_json.get('product_data', {}).get('product_name', ''),
+           "category_id": parsed_json.get('product_data', {}).get('category_id', ''),
+           "category_name": parsed_json.get('product_data', {}).get('category_name', ''),
+           "quantity": parsed_json.get('product_data', {}).get('quantity', ''),
+           "product_price": parsed_json.get('product_data', {}).get('product_price', ''),
+           "page_url": parsed_json.get('context', {}).get('page_url', ''),
+           "referrer": parsed_json.get('context', {}).get('referrer', ''),
+           "session_id": parsed_json.get('context', {}).get('session_id', '')
+       }
+       
+       return flat_data
    except Exception as e:
        print(f"Error processing record: {e}")
        return None
