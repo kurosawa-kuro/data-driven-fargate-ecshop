@@ -21,12 +21,19 @@ export default function Navigation() {
     menuItems.push({ href: '/order', label: '注文履歴' });
   }
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+// クライアントサイドでの呼び出し例
+const handleSearch = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (searchQuery.trim()) {
+    try {
+      const response = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}`);
+      const data = await response.json();
+      // 検索結果の処理
+    } catch (error) {
+      console.error('検索エラー:', error);
     }
-  };
+  }
+};
 
   return (
     <nav className="container mx-auto bg-gray-900">
