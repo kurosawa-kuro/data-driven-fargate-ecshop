@@ -288,10 +288,34 @@ async function main() {
       prisma.userActionLog.create({
         data: {
           userId: users[1].id,
-          actionType: ActionType.RETURN_REQUESTED,
+          actionType: ActionType.ORDER_RETURN_REQUEST,
           productId: products[1].id,
-          returnReason: "商品が期待と異なります",
           metadata: { returnId: 1 }
+        }
+      }),
+      prisma.userActionLog.create({
+        data: {
+          userId: users[2].id,
+          actionType: ActionType.SEARCH_BY_KEYWORD,
+          searchKeyword: "スマートフォン",
+          metadata: { searchResults: 15 }
+        }
+      }),
+      prisma.userActionLog.create({
+        data: {
+          userId: users[3].id,
+          actionType: ActionType.REVIEW_SUBMIT,
+          productId: products[3].id,
+          reviewText: "とても使いやすいです",
+          rating: 5.0,
+          metadata: { reviewId: 1 }
+        }
+      }),
+      prisma.userActionLog.create({
+        data: {
+          userId: users[4].id,
+          actionType: ActionType.USER_LOGIN,
+          metadata: { loginMethod: "email" }
         }
       })
     ]);

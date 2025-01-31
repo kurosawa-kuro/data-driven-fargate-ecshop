@@ -41,7 +41,9 @@ const useOrderActions = () => {
 
   const handleReaddToCart = async (products: { id: string; quantity: number }[]) => {
     try {
-      await cartAPI.readdToCart(products);
+      await Promise.all(products.map(product => 
+        cartAPI.readdToCart(product.id)
+      ));
     } catch (error) {
       logger.error('カートへの再追加に失敗しました', error as Error);
     }

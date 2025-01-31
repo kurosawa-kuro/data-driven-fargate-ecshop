@@ -158,63 +158,71 @@ model OrderItem {
   @@index([productId])
 }
 
+enum ActionType {
+  // カート操作
+  CART_ADD             // 商品追加
+  CART_REMOVE         // 削除
+  CART_UPDATE         // 数量更新
+  CART_READD          // 再購入
+
+  // 注文
+  ORDER_COMPLETE      // 完了
+  ORDER_CANCEL        // キャンセル
+  ORDER_RETURN_REQUEST // 返品リクエスト
+  ORDER_RETURN_COMPLETE // 返品完了
+
+  // 検索
+  SEARCH_BY_KEYWORD   // キーワード検索
+  SEARCH_BY_CATEGORY  // カテゴリ検索
+
+  // レビュー
+  REVIEW_START        // 開始
+  REVIEW_SUBMIT       // 投稿
+
+  // アカウント
+  USER_REGISTER_START // 登録開始
+  USER_REGISTER_COMPLETE // 登録完了
+  USER_UPDATE         // 更新
+  USER_LOGIN          // ログイン
+  USER_LOGOUT         // ログアウト
+  USER_DELETE         // 削除
+}
+
 model UserActionLog {
   id          Int       @id @default(autoincrement())
-  requestID   String?   // リクエストIDを追加
+  requestID   String?   
   userId      String
   actionType  ActionType
 
-
-  // 商品関連のアクション用
+  // 製品情報
   productId   Int?
-
-  // カート関連のアクション用
+  productName String?
+  categoryId  Int?
+  categoryName String?
+  
+  // トランザクション情報
   cartItemId  Int?
-  quantity    Int?      // CART_UPDATE用
-  savedForLater Boolean? // CART_SAVE_FOR_LATER用
-
-  // チェックアウト関連のアクション用
   orderId     Int?
-  paymentErrorDetails String? // PAYMENT_ERROR用
-
-  // 返品関連のアクション用
   returnId    Int?
-  returnReason String? // RETURN_REQUESTED用
+  quantity    Int?
+  
+  // 検索情報
+  searchKeyword   String?   // キーワード検索時の検索語
+  searchCategoryId Int?    // カテゴリ検索時のカテゴリID
+  searchCategoryName String? // カテゴリ検索時のカテゴリ名
 
-  // レビュー関連のアクション用
-  reviewText  String?  // PRODUCT_REVIEW用
-  rating      Float?   // PRODUCT_REVIEW用
+  // コンテンツ
+  reviewText    String?   // レビュー本文
+  rating        Float?    // 評価
+  actionReason  String?   // 理由（返品、削除等）
+  errorDetails  String?   // エラー詳細
 
-  // ユーザーアクション関連
-  deleteReason String?   // DELETE_ACCOUNT用
-
-  // メタデータフィールド
-  metadata    Json?
-  createdAt   DateTime  @default(now())
+  // システム情報
+  metadata    Json?      // {userAgent, ipAddress, platform, referrer, etc}
+  createdAt   DateTime   @default(now())
 
   @@index([userId, actionType, createdAt])
-  @@index([requestID])  // リクエストIDのインデックスを追加
-}
-
-enum ActionType {
-  // カート操作（在庫影響）
-  CART_ADD
-  CART_REMOVE
-  CART_UPDATE
-
-  // 購入・返品（売上影響）
-  COMPLETE_ORDER
-  ORDER_CANCEL
-  RETURN_REQUESTED
-  RETURN_COMPLETED
-
-  // ユーザーアカウント管理
-  USER_REGISTER_START
-  USER_REGISTER_COMPLETE
-  PROFILE_UPDATE
-  USER_LOGIN
-  USER_LOGOUT
-  DELETE_ACCOUNT
+  @@index([requestID])
 }
 
 model Return {
