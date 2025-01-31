@@ -24,11 +24,11 @@ interface OrderSummary {
 export default function Page() {
   const router = useRouter();
   const [formData, setFormData] = useState<OrderFormData>({
-    name: '',
-    address: '',
-    cardNumber: '',
-    expiryDate: '',
-    securityCode: '',
+    name: '山田 太郎',
+    address: '札幌 狸小路',
+    cardNumber: '1234567890123456',
+    expiryDate: '12/24',
+    securityCode: '123',
     deliveryDate: '明日 - 12/24（日）',
     paymentMethod: 'credit_card',
   });

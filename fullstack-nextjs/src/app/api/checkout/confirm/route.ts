@@ -23,7 +23,7 @@ class CheckoutConfirmHandler extends BaseApiHandler {
         }
 
         // 2. Order作成
-        const Order = await tx.Order.create({
+        const order = await tx.order.create({
           data: {
             userId: userId!,
             totalAmount: cartItems.reduce((sum, item) => sum + (item.quantity * item.product.price), 0),
@@ -47,11 +47,11 @@ class CheckoutConfirmHandler extends BaseApiHandler {
           actionType: ActionType.COMPLETE_ORDER,
           userId: userId!,
           requestID: requestId ?? undefined,
-          orderId: Order.id,
+          orderId: order.id,
           metadata: {}
         });
 
-        return { Order };
+        return { order };
       });
 
       return this.successResponse({ data: result });

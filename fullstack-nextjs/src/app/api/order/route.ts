@@ -9,7 +9,7 @@ class OrderHandler extends BaseApiHandler {
       if (authError) return authError;
 
       // 購入履歴を取得（最新順）
-      const orders = await prisma.Order.findMany({
+      const orders = await prisma.order.findMany({
         where: { userId: userId! },
         orderBy: { orderedAt: 'desc' },
         include: {
