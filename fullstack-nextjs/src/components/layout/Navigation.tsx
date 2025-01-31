@@ -2,45 +2,97 @@
 
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth.store';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function Navigation() {
   const email = useAuthStore((state) => state.user.email);
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const menuItems = [
     { href: '/', label: 'ロゴ/TOP' },
     { href: '/products', label: 'products' },
   ];
 
-  // ログインしていない場合のみログイン/登録リンクを追加
-  if (!email) {
-    menuItems.push(
-      { href: '/login', label: 'ログイン' },
-      { href: '/register', label: 'ユーザー登録' }
-    );
-  } else {
-    // ログイン済みの場合のみログアウトリンクを追加
+  // ログイン済みの場合のみカートと注文履歴リンクを追加
+  if (email) {
     menuItems.push({ href: '/carts', label: 'カート' });
     menuItems.push({ href: '/order', label: '注文履歴' });
-    menuItems.push({ href: '/logout', label: 'ログアウト' });
   }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   return (
     <nav className="container mx-auto bg-gray-900">
-      <ul className="flex flex-wrap gap-4 list-none p-4 items-center">
+      <ul className="flex flex-wrap gap-4 list-none p-4 items-center justify-center">
         {menuItems.map((item) => (
           <li key={item.href}>
-  
             <Link 
               href={item.href}
               className="hover:text-blue-500 transition-colors"
-              prefetch={true} // プリフェッチを有効化
+              prefetch={true}
             >{item.label}</Link>
           </li>
         ))}
-        {email && (
-          <li className="ml-2 text-gray-400">
-            {email}
-          </li>
+        <li>
+          <form onSubmit={handleSearch} className="flex items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="商品を検索..."
+              className="bg-gray-700 text-white px-3 py-1 rounded-l-md focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-3 py-1 rounded-r-md hover:bg-blue-700 transition-colors"
+            >
+              検索
+            </button>
+          </form>
+        </li>
+        {!email ? (
+          <>
+            <li>
+              <Link 
+                href="/login"
+                className="hover:text-blue-500 transition-colors"
+                prefetch={true}
+              >
+                ログイン
+              </Link>
+            </li>
+            <li>
+              <Link 
+                href="/register"
+                className="hover:text-blue-500 transition-colors"
+                prefetch={true}
+              >
+                ユーザー登録
+              </Link>
+            </li>
+          </>
+        ) : (
+          <>
+            <li className="ml-2 text-gray-400">
+              {email}
+            </li>
+            <li>
+              <Link 
+                href="/logout"
+                className="hover:text-blue-500 transition-colors"
+                prefetch={true}
+              >
+                ログアウト
+              </Link>
+            </li>
+          </>
         )}
       </ul>
     </nav>
