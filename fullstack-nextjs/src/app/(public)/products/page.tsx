@@ -9,16 +9,36 @@ interface Product {
   rating: number;
 }
 
+// ダミーのカテゴリーデータ
+const dummyCategories = [
+  { id: 1, name: 'Electronics' },
+  { id: 2, name: 'Books' },
+  { id: 3, name: 'Clothing' },
+  { id: 4, name: 'Sports' },
+  { id: 5, name: 'Home & Garden' },
+];
+
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
-  
   const { products } = await productAPI.getProducts();
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8 text-white">商品一覧</h1>
-      
+      {/* カテゴリー一覧 */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        {dummyCategories.map((category) => (
+          <Link
+            key={category.id}
+            href={`/categories/${category.id}`}
+            className="px-4 py-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors"
+          >
+            {category.name}
+          </Link>
+        ))}
+      </div>
+
+      {/* 商品一覧 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product: Product) => (
           <Link 
