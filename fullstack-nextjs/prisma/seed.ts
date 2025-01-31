@@ -280,6 +280,9 @@ async function main() {
           userId: users[0].id,
           actionType: ActionType.CART_ADD,
           productId: products[0].id,
+          productName: products[0].name,
+          categoryId: categories[0].id,
+          categoryName: categories[0].name,
           cartItemId: 1,
           quantity: 2,
           metadata: { source: "product_page" }
