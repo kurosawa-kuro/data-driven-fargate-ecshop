@@ -3,79 +3,28 @@
 Fargate CDK
 Athena CDK
 
-次はある程度ECShop進まないとデータ関連がドライブしない
-その為、一旦数日Next.jsに集中する
+# Data Model
+Python
+scikit-learn
+Fast API
 
-next.js sample
-next.js cognito
-next.js testing
-next.js CICD
-next.js Shop Read
-next.js Shop Post
-next.js Shop Admin Read
-next.js Shop Admin Post
+# Micro service
+RUST DB CRUD Testing Cors
+Go DB CRUD Testing Cors
 
+## Sample Table
 
-event bridge
-sns メール
+```sql
+CREATE TABLE "Sample" (
+    name VARCHAR(255) NOT NULL
+);
 
-
-Amplify Cognito 
-Migration
-Seeder
-
-
-
-
-
-Fargat-Appli-axnZ0viKxHrE-302822521.ap-northeast-1.elb.amazonaws.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- シンプルなシードデータ
+INSERT INTO "Sample" (name) VALUES
+   ('sample1'),
+   ('sample2'),
+   ('sample3'),
+   ('sample4'),
+   ('sample5');
+```
 
