@@ -170,6 +170,9 @@ interface AthenaLogEntry {
     category_name: string;
   };
   metadata?: Record<string, unknown>;
+  order_data?: {
+    order_id: string;
+  };
 }
 
 // ----------------
@@ -371,6 +374,11 @@ class AppLogger implements Logger {
         quantity: action.quantity || 0,
         category_id: action.categoryId || 0,
         category_name: action.categoryName || ''
+      } : undefined,
+
+      // 注文データ
+      order_data: action.orderId ? {
+        order_id: action.orderId.toString()
       } : undefined,
 
       // 検索データ
