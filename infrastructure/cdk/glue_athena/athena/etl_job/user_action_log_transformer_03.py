@@ -51,6 +51,11 @@ def extract_context_data(parsed_json):
         "session_id": parsed_json.get('context', {}).get('session_id', '')
     }
 
+def extract_order_data(parsed_json):
+    return {
+        "order_id": parsed_json.get('order_data', {}).get('order_id', '')
+    }
+
 def transform_log_record(rec):
     if 'container_id' not in rec or 'log' not in rec:
         return None
@@ -65,6 +70,7 @@ def transform_log_record(rec):
         timestamp = parse_timestamp(parsed_json['timestamp'])
         product_data = extract_product_data(parsed_json)
         context_data = extract_context_data(parsed_json)
+        order_data = extract_order_data(parsed_json)
         
         return {
             "timestamp": parsed_json['timestamp'],
@@ -82,7 +88,8 @@ def transform_log_record(rec):
             "user_agent": parsed_json.get('user_agent', ''),
             "country_code": parsed_json.get('country_code', ''),
             **product_data,
-            **context_data
+            **context_data,
+            **order_data
         }
     except Exception as e:
         print(f"Error processing record: {e}")

@@ -13,7 +13,17 @@ class CheckoutConfirmHandler extends BaseApiHandler {
       const result = await prisma.$transaction(async (tx) => {
         const cartItems = await tx.cartItem.findMany({
           where: { userId: userId! },
-          include: { product: true }
+          include: { 
+            product: {
+              include: {
+                productCategories: {
+                  include: {
+                    category: true
+                  }
+                }
+              }
+            }
+          }
         });
 
         if (cartItems.length === 0) {
@@ -48,6 +58,8 @@ class CheckoutConfirmHandler extends BaseApiHandler {
             productId: cartItem.productId,
             productName: cartItem.product.name,
             productPrice: cartItem.product.price,
+            categoryId: cartItem.product.productCategories[0]?.categoryId ?? null,
+            categoryName: cartItem.product.productCategories[0]?.category?.name ?? '',
             quantity: cartItem.quantity,
             cartItemId: cartItem.id,
             metadata: {
