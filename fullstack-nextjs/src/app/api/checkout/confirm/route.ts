@@ -56,6 +56,7 @@ class CheckoutConfirmHandler extends BaseApiHandler {
             actionType: ActionType.ORDER_COMPLETE,
             userId: userId!,
             requestID: requestId ?? undefined,
+            page_url: requestUrl ?? undefined,
             orderId: order.id,
             productId: cartItem.productId,
             productName: cartItem.product.name,
@@ -64,10 +65,6 @@ class CheckoutConfirmHandler extends BaseApiHandler {
             categoryName: cartItem.product.productCategories[0]?.category?.name ?? '',
             quantity: cartItem.quantity,
             cartItemId: cartItem.id,
-            metadata: {
-              source: 'checkout',
-              page_url: requestUrl
-            }
           });
         }
 

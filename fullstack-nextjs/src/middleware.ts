@@ -95,7 +95,7 @@ class AuthGuard {
 
 // メインのミドルウェア関数
 export async function middleware(request: NextRequest) {
-  console.log("request.url", request.url);
+
   const requestID = Math.random().toString(36).substring(2, 15) + 
                     Math.random().toString(36).substring(2, 15);
 

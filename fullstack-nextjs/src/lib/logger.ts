@@ -95,6 +95,7 @@ export interface UserAction {
   actionType: ActionType;
   userId: string;
   requestID?: string;
+  page_url?: string;
   requestUrl?: string;
   
   // 製品情報
@@ -361,7 +362,7 @@ class AppLogger implements Logger {
 
       // コンテキスト
       context: {
-        page_url: action.metadata?.page_url,
+        page_url: action.page_url,
         source: action.metadata?.source,
         referrer: req.headers.referer,
         session_id: req.session?.id,
@@ -390,8 +391,8 @@ class AppLogger implements Logger {
         category_name: action.searchCategoryName || ''
       } : undefined,
 
-      // // その他のメタデータ
-      // ...action.metadata
+      // その他のメタデータ
+      ...action.metadata
     };
   }
 }
