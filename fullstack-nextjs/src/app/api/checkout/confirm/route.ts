@@ -5,8 +5,10 @@ import { logger } from '@/lib/logger';
 
 class CheckoutConfirmHandler extends BaseApiHandler {
   async POST() {
-    try {
-      const { userId, requestId } = await this.getHeaders();
+    try {  
+      const { userId, requestId, requestUrl } = await this.getHeaders();
+      // // // リクエスト pathをconsoleに出力
+      // console.log("requestUrl",requestUrl);
       const authError = this.checkAuth(userId);
       if (authError) return authError;
 
@@ -63,7 +65,8 @@ class CheckoutConfirmHandler extends BaseApiHandler {
             quantity: cartItem.quantity,
             cartItemId: cartItem.id,
             metadata: {
-              source: 'checkout'
+              source: 'checkout',
+              page_url: requestUrl
             }
           });
         }

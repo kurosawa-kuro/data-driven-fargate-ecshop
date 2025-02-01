@@ -8,7 +8,8 @@ export class BaseApiHandler {
       const headersList = await headers();
       return {
         userId: headersList.get('x-user-id'),
-        requestId: headersList.get('x-request-id')
+        requestId: headersList.get('x-request-id'),
+        requestUrl: headersList.get('x-request-url')
       };
     }
   

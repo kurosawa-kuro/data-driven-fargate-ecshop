@@ -95,6 +95,7 @@ export interface UserAction {
   actionType: ActionType;
   userId: string;
   requestID?: string;
+  requestUrl?: string;
   
   // 製品情報
   productId?: number;
@@ -360,7 +361,8 @@ class AppLogger implements Logger {
 
       // コンテキスト
       context: {
-        page_url: req.originalUrl,
+        page_url: action.metadata?.page_url,
+        source: action.metadata?.source,
         referrer: req.headers.referer,
         session_id: req.session?.id,
         ...extractUTMParams(req.query)
@@ -388,8 +390,8 @@ class AppLogger implements Logger {
         category_name: action.searchCategoryName || ''
       } : undefined,
 
-      // その他のメタデータ
-      ...action.metadata
+      // // その他のメタデータ
+      // ...action.metadata
     };
   }
 }
