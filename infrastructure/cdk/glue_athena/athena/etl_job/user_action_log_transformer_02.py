@@ -8,11 +8,15 @@ from awsglue.context import GlueContext
 from awsglue.job import Job
 from awsglue.dynamicframe import DynamicFrame
 
+# Constants
+INPUT_PATH = "s3://fargatestack-logbucketcc3b17e8-usk5fhtyu7ev/"
+OUTPUT_PATH = "s3://fargatestack-logbucketcc3b17e8-usk5fhtyu7ev/after/"
+
 def initialize_glue_job():
     args = getResolvedOptions(sys.argv, ['JOB_NAME'])
     sc = SparkContext()
     glueContext = GlueContext(sc)
-    spark = glueContext.spark_session
+    glueContext.spark_session
     job = Job(glueContext)
     job.init(args['JOB_NAME'], args)
     return glueContext, job
@@ -98,14 +102,11 @@ def write_output(glueContext, deduplicated_dyf, output_path):
     )
 
 def main():
-    input_path = "s3://fargatestack-logbucketcc3b17e8-usk5fhtyu7ev/"
-    output_path = "s3://fargatestack-logbucketcc3b17e8-usk5fhtyu7ev/after/"
-    
     glueContext, job = initialize_glue_job()
-    source_dyf = load_data(glueContext, input_path)
+    source_dyf = load_data(glueContext, INPUT_PATH)
     mapped_dyf = Map.apply(frame=source_dyf, f=transform_log_record)
     deduplicated_dyf = deduplicate_data(mapped_dyf, glueContext)
-    write_output(glueContext, deduplicated_dyf, output_path)
+    write_output(glueContext, deduplicated_dyf, OUTPUT_PATH)
     job.commit()
 
 if __name__ == "__main__":
