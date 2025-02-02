@@ -3,25 +3,11 @@
 1. まず、パッケージリストを更新します：
 ```bash
 sudo apt update
-```
 
-2. Pythonをインストールします：
-```bash
 sudo apt install python3 python3-pip
-```
-
-3. Python3がデフォルトのPythonになるように設定します：
-```bash
 sudo apt install python-is-python3
-```
 
-4. インストールが完了したか確認します：
-```bash
 python3 --version
-```
-
-5. pipがインストールされているか確認します：
-```bash
 pip3 --version
 ```
 
