@@ -11,3 +11,6 @@ http://35.77.48.143:3000
 
 ### /
 GET {{localBaseUrl}}/
+
+### /predict    
+GET {{localBaseUrl}}/predict

@@ -34,6 +34,7 @@ source myenv/bin/activate
 # データ分析関連パッケージのインストール
 pip3 install scikit-learn numpy pandas matplotlib skl2onnx
 pip3 install tensorflow tf2onnx numpy scikit-learn
+pip3 install fastapi uvicorn tensorflow numpy
 ```
 
 pip3 install numpy
