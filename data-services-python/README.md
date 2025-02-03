@@ -32,8 +32,14 @@ source myenv/bin/activate
 ### 4. 必要なパッケージのインストール
 ```bash
 # データ分析関連パッケージのインストール
-pip3 install scikit-learn numpy pandas matplotlib
+pip3 install scikit-learn numpy pandas matplotlib skl2onnx
+pip3 install tensorflow tf2onnx numpy scikit-learn
 ```
+
+pip3 install numpy
+pip3 install scikit-learn
+pip3 install tensorflow
+pip3 install tf2onnx
 
 ## 注意事項
 - `.gitignore`に`myenv/`を追加することを推奨
@@ -50,3 +56,19 @@ pip freeze > requirements.txt
 - matplotlib
 
 この構成により、データ分析やML開発のための基本的な環境が整います。
+
+
+
+# モデルの学習
+python script.py --train
+
+# ONNXへの変換
+python script.py --convert
+
+# 予測
+python script.py --predict "5.1,3.5,1.4,0.2"
+
+# WSLのメモリ制限を設定
+# ホームディレクトリに.wslconfigファイルを作成
+echo "[wsl2]" > ~/.wslconfig
+echo "memory=8GB" >> ~/.wslconfig
