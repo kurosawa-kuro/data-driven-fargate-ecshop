@@ -10,15 +10,19 @@ interface DecodedToken {
   sub: string;
 }
 
-class LoginHandler extends BaseApiHandler {
-  private async validateToken(idToken: string | undefined): Promise<DecodedToken> {
+class TokenValidator {
+  async validateToken(idToken: string | undefined): Promise<DecodedToken> {
     if (!idToken) {
       throw new Error('認証トークンがありません');
     }
     return await jose.decodeJwt(idToken) as DecodedToken;
   }
+}
 
-  private async authenticate(email: string, password: string) {
+class UserAuthenticator {
+  private tokenValidator = new TokenValidator();
+
+  async authenticate(email: string, password: string) {
     const result = await signIn(email, password);
     const idToken = result?.AuthenticationResult?.IdToken;
     
@@ -26,7 +30,7 @@ class LoginHandler extends BaseApiHandler {
       throw new Error('認証トークンの取得に失敗しました');
     }
     
-    const decoded = await this.validateToken(idToken);
+    const decoded = await this.tokenValidator.validateToken(idToken);
     return {
       idToken,
       user: {
@@ -35,21 +39,43 @@ class LoginHandler extends BaseApiHandler {
       }
     };
   }
+}
+
+class UserActivityLogger {
+  async logLogin(userId: string) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastLoginAt: new Date() }
+    });
+
+    await logger.action({
+      actionType: ActionLogType.USER.LOGIN,
+      userId
+    });
+  }
+
+  async logFailedLogin(error: Error) {
+    await logger.action({
+      actionType: ActionLogType.USER.LOGIN,
+      userId: 'unknown',
+      metadata: {
+        error: error.message,
+        timestamp: new Date()
+      }
+    });
+  }
+}
+
+class LoginHandler extends BaseApiHandler {
+  private authenticator = new UserAuthenticator();
+  private logger = new UserActivityLogger();
 
   async POST(request: NextRequest) {
     try {
       const { email, password } = await request.json();
-      const { idToken, user} = await this.authenticate(email, password);
+      const { idToken, user } = await this.authenticator.authenticate(email, password);
 
-      await prisma.user.update({
-        where: { email: email },
-        data: { lastLoginAt: new Date() }
-      });
-
-      await logger.action({
-        actionType: ActionLogType.USER.LOGIN,
-        userId: user.userId
-      });
+      await this.logger.logLogin(user.userId);
 
       const response = this.successResponse({ 
         success: true,
@@ -68,14 +94,7 @@ class LoginHandler extends BaseApiHandler {
       return response;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        await logger.action({
-          actionType: ActionLogType.USER.LOGIN,
-          userId: 'unknown',
-          metadata: {
-            error: error instanceof Error ? error.message : 'ログインに失敗しました',
-            timestamp: new Date()
-          }
-        });
+        await this.logger.logFailedLogin(error);
       }
       return this.errorResponse('ログインに失敗しました', 500);
     }

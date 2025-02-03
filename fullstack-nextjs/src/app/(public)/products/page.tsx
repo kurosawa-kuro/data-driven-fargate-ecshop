@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { productAPI } from "@/lib/api/client";
-import CategoryButtons from "./CategoryButtons";
+import CategoryButtons from "./categoryButtons";
 
 interface Product {
   id: number;

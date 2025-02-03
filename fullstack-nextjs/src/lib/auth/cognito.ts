@@ -80,11 +80,6 @@ export const AuthService = {
   
   async signUp(email: string, password: string) {
     try {
-      console.log('Cognito Config:', {
-        region: COGNITO_CONFIG.REGION,
-        userPoolId: COGNITO_CONFIG.USER_POOL_ID,
-        clientId: COGNITO_CONFIG.CLIENT_ID
-      });
       const command = CommandFactory.createSignUpCommand(email, password);
       const response = await client.send(command);
       

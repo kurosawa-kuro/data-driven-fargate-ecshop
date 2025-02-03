@@ -98,6 +98,9 @@ export const productAPI = {
   },
   getProduct: async (productId: string): Promise<{ product: Product }> => {
     return executeRequest(`/api/products/${productId}`, 'GET', undefined, { cache: 'no-store' });
+  },
+  getProductsByCategory: async (categoryId: number): Promise<{ products: Product[] }> => {
+    return executeRequest(`/api/products/category/${categoryId}`, 'GET', undefined, { cache: 'no-store' });
   }
 };
 
