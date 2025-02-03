@@ -129,5 +129,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-tmp/
-data-services-python/myenv/
+**/tmp/
+**/myenv/
+**/__pycache__/

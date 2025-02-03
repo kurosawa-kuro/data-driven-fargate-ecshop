@@ -1,3 +1,9 @@
+venv-activate:
+	source myenv/bin/activate
+
+venv-deactivate:
+	deactivate	
+
 train:
 	python3 iris_training.py --train
 
@@ -12,3 +18,6 @@ predict_virginica:
 
 predict_setosa:
 	python3 iris_training.py --predict "5.1,3.5,1.4,0.2"
+
+	
+
