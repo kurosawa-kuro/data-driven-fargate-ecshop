@@ -14,3 +14,6 @@ GET {{localBaseUrl}}/
 
 ### /predict    
 GET {{localBaseUrl}}/predict
+
+### /predict_onnx
+GET {{localBaseUrl}}/predict_onnx
