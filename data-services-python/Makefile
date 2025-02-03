@@ -19,5 +19,6 @@ predict_virginica:
 predict_setosa:
 	python3 iris_training.py --predict "5.1,3.5,1.4,0.2"
 
-	
-
+# uvicorn app.main:app --reload
+run:
+	uvicorn app.main:app --reload
