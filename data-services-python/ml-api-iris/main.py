@@ -2,63 +2,52 @@ import os
 import numpy as np
 from fastapi import FastAPI
 from tensorflow.keras.models import load_model
-import onnxruntime as ort  # ONNX runtime for inference
+import onnxruntime as ort
 
-def load_iris_model(model_path: str):
-    """
-    Load and return the pre-trained Keras model from the specified path.
-    """
-    return load_model(model_path)
+# ----------------------------------------------------------------
+# Model Loading Classes - Responsible for loading models and performing prediction
+# ----------------------------------------------------------------
+class KerasIrisModel:
+    def __init__(self, model_path: str) -> None:
+        # Load the pre-trained Keras model from the specified path
+        self.model = load_model(model_path)
 
-def load_iris_model_onnx(model_path: str):
-    """
-    Load and return the ONNX model session from the specified path.
-    """
-    return ort.InferenceSession(model_path)
+    def predict(self, input_data: np.ndarray) -> np.ndarray:
+        # Compute predictions using the loaded Keras model
+        return self.model.predict(input_data)
 
+
+class ONNXIrisModel:
+    def __init__(self, model_path: str) -> None:
+        # Load the ONNX model session from the specified path
+        self.session = ort.InferenceSession(model_path)
+
+    def predict(self, input_data: np.ndarray) -> np.ndarray:
+        # Compute predictions using the loaded ONNX model session
+        input_name = self.session.get_inputs()[0].name
+        prediction_list = self.session.run(None, {input_name: input_data.astype(np.float32)})
+        return np.array(prediction_list[0])
+
+
+# ----------------------------------------------------------------
+# Utility Functions - Provide input data and map predictions
+# ----------------------------------------------------------------
 def get_species_mapping() -> dict:
-    """
-    Return a mapping dictionary for iris species.
-    """
+    # Return a mapping of iris species
     return {
         0: "setosa",
         1: "versicolor",
         2: "virginica"
     }
 
+
 def get_fixed_input_data() -> np.ndarray:
-    """
-    Return fixed input data for prediction.
-    """
-    # Fixed input: [sepal_length, sepal_width, petal_length, petal_width]
+    # Provide fixed input data for prediction: [sepal_length, sepal_width, petal_length, petal_width]
     return np.array([[5.1, 3.5, 1.4, 0.2]])
 
-def compute_prediction(model, input_data: np.ndarray) -> np.ndarray:
-    """
-    Compute the prediction for the given input data using the provided Keras model.
-    """
-    return model.predict(input_data)
-
-def compute_prediction_onnx(session, input_data: np.ndarray) -> np.ndarray:
-    """
-    Compute the prediction for the given input data using the provided ONNX model session.
-    """
-    # Get the name of the model's first input
-    input_name = session.get_inputs()[0].name
-    # Run inference using ONNX runtime
-    prediction_list = session.run(None, {input_name: input_data.astype(np.float32)})
-    return np.array(prediction_list[0])
 
 def map_prediction_to_species(prediction: np.ndarray, species_mapping: dict) -> dict:
-    """
-    Map the numeric prediction to the species name and probabilities.
-
-    Returns a dictionary that includes:
-      - predicted_class_id: Numeric index of the predicted species.
-      - predicted_species: Mapped species name.
-      - species_probabilities: A dictionary mapping each species to its probability.
-      - raw_probabilities: Raw output probabilities from the model.
-    """
+    # Map the numeric prediction result to species name and probabilities
     predicted_class_id = int(np.argmax(prediction, axis=1)[0])
     predicted_species = species_mapping.get(predicted_class_id, "unknown")
     species_probabilities = {
@@ -71,48 +60,44 @@ def map_prediction_to_species(prediction: np.ndarray, species_mapping: dict) -> 
         "raw_probabilities": prediction.tolist()
     }
 
-def predict_iris() -> dict:
-    """
-    Orchestrate the iris prediction process using the Keras model.
-    """
+
+def perform_prediction(model) -> dict:
+    # Orchestrate the prediction process using the given model instance
     input_data = get_fixed_input_data()
-    prediction = compute_prediction(iris_model, input_data)
-    species_map = get_species_mapping()
-    return map_prediction_to_species(prediction, species_map)
+    prediction = model.predict(input_data)
+    return map_prediction_to_species(prediction, get_species_mapping())
 
-def predict_iris_onnx() -> dict:
-    """
-    Orchestrate the iris prediction process using the ONNX model.
-    """
-    input_data = get_fixed_input_data()
-    session = load_iris_model_onnx(ONNX_MODEL_PATH)
-    prediction = compute_prediction_onnx(session, input_data)
-    species_map = get_species_mapping()
-    return map_prediction_to_species(prediction, species_map)
 
-# ------ モデルパスの相対指定部分 ------
-
-# __file__を利用して、main.pyのあるディレクトリを基準にモデルへのパスを組み立てる
+# ----------------------------------------------------------------
+# Model Paths - Establish base directory and model file paths
+# ----------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# 例: モデルファイルが「../deep-learning/model/iris_deep_learning_model.keras」にある場合
 MODEL_PATH = os.path.join(BASE_DIR, "..", "deep-learning", "model", "iris_deep_learning_model.keras")
 ONNX_MODEL_PATH = os.path.join(BASE_DIR, "..", "deep-learning", "model", "iris_deep_learning_model.onnx")
 
-iris_model = load_iris_model(MODEL_PATH)
+# Instantiate the Keras model once for performance
+keras_iris_model = KerasIrisModel(MODEL_PATH)
 
-# --------------------------------------
 
-# FastAPI アプリケーションの作成
+# ----------------------------------------------------------------
+# FastAPI Application Setup and Route Definitions
+# ----------------------------------------------------------------
 app = FastAPI()
 
 @app.get("/predict")
 def predict():
-    return predict_iris()
+    # Endpoint using the Keras model for prediction
+    return perform_prediction(keras_iris_model)
+
 
 @app.get("/predict_onnx")
 def predict_onnx():
-    return predict_iris_onnx()
+    # Instantiate ONNX model per request to load a fresh session if necessary
+    onnx_model = ONNXIrisModel(ONNX_MODEL_PATH)
+    return perform_prediction(onnx_model)
+
 
 if __name__ == '__main__':
     import uvicorn
+    # Run the FastAPI application
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
