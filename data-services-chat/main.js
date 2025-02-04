@@ -1,32 +1,53 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
-process.noDeprecation = true;
-
 import { OpenAI } from 'openai';
 
 /**
- * Creates and returns an instance of the OpenAI client.
+ * Load and apply the environment configuration from .env file.
  */
-function initializeOpenAI() {
+function loadConfiguration() {
+  dotenv.config();
+}
+
+/**
+ * Constant definition for the OpenAI model name.
+ */
+const GPT_MODEL_NAME = "gpt-4o-mini";
+
+/**
+ * Creates and returns an instance of the OpenAI client.
+ * Ensures that the API key is retrieved via environment variables.
+ */
+function getOpenAiClient() {
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
 }
 
 /**
+ * Builds the message payload for the OpenAI chat completion.
+ * @param {string} messageContent - The user message to be sent.
+ * @returns {Array<Object>} - The message payload array.
+ */
+function buildUserMessage(messageContent) {
+  return [{ role: "user", content: messageContent }];
+}
+
+/**
  * Fetches chat completion from OpenAI using the provided client and message.
- * @param {OpenAI} client - The OpenAI client instance.
- * @param {string} messageContent - The user message to send.
- * @returns {Promise<string>} - The content of the AI's reply.
+ * This function encapsulates the API call logic and error handling.
+ * @param {OpenAI} client - The initialized OpenAI client instance.
+ * @param {string} messageContent - The text content of the user message.
+ * @returns {Promise<string>} - The AI's reply content.
  */
 async function fetchChatCompletion(client, messageContent) {
   try {
+    const messages = buildUserMessage(messageContent);
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: messageContent }],
+      model: GPT_MODEL_NAME,
+      messages: messages,
     });
-    return response.choices[0].message.content;
+    // Return the first message content from the response, if available.
+    return response?.choices[0]?.message?.content || "No response content.";
   } catch (error) {
     console.error("Error fetching chat completion:", error);
     throw error;
@@ -34,12 +55,21 @@ async function fetchChatCompletion(client, messageContent) {
 }
 
 /**
- * Main execution function which ties all functionalities together.
+ * The main execution function, which ties all functionalities together.
+ * It handles configuration loading, client initialization, and processing the chat flow.
  */
 async function main() {
   try {
-    const client = initializeOpenAI();
+    // Load configuration settings from environment.
+    loadConfiguration();
+
+    // Initialize the OpenAI client.
+    const client = getOpenAiClient();
+
+    // Define the user message to be sent.
     const userMessage = "Hello, world!";
+
+    // Fetch the AI response based on the user message.
     const aiResponse = await fetchChatCompletion(client, userMessage);
     console.log(aiResponse);
   } catch (error) {
@@ -47,5 +77,5 @@ async function main() {
   }
 }
 
-// Execute the main function as the entry point.
+// Execute main as the entry point of the application.
 main();
