@@ -69,22 +69,24 @@ model Product {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
-  // リレーション
   productCategories ProductCategory[]
-  viewHistories   ViewHistory[]
-  cartItems       CartItem[]
-  orderItems      OrderItem[]
-  returnItems     ReturnItem[]
+  viewHistories     ViewHistory[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+  returnItems       ReturnItem[]
+  
+  topPageDisplays   TopPageDisplay[]
 }
 
 // カテゴリー
 model Category {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                Int       @id @default(autoincrement())
+  name              String    @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   
   productCategories ProductCategory[]
+  topPageDisplays   TopPageDisplay[]
 }
 
 model ProductCategory {
@@ -98,6 +100,41 @@ model ProductCategory {
   @@id([productId, categoryId])
   @@index([productId])
   @@index([categoryId])
+}
+
+// 新たに追加する enum: DisplayType
+enum DisplayType {
+  SALE                 // セール商品
+  RECOMMENDED          // 閲覧履歴ベースのおすすめ
+  REPURCHASE           // 再び購入
+  DAILY_DEAL           // 今日の特価
+  RECOMMENDED_CATEGORY // おすすめカテゴリー
+  CONTINUE_SHOPPING    // ショッピングを続ける
+}
+
+// 新たに追加する model: TopPageDisplay
+model TopPageDisplay {
+  id              Int         @id @default(autoincrement())
+  displayType     DisplayType
+  productId       Int?        // 商品ID（商品表示の場合）
+  categoryId      Int?        // カテゴリーID（カテゴリー表示の場合）
+  priority        Int         @default(0)  // 表示順
+  specialPrice    Float?      // セールや特価用の価格
+  startDate       DateTime    @default(now())
+  endDate         DateTime?   // null の場合は無期限
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // 修正: 明示的なリレーション名を削除
+  product         Product?    @relation(fields: [productId], references: [id])
+  category        Category?   @relation(fields: [categoryId], references: [id])
+
+  @@index([displayType])
+  @@index([productId])
+  @@index([categoryId])
+  @@index([startDate, endDate])
+  @@index([isActive])
 }
 
 
@@ -261,3 +298,4 @@ enum ReturnStatus {
   REJECTED
   COMPLETED
 }
+

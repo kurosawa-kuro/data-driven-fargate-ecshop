@@ -141,7 +141,7 @@ async function main() {
       prisma.userRole.create({
         data: {
           userId: users[4].id,
-          roleId: roles[1].id  // USER（roles[4]から修正）
+          roleId: roles[1].id  // USER
         }
       })
     ]);
@@ -322,6 +322,51 @@ async function main() {
         }
       })
     ]);
+
+    // TopPageDisplayのシード作成 (各グループに５件ずつ)
+    const topPageDisplays = await Promise.all([
+      // 5 entries for SALE display type
+      ...Array.from({ length: 5 }, (_, index) =>
+        prisma.topPageDisplay.create({
+          data: {
+            displayType: "SALE", // Display type for sale products
+            productId: products[index % products.length].id, // Cycle through available products
+            priority: index + 1,
+            specialPrice: Number((products[index % products.length].price * 0.9).toFixed(2)), // 10% off
+            startDate: new Date(),
+            endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Valid for 7 days
+            isActive: true
+          }
+        })
+      ),
+      // 5 entries for RECOMMENDED_CATEGORY display type
+      ...Array.from({ length: 5 }, (_, index) =>
+        prisma.topPageDisplay.create({
+          data: {
+            displayType: "RECOMMENDED_CATEGORY", // Display type for recommended categories
+            categoryId: categories[index % categories.length].id, // Cycle through available categories
+            priority: index + 1,
+            startDate: new Date(),
+            // For indefinite display, endDate is omitted (null)
+            isActive: true
+          }
+        })
+      ),
+      // 5 entries for CONTINUE_SHOPPING display type
+      ...Array.from({ length: 5 }, (_, index) =>
+        prisma.topPageDisplay.create({
+          data: {
+            displayType: "CONTINUE_SHOPPING", // Display type to encourage continuous shopping
+            productId: products[index % products.length].id, // Cycle through available products
+            priority: index + 1,
+            startDate: new Date(),
+            isActive: true
+          }
+        })
+      )
+    ]);
+
+    console.log("TopPageDisplayのシードデータが作成されました");
 
     // OrderとOrderItemの作成例
     const order = await prisma.order.create({
