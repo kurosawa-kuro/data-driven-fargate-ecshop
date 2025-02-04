@@ -1,0 +1,11 @@
+
+@localHost = localhost
+@port = 8080
+
+### Base URLs
+@localBaseUrl = http://{{localHost}}:{{port}}
+
+
+### /
+GET {{localBaseUrl}}/
+

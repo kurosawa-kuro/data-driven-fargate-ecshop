@@ -10,7 +10,8 @@ export default function Navigation() {
 
   const menuItems = [
     { href: '/', label: 'TOP' },
-    { href: '/products', label: 'products' },
+    { href: '/products', label: '商品一覧' },
+    { href: '/chatbot', label: '問い合わせ（人工知能）' },
   ];
 
   // ログイン済みの場合のみカートと注文履歴リンクを追加
