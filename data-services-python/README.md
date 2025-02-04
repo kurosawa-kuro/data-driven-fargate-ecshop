@@ -23,15 +23,48 @@
 
 ### システム更新とPythonインストール
 
-以下のコマンドでシステムパッケージを更新し、Python3と関連ツールをインストールします。
+以下の手順で、システムパッケージの更新、Python のインストール、及び仮想環境の作成を行います。
 
-```bash
-# システムパッケージの更新
+#### 1. システムパッケージの更新と依存ライブラリのインストール
+
+# Update system package list
 sudo apt update
 
-# Python3と関連ツールのインストール
-sudo apt install python3 python3-pip python-is-python3
-```
+# Install build tools and necessary libraries for building Python
+sudo apt install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+  libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
+  xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+
+#### 2. pyenv を用いた Python 3.11.5 のインストール
+
+# Install pyenv via the official installer script
+curl https://pyenv.run | bash
+
+# Set up pyenv environment variables (add these lines to your ~/.bashrc or ~/.zshrc)
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+
+# Reload shell configuration if necessary
+source ~/.bashrc
+
+# Confirm pyenv installation and install Python 3.11.5
+pyenv --version
+pyenv install 3.11.5
+pyenv local 3.11.5
+
+#### 3. 仮想環境の作成と初期設定
+
+# Create a virtual environment using the installed Python version
+python3 -m venv myenv
+
+# Activate the virtual environment
+source myenv/bin/activate
+
+# Upgrade pip and install required packages
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
 
 ### バージョン確認
 
@@ -168,3 +201,5 @@ uvicorn main:app --reload
 ---
 
 以上の手順に従うことで、データ分析及びML開発に最適な環境が整い、効率的な開発作業が可能となります。
+
+pip install -r requirements.txt
