@@ -113,6 +113,42 @@ export const historyAPI = {
   }
 };
 
+/* ------------------------------------------------------------------
+   New API: Top Page Display API
+   This API retrieves the top page display information grouped
+   by display type from the backend (/api/top).
+---------------------------------------------------------------------*/
+
+// Type definitions for top page display response
+interface TopPageDisplay {
+  id: number;
+  displayType: string;
+  productId: number;
+  productName: string;
+  productPrice: number;
+  categoryId: number;
+  categoryName: string;
+  priority: number;
+  specialPrice?: number | null;
+  startDate: string;
+  endDate?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+type TopPageDisplayByDisplayType = Record<string, TopPageDisplay[]>;
+
+interface TopPageResponse {
+  topPageDisplayByDisplayType: TopPageDisplayByDisplayType;
+}
+
+export const topAPI = {
+  getTopPageDisplay: async (): Promise<TopPageResponse> => {
+    return executeRequest<TopPageResponse>("/api/top", "GET", undefined, { cache: "no-store" });
+  }
+};
+
 // リクエスト実行ユーティリティ
 const executeRequest = async <T = Record<string, unknown>>(
   endpoint: string,
