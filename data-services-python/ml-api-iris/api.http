@@ -17,3 +17,11 @@ GET {{localBaseUrl}}/predict
 
 ### /predict_onnx
 GET {{localBaseUrl}}/predict_onnx
+
+### /chat
+POST {{localBaseUrl}}/chat
+Content-Type: application/json
+
+{
+  "message": "Hello, how are you?"
+}

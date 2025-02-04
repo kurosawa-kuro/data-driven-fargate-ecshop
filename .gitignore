@@ -133,3 +133,6 @@ dist
 **/myenv/
 **/__pycache__/
 **/screenshot/
+**/myenv/
+data-services-python/myenv/lib/
+data-services-python/myenv/

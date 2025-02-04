@@ -1,8 +1,21 @@
 import os
 import numpy as np
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from tensorflow.keras.models import load_model
 import onnxruntime as ort
+from pydantic import BaseModel
+import openai
+from openai import ChatCompletion
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Set OpenAI API key from environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Constant definition for the OpenAI model name
+GPT_MODEL_NAME = "gpt-4o-mini"
 
 # ----------------------------------------------------------------
 # Model Loading Classes - Responsible for loading models and performing prediction
@@ -89,13 +102,60 @@ def predict():
     # Endpoint using the Keras model for prediction
     return perform_prediction(keras_iris_model)
 
-
 @app.get("/predict_onnx")
 def predict_onnx():
     # Instantiate ONNX model per request to load a fresh session if necessary
     onnx_model = ONNXIrisModel(ONNX_MODEL_PATH)
     return perform_prediction(onnx_model)
 
+# Define request model for the chat endpoint
+class ChatRequest(BaseModel):
+    message: str
+
+def build_user_message(message_content: str):
+    """
+    Build the message payload for OpenAI ChatCompletion request.
+    
+    :param message_content: The user's message to send.
+    :return: A list containing the message payload.
+    """
+    return [{"role": "user", "content": message_content}]
+
+def fetch_chat_completion(message_content: str) -> str:
+    """
+    Fetch chat completion from OpenAI using the provided message.
+    
+    :param message_content: The input message from the user.
+    :return: The AI's reply content.
+    """
+    try:
+        messages = build_user_message(message_content)
+        response = ChatCompletion.create(
+            model=GPT_MODEL_NAME,
+            messages=messages
+        )
+        # Return the first message content from the response, if available.
+        if response.choices and response.choices[0].message:
+            return response.choices[0].message.content
+        else:
+            return "No response content."
+    except Exception as error:
+        print("Error fetching chat completion:", error)
+        raise error
+
+@app.post("/chat")
+def chat_endpoint(chat_request: ChatRequest):
+    """
+    FastAPI endpoint to handle chatbot conversation.
+    
+    :param chat_request: The request payload containing the user's message.
+    :return: JSON response with the AI's reply.
+    """
+    try:
+        ai_response = fetch_chat_completion(chat_request.message)
+        return {"response": ai_response}
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 if __name__ == '__main__':
     import uvicorn
