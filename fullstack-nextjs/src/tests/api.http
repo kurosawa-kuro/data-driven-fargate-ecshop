@@ -30,6 +30,9 @@ Content-Type: application/json
 }
 
 ### ==================== 商品管理 ====================
+### トップページ表示
+GET {{localBaseUrl}}/api/top
+
 ### 商品一覧取得
 GET {{localBaseUrl}}/api/products
 
