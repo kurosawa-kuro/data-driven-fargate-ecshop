@@ -5,7 +5,7 @@ export default function Sidebar() {
     <aside className="w-64 min-h-screen bg-gray-900 text-white">
       <nav className="p-8">
         <ul className="space-y-1">
-          <li><Link href="/" className="block py-2 px-3 hover:bg-gray-800 hover:text-blue-400">ロゴ/TOP</Link></li>
+          <li><Link href="/" className="block py-2 px-3 hover:bg-gray-800 hover:text-blue-400">TOP</Link></li>
           <li><Link href="/products" className="block py-2 px-3 hover:bg-gray-800 hover:text-blue-400">検索バー</Link></li>
           <li><Link href="/developerTools" className="block py-2 px-3 hover:bg-gray-800 hover:text-blue-400">カート</Link></li>
           <li><Link href="/adminTools" className="block py-2 px-3 hover:bg-gray-800 hover:text-blue-400">ログイン/アカウント</Link></li>

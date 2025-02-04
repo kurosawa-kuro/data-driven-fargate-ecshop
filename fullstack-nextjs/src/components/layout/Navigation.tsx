@@ -9,7 +9,7 @@ export default function Navigation() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const menuItems = [
-    { href: '/', label: 'ロゴ/TOP' },
+    { href: '/', label: 'TOP' },
     { href: '/products', label: 'products' },
   ];
 
