@@ -132,4 +132,4 @@ dist
 **/tmp/
 **/myenv/
 **/__pycache__/
-data-services-scraping/screenshot/
+**/screenshot/
