@@ -14,6 +14,7 @@ async function cleanAllTables() {
   await prisma.$executeRaw`
     DO $$ 
     BEGIN 
+      DELETE FROM "TopPageDisplay";
       DELETE FROM "ReturnItem";
       DELETE FROM "Return";
       DELETE FROM "UserActionLog";
@@ -28,6 +29,7 @@ async function cleanAllTables() {
       DELETE FROM "Role";
       DELETE FROM "User";
       
+      ALTER SEQUENCE "TopPageDisplay_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "ReturnItem_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "Return_id_seq" RESTART WITH 1;
       ALTER SEQUENCE "UserActionLog_id_seq" RESTART WITH 1;
@@ -204,7 +206,7 @@ async function main() {
       })
     ]);
 
-    // ProductCategoryの作成
+    // ProductCategoryの作成（各商品に異なるカテゴリーを割り当て）
     await Promise.all([
       prisma.productCategory.create({
         data: {
@@ -215,25 +217,25 @@ async function main() {
       prisma.productCategory.create({
         data: {
           productId: products[1].id,
-          categoryId: categories[0].id
+          categoryId: categories[1].id
         }
       }),
       prisma.productCategory.create({
         data: {
           productId: products[2].id,
-          categoryId: categories[0].id
+          categoryId: categories[2].id
         }
       }),
       prisma.productCategory.create({
         data: {
           productId: products[3].id,
-          categoryId: categories[0].id
+          categoryId: categories[3].id
         }
       }),
       prisma.productCategory.create({
         data: {
           productId: products[4].id,
-          categoryId: categories[0].id
+          categoryId: categories[4].id
         }
       })
     ]);
@@ -323,51 +325,62 @@ async function main() {
       })
     ]);
 
-    // TopPageDisplayのシード作成 (各グループに５件ずつ)
+    // TopPageDisplayのシード作成（すべてのエントリーに対し、商品情報とカテゴリー情報を必須で設定）
     const topPageDisplays = await Promise.all([
-      // 5 entries for SALE display type
-      ...Array.from({ length: 5 }, (_, index) =>
-        prisma.topPageDisplay.create({
+      // SALE display type
+      ...Array.from({ length: 5 }, (_, index) => {
+        const prodIndex = index % products.length;
+        return prisma.topPageDisplay.create({
           data: {
-            displayType: "SALE", // Display type for sale products
-            productId: products[index % products.length].id, // Cycle through available products
-            productName: products[index % products.length].name, // Record product name
-            productPrice: products[index % products.length].price, // Record product price
+            displayType: "SALE",
+            productId: products[prodIndex].id,
+            productName: products[prodIndex].name,
+            productPrice: products[prodIndex].price,
+            categoryId: categories[prodIndex].id,         // Set corresponding category info
+            categoryName: categories[prodIndex].name,
             priority: index + 1,
-            specialPrice: Number((products[index % products.length].price * 0.9).toFixed(2)), // 10% off price
+            specialPrice: Number((products[prodIndex].price * 0.9).toFixed(2)),
             startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Valid for 7 days
+            endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
             isActive: true
           }
-        })
-      ),
-      // 5 entries for RECOMMENDED_CATEGORY display type
-      ...Array.from({ length: 5 }, (_, index) =>
-        prisma.topPageDisplay.create({
+        });
+      }),
+      // RECOMMENDED_CATEGORY display type
+      ...Array.from({ length: 5 }, (_, index) => {
+        const catIndex = index % categories.length;
+        const prodIndex = index % products.length;
+        return prisma.topPageDisplay.create({
           data: {
-            displayType: "RECOMMENDED_CATEGORY", // Display type for recommended categories
-            categoryId: categories[index % categories.length].id, // Cycle through available categories
-            categoryName: categories[index % categories.length].name, // Record category name
-            priority: index + 1,
-            startDate: new Date(),
-            isActive: true
-          }
-        })
-      ),
-      // 5 entries for CONTINUE_SHOPPING display type
-      ...Array.from({ length: 5 }, (_, index) =>
-        prisma.topPageDisplay.create({
-          data: {
-            displayType: "CONTINUE_SHOPPING", // Display type to encourage continuous shopping
-            productId: products[index % products.length].id, // Cycle through available products
-            productName: products[index % products.length].name, // Record product name
-            productPrice: products[index % products.length].price, // Record product price
+            displayType: "RECOMMENDED_CATEGORY",
+            categoryId: categories[catIndex].id,
+            categoryName: categories[catIndex].name,
+            productId: products[prodIndex].id,
+            productName: products[prodIndex].name,
+            productPrice: products[prodIndex].price,
             priority: index + 1,
             startDate: new Date(),
             isActive: true
           }
-        })
-      )
+        });
+      }),
+      // CONTINUE_SHOPPING display type
+      ...Array.from({ length: 5 }, (_, index) => {
+        const prodIndex = index % products.length;
+        return prisma.topPageDisplay.create({
+          data: {
+            displayType: "CONTINUE_SHOPPING",
+            productId: products[prodIndex].id,
+            productName: products[prodIndex].name,
+            productPrice: products[prodIndex].price,
+            categoryId: categories[prodIndex].id,
+            categoryName: categories[prodIndex].name,
+            priority: index + 1,
+            startDate: new Date(),
+            isActive: true
+          }
+        });
+      })
     ]);
 
     console.log("TopPageDisplayのシードデータが作成されました");
