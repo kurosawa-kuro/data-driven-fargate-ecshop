@@ -331,8 +331,10 @@ async function main() {
           data: {
             displayType: "SALE", // Display type for sale products
             productId: products[index % products.length].id, // Cycle through available products
+            productName: products[index % products.length].name, // Record product name
+            productPrice: products[index % products.length].price, // Record product price
             priority: index + 1,
-            specialPrice: Number((products[index % products.length].price * 0.9).toFixed(2)), // 10% off
+            specialPrice: Number((products[index % products.length].price * 0.9).toFixed(2)), // 10% off price
             startDate: new Date(),
             endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Valid for 7 days
             isActive: true
@@ -345,9 +347,9 @@ async function main() {
           data: {
             displayType: "RECOMMENDED_CATEGORY", // Display type for recommended categories
             categoryId: categories[index % categories.length].id, // Cycle through available categories
+            categoryName: categories[index % categories.length].name, // Record category name
             priority: index + 1,
             startDate: new Date(),
-            // For indefinite display, endDate is omitted (null)
             isActive: true
           }
         })
@@ -358,6 +360,8 @@ async function main() {
           data: {
             displayType: "CONTINUE_SHOPPING", // Display type to encourage continuous shopping
             productId: products[index % products.length].id, // Cycle through available products
+            productName: products[index % products.length].name, // Record product name
+            productPrice: products[index % products.length].price, // Record product price
             priority: index + 1,
             startDate: new Date(),
             isActive: true
