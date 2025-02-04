@@ -9,8 +9,8 @@ http://35.77.48.143:3000
 @localBaseUrl = http://{{localHost}}:{{port}}
 
 
-### /
-GET {{localBaseUrl}}/
+### /health
+GET {{localBaseUrl}}/health
 
 ### /predict    
 GET {{localBaseUrl}}/predict
