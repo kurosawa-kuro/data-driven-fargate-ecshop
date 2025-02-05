@@ -45,3 +45,6 @@ function startServer(app: Hono, port: number): void {
 const app = initApp();
 const port = 8080;
 startServer(app, port);
+
+// Exporting initApp for testing purposes
+export { initApp };
