@@ -83,7 +83,7 @@ const productList = [
   { id: "prod048", name: "玄関収納", price: 28000, category_id: "cat005" },
   { id: "prod049", name: "サイドテーブル", price: 12800, category_id: "cat005" },
   { id: "prod050", name: "シューズラック", price: 8800, category_id: "cat005" }
- ];
+];
 
 const categoryList = [
   { id: "cat001", name: "電化製品" },
@@ -93,18 +93,18 @@ const categoryList = [
   { id: "cat005", name: "家具" },
 ];
 
-// Utility function to get random element from an array
+// Utility function to get a random element from an array
 function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Updated function for device type detection: returns a random value from the list ['desktop', 'web', 'iPhone', 'Android']
+// Updated function for device type detection: returns a random value from ['desktop', 'web', 'iPhone', 'Android']
 function detectDeviceType(userAgent) {
   const deviceTypes = ['desktop', 'web', 'iPhone', 'Android'];
   return getRandomElement(deviceTypes);
 }
 
-// Stub for getting request context (to be replaced with actual implementation)
+// Stub for getting request context (to be replaced with an actual implementation)
 function getRequestContext() {
   return {
     headers: {
@@ -120,36 +120,17 @@ function getRequestContext() {
 
 // Stub for categorizing action types
 function categorizeAction(actionType) {
-  // Return a categorized action string based on actionType
   return actionType.toUpperCase();
 }
 
 // Stub for extracting UTM parameters from query
 function extractUTMParams(query) {
-  // Return UTM parameters if exists; placeholder implementation
   return {
     utm_source: query.utm_source || '',
     utm_medium: query.utm_medium || '',
     utm_campaign: query.utm_campaign || ''
   };
 }
-
-/* 
-  Improvement Functions:
-  
-  - generateRandomAmount: simulate realistic amount using log-normal distribution.
-  - addNoiseToData: add noise around a base value.
-  - addSeasonality: add seasonal factor based on the month.
-  - productRelations: indicates product associations.
-  - userPreferences: indicates user purchasing tendencies.
-  - introduceAnomalies: randomly introduce extreme outliers.
-  - generateSessionBehavior: simulate session-related purchasing actions.
-*/
-
-// Generate a random amount using log-normal distribution
-const generateRandomAmount = () => {
-  return Math.exp(Math.random() + 0.5) * 1000;
-};
 
 // Add noise to a given value
 const addNoiseToData = (value, noiseLevel = 0.1) => {
@@ -163,19 +144,7 @@ const addSeasonality = (baseAmount, date) => {
   return baseAmount * seasonalFactor;
 };
 
-// Define product relations (for cross-selling scenarios)
-const productRelations = {
-  'prod123': ['prod456', 'prod789'],
-  'prod456': ['prod123', 'prod101'],
-};
-
-// Define user purchasing preferences
-const userPreferences = {
-  'user123': ['electronics', 'books'],
-  'user456': ['clothes', 'food'],
-};
-
-// Introduce anomalies into logs (e.g., extreme amount outliers)
+// Introduce anomalies into logs (e.g., extreme outliers)
 const introduceAnomalies = (logs, anomalyRate = 0.05) => {
   return logs.map(log => {
     if (Math.random() < anomalyRate) {
@@ -188,33 +157,21 @@ const introduceAnomalies = (logs, anomalyRate = 0.05) => {
   });
 };
 
-// Simulate session behavior for a user
-const generateSessionBehavior = (userId) => {
-  const sessionLength = Math.floor(Math.random() * 5) + 1;
-  return Array.from({ length: sessionLength }, () => ({
-    userId,
-    sessionId: `${userId}-${Date.now()}-${Math.random().toString(36).substr(2,5)}`,
-    activity: getRandomElement(["click", "view", "purchase", "refund"]),
-    timestamp: new Date()
-  }));
-};
-
 // Class responsible for file operations for log writing
 class LogFileWriter {
   constructor(filePath) {
     this.logFilePath = filePath;
   }
 
-  // Write log message to file; delete existing file if exists
+  // Write log message to file; delete existing file if it exists
   write(logMessage) {
-    if (fs.existsSync(this.logFilePath)) { // If file exists, delete it
+    if (fs.existsSync(this.logFilePath)) {
       try {
         fs.unlinkSync(this.logFilePath);
       } catch (err) {
         console.error('Failed to delete existing log file:', err);
       }
     }
-    
     fs.writeFile(this.logFilePath, logMessage, (err) => {
       if (err) {
         console.error('Failed to write log to file:', err);
@@ -227,9 +184,7 @@ class LogFileWriter {
 class LogMaker {
   constructor() {
     this.logs = [];
-    // Define the log file path for payment logs
     this.logFilePath = path.join(__dirname, 'payment.log');
-    // Instantiate LogFileWriter for file operations (SRP)
     this.logWriter = new LogFileWriter(this.logFilePath);
   }
 
@@ -248,18 +203,14 @@ class LogMaker {
       throw new Error('Input must be an array of log data objects');
     }
     
-    // Validate and enrich logs for each data object
     let newLogs = dataArray.map(data => {
       this.validateData(data);
       return this.createEnrichedLog(data);
     });
     
-    // Introduce anomalies randomly into the log set
     newLogs = introduceAnomalies(newLogs, 0.05);
-    
     this.logs.push(...newLogs);
     
-    // Process logs according to the flag (batch mode or individual processing)
     if (ENABLE_BATCH_LOG_PROCESSING) {
       this.processLogs(newLogs);
     } else {
@@ -269,7 +220,7 @@ class LogMaker {
     return newLogs;
   }
 
-  // Enriches raw log data with additional metadata and improvement info
+  // Enriches raw log data with additional metadata to match the Athena log schema
   createEnrichedLog(data) {
     const req = getRequestContext();
     return {
@@ -287,11 +238,11 @@ class LogMaker {
         note: "Payment log entry"
       },
       product_data: data.productId ? {
-          product_id: parseInt(data.productId.replace(/\D/g, "")),  // "prod001" -> 1
+          product_id: parseInt(data.productId.replace(/\D/g, "")),
           product_name: data.productName,
           product_price: data.productPrice,
           quantity: data.quantity,
-          category_id: data.categoryId ? parseInt(data.categoryId.replace(/\D/g, "")) : 0, // "cat001" -> 1
+          category_id: data.categoryId ? parseInt(data.categoryId.replace(/\D/g, "")) : 0,
           category_name: data.category
       } : undefined,
       search_data: data.searchKeyword ? {
@@ -322,11 +273,6 @@ class LogMaker {
     }
   }
 
-  // Generates a unique log ID using the current timestamp and a random string
-  generateLogId() {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-
   // Processes a single log: delegates file writing and outputs to console
   processLog(log) {
     const logMessage = `${JSON.stringify(log)}\n`;
@@ -348,9 +294,8 @@ class LogMaker {
     );
   }
 
-  // Utility method: retrieves logs within a specified date range (inclusive)
+  // Retrieves logs within a specified date range (inclusive)
   getLogsByDateRange(startDate, endDate) {
-    // Convert startDate and endDate to milliseconds for accurate comparison
     const startTime = new Date(startDate).getTime();
     const endTime = new Date(endDate).getTime();
     
@@ -367,57 +312,37 @@ class LogMaker {
       .reduce((sum, log) => sum + log.amount, 0);
   }
 
-  // --------------------------------------------------------------
+  // -------------------------
   // New Methods for Asynchronous User Action Logging (Athena format)
   
   /**
    * Log user action asynchronously in Athena log format.
    * Only processes actions with actionType "ORDER_COMPLETE".
-   * Prints log to CloudWatch (console) and conditionally saves to DB.
    */
   async logUserAction(action) {
-    // Restrict logging to ORDER_COMPLETE actions only
     if (action.actionType !== "ORDER_COMPLETE") {
       console.log("Skipping user action log because action type is not ORDER_COMPLETE");
       return;
-    }
-    
-    const athenaLog = await this.formatForAthena(action);
-    
-    // Send log to Athena via CloudWatch Logs (displayed in yellow)
-    console.log('\x1b[33m%s\x1b[0m', JSON.stringify(athenaLog));
-    
-    // Save to DB if action type is not logging-only
-    if (!this.isLoggingOnlyAction(action.actionType)) {
-      await this.logToDB(action);
     }
   }
   
   /**
    * Format the user action to Athena Log format.
-   * Returns a Promise that resolves to the Athena log entry.
    */
   async formatForAthena(action) {
-    // Retrieve request context (stub implementation)
     const req = getRequestContext();
     
     return {
-      timestamp: new Date().toISOString(), // Log timestamp in ISO format
+      timestamp: new Date().toISOString(),
       request_id: action.requestID || this.generateRequestID(),
       log_type: 'USER_ACTION',
       environment: process.env.NODE_ENV || 'development',
-      
-      // User information
       user_id: action.userId,
       user_agent: req.headers['user-agent'],
       client_ip: req.ip,
       country_code: req.headers['cf-ipcountry'],
       device_type: detectDeviceType(req.headers['user-agent']),
-      
-      // Action information
       action: categorizeAction(action.actionType),
-      
-      // Context data
       context: {
         page_url: action.page_url,
         source: action.metadata?.source,
@@ -425,8 +350,6 @@ class LogMaker {
         session_id: req.session?.id,
         ...extractUTMParams(req.query)
       },
-      
-      // Product data if available
       product_data: action.productId ? {
         product_id: action.productId,
         product_name: action.productName || '',
@@ -435,43 +358,23 @@ class LogMaker {
         category_id: action.categoryId || 0,
         category_name: action.categoryName || ''
       } : undefined,
-      
-      // Order data if available
       order_data: action.orderId ? {
         order_id: action.orderId.toString()
       } : undefined,
-      
-      // Search data if available
       search_data: action.searchKeyword ? {
         keyword: action.searchKeyword,
         category_id: action.searchCategoryId || 0,
         category_name: action.searchCategoryName || ''
       } : undefined,
-      
-      // Additional metadata merged
       ...action.metadata
     };
   }
   
   /**
    * Placeholder: Determines if the action is a logging-only action.
-   * Replace with actual logic as needed.
    */
   isLoggingOnlyAction(actionType) {
-    // For demonstration, assume actions of type 'VIEW' are logging-only.
     return actionType === 'VIEW';
-  }
-  
-  /**
-   * Placeholder: Logs the action to the database.
-   * Replace with actual DB logging implementation.
-   */
-  async logToDB(action) {
-    // Simulate asynchronous DB logging
-    return new Promise((resolve) => {
-      console.log('Logging action to DB:', action);
-      setTimeout(resolve, 100); // Simulated async DB operation delay
-    });
   }
   
   /**
@@ -483,19 +386,15 @@ class LogMaker {
 }
 
 // ----- Usage example for Payment Logs -----
-
 const logMaker = new LogMaker();
 
-// Dynamic generation of 10 payment log entries using ORDER_COMPLETE only
 const dynamicMultipleLogData = Array.from({ length: 10 }, () => {
   const randomUser = getRandomElement(userList);
   const randomProduct = getRandomElement(productList);
-  // Get corresponding category for consistency with product
   const matchingCategory = categoryList.find(cat => cat.id === randomProduct.category_id) || randomProduct;
   const action = "ORDER_COMPLETE"; // 固定値で設定
   const quantity = Math.floor(Math.random() * 5) + 1;
   
-  // Calculate base amount from product price and quantity, then apply noise and seasonality
   let baseAmount = randomProduct.price * quantity;
   baseAmount = addNoiseToData(baseAmount);
   baseAmount = addSeasonality(baseAmount, new Date());
@@ -503,11 +402,11 @@ const dynamicMultipleLogData = Array.from({ length: 10 }, () => {
   return {
     userId: randomUser.id,
     action: action,
-    productId: randomProduct.id,            // e.g. "prod001"
-    productName: randomProduct.name,          // e.g. "4Kテレビ 55インチ"
-    productPrice: randomProduct.price,        // e.g. 89800
-    categoryId: matchingCategory.id,          // e.g. "cat001"
-    category: matchingCategory.name,          // e.g. "電化製品"
+    productId: randomProduct.id,
+    productName: randomProduct.name,
+    productPrice: randomProduct.price,
+    categoryId: matchingCategory.id,
+    category: matchingCategory.name,
     quantity: quantity,
     amount: baseAmount,
     timestamp: new Date()
@@ -522,20 +421,16 @@ try {
 }
 
 // ----- Example usage of getLogsByDateRange -----
-// Assume logs have been created and pushed into logMaker.logs
 const now = new Date();
-// Define end date as 10 minutes later from now
 const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
-
-// Retrieve logs in the specified date range (using ISO string for clarity)
 const logsWithinRange = logMaker.getLogsByDateRange(now.toISOString(), tenMinutesLater.toISOString());
 console.log('Logs within specified date range:', logsWithinRange);
 
 // ----- Usage example for User Action Logging -----
 const sampleUserAction = {
-  requestID: null, // Will be generated dynamically if null
+  requestID: null,
   userId: 'user123',
-  actionType: 'ORDER_COMPLETE', // Changed to ORDER_COMPLETE
+  actionType: 'ORDER_COMPLETE',
   page_url: 'http://example.com/home',
   productId: 'prod001',
   productName: '4Kテレビ 55インチ',
