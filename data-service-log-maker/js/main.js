@@ -30,6 +30,33 @@ function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/**
+ * Generates a unique request ID.
+ * @returns {string} A unique request ID.
+ */
+function generateRequestID() {
+  return `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Generates a unique order ID.
+ * @returns {string} A unique order ID.
+ */
+function generateOrderID() {
+  return `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Extracts numeric part from a string.
+ * If no digits found, returns 0.
+ * @param {string} id 
+ * @returns {number}
+ */
+function parseNumericId(id) {
+  const digits = id.replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+}
+
 /*************************************
  * データ定義
  *************************************/
@@ -127,27 +154,50 @@ const categoryList = [
  * ドメインロジック - ログ生成処理
  *************************************/
 /**
- * Generates a single payment log.
+ * Generates a single payment log with the correct log format.
  * @returns {Object} A log object.
  */
 function generatePaymentLog() {
   const randomUser = getRandomElement(userList);
   const randomProduct = getRandomElement(productList);
-  const matchingCategory = categoryList.find(
-    cat => cat.id === randomProduct.category_id
-  ) || { id: null, name: "" };
+  const matchingCategory =
+    categoryList.find(cat => cat.id === randomProduct.category_id) || { id: "", name: "" };
   const quantity = Math.floor(Math.random() * 5) + 1;
   
   return {
-    userId: randomUser.id,
+    timestamp: getRandomTimestamp(),
+    request_id: generateRequestID(),
+    log_type: "USER_ACTION",
+    environment: process.env.NODE_ENV || "development",
+    user_id: randomUser.id,
+    user_agent: "example user-agent",
+    client_ip: "127.0.0.1",
+    country_code: "日本",
+    device_type: "iPhone",
     action: "ORDER_COMPLETE",
-    productId: randomProduct.id,
-    productName: randomProduct.name,
-    productPrice: randomProduct.price,
-    categoryId: matchingCategory.id,
-    categoryName: matchingCategory.name,
-    quantity: quantity,
-    timestamp: getRandomTimestamp()
+    context: {
+      page_url: "http://example.com/home",
+      referrer: "http://example.com",
+      session_id: "session123",
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: ""
+    },
+    product_data: {
+      product_id: parseNumericId(randomProduct.id),
+      product_name: randomProduct.name,
+      product_price: randomProduct.price,
+      quantity: quantity,
+      category_id: parseNumericId(matchingCategory.id),
+      category_name: matchingCategory.name
+    },
+    search_data: {
+      keyword: "テレビ",
+      category_id: parseNumericId(matchingCategory.id),
+      category_name: matchingCategory.name
+    },
+    metadata: { additional_info: "test action" },
+    order_data: { order_id: generateOrderID() }
   };
 }
 
