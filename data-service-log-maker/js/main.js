@@ -226,11 +226,11 @@ class LogFileWriter {
   }
 }
 
-// Class responsible for log management (creation, validation, enrichment)
+// Class responsible for log management (payment logs & user action logs)
 class LogMaker {
   constructor() {
     this.logs = [];
-    // Define the log file path
+    // Define the log file path for payment logs
     this.logFilePath = path.join(__dirname, 'payment.log');
     // Instantiate LogFileWriter for file operations (SRP)
     this.logWriter = new LogFileWriter(this.logFilePath);
@@ -274,13 +274,39 @@ class LogMaker {
 
   // Enriches raw log data with additional metadata and improvement info
   createEnrichedLog(data) {
-    // Enrich the log with a unique ID and creation timestamp
-    const enrichedLog = {
-      ...data,
-      logId: this.generateLogId(),
-      createdAt: new Date(),
+    const req = getRequestContext();
+    return {
+      timestamp: data.timestamp ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
+      request_id: this.generateRequestID(),
+      log_type: "ORDER_COMPLETE",
+      environment: process.env.NODE_ENV || "development",
+      user_id: data.userId,
+      user_agent: req.headers['user-agent'],
+      client_ip: req.ip,
+      country_code: req.headers['cf-ipcountry'],
+      device_type: detectDeviceType(req.headers['user-agent']),
+      action: data.action,
+      context: {
+        note: "Payment log entry"
+      },
+      product_data: data.productId ? {
+          product_id: parseInt(data.productId.replace(/\D/g, "")),  // "prod001" -> 1
+          product_name: data.productName,
+          product_price: data.productPrice,
+          quantity: data.quantity,
+          category_id: data.categoryId ? parseInt(data.categoryId.replace(/\D/g, "")) : 0, // "cat001" -> 1
+          category_name: data.category
+      } : undefined,
+      search_data: data.searchKeyword ? {
+          keyword: data.searchKeyword,
+          category_id: data.searchCategoryId || 0,
+          category_name: data.searchCategoryName || ""
+      } : undefined,
+      metadata: data.metadata || {},
+      order_data: data.orderId ? {
+          order_id: data.orderId.toString()
+      } : undefined
     };
-    return enrichedLog;
   }
 
   // Validates that necessary fields are present and valid
@@ -338,31 +364,148 @@ class LogMaker {
       .filter(log => log.userId === userId)
       .reduce((sum, log) => sum + log.amount, 0);
   }
+
+  // --------------------------------------------------------------
+  // New Methods for Asynchronous User Action Logging (Athena format)
+  
+  /**
+   * Log user action asynchronously in Athena log format.
+   * Only processes actions with actionType "ORDER_COMPLETE".
+   * Prints log to CloudWatch (console) and conditionally saves to DB.
+   */
+  async logUserAction(action) {
+    // Restrict logging to ORDER_COMPLETE actions only
+    if (action.actionType !== "ORDER_COMPLETE") {
+      console.log("Skipping user action log because action type is not ORDER_COMPLETE");
+      return;
+    }
+    
+    const athenaLog = await this.formatForAthena(action);
+    
+    // Send log to Athena via CloudWatch Logs (displayed in yellow)
+    console.log('\x1b[33m%s\x1b[0m', JSON.stringify(athenaLog));
+    
+    // Save to DB if action type is not logging-only
+    if (!this.isLoggingOnlyAction(action.actionType)) {
+      await this.logToDB(action);
+    }
+  }
+  
+  /**
+   * Format the user action to Athena Log format.
+   * Returns a Promise that resolves to the Athena log entry.
+   */
+  async formatForAthena(action) {
+    // Retrieve request context (stub implementation)
+    const req = getRequestContext();
+    
+    return {
+      timestamp: new Date().toISOString(), // Log timestamp in ISO format
+      request_id: action.requestID || this.generateRequestID(),
+      log_type: 'USER_ACTION',
+      environment: process.env.NODE_ENV || 'development',
+      
+      // User information
+      user_id: action.userId,
+      user_agent: req.headers['user-agent'],
+      client_ip: req.ip,
+      country_code: req.headers['cf-ipcountry'],
+      device_type: detectDeviceType(req.headers['user-agent']),
+      
+      // Action information
+      action: categorizeAction(action.actionType),
+      
+      // Context data
+      context: {
+        page_url: action.page_url,
+        source: action.metadata?.source,
+        referrer: req.headers.referer,
+        session_id: req.session?.id,
+        ...extractUTMParams(req.query)
+      },
+      
+      // Product data if available
+      product_data: action.productId ? {
+        product_id: action.productId,
+        product_name: action.productName || '',
+        product_price: action.productPrice || 0,
+        quantity: action.quantity || 0,
+        category_id: action.categoryId || 0,
+        category_name: action.categoryName || ''
+      } : undefined,
+      
+      // Order data if available
+      order_data: action.orderId ? {
+        order_id: action.orderId.toString()
+      } : undefined,
+      
+      // Search data if available
+      search_data: action.searchKeyword ? {
+        keyword: action.searchKeyword,
+        category_id: action.searchCategoryId || 0,
+        category_name: action.searchCategoryName || ''
+      } : undefined,
+      
+      // Additional metadata merged
+      ...action.metadata
+    };
+  }
+  
+  /**
+   * Placeholder: Determines if the action is a logging-only action.
+   * Replace with actual logic as needed.
+   */
+  isLoggingOnlyAction(actionType) {
+    // For demonstration, assume actions of type 'VIEW' are logging-only.
+    return actionType === 'VIEW';
+  }
+  
+  /**
+   * Placeholder: Logs the action to the database.
+   * Replace with actual DB logging implementation.
+   */
+  async logToDB(action) {
+    // Simulate asynchronous DB logging
+    return new Promise((resolve) => {
+      console.log('Logging action to DB:', action);
+      setTimeout(resolve, 100); // Simulated async DB operation delay
+    });
+  }
+  
+  /**
+   * Generates a unique request ID.
+   */
+  generateRequestID() {
+    return `req-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+  }
 }
 
-// ----- Usage example -----
+// ----- Usage example for Payment Logs -----
 
 const logMaker = new LogMaker();
 
-// Dynamically generate 10 log entries using random values from userList, productList, and categoryList
+// Dynamic generation of 10 payment log entries using ORDER_COMPLETE only
 const dynamicMultipleLogData = Array.from({ length: 10 }, () => {
   const randomUser = getRandomElement(userList);
   const randomProduct = getRandomElement(productList);
-  const randomCategory = getRandomElement(categoryList);
-  const randomAction = Math.random() > 0.5 ? "purchase" : "refund";
+  // Get corresponding category for consistency with product
+  const matchingCategory = categoryList.find(cat => cat.id === randomProduct.category_id) || randomProduct;
+  const action = "ORDER_COMPLETE"; // 固定値で設定
   const quantity = Math.floor(Math.random() * 5) + 1;
   
-  // Calculate base amount from product price and quantity
+  // Calculate base amount from product price and quantity, then apply noise and seasonality
   let baseAmount = randomProduct.price * quantity;
-  // Add noise and seasonality to simulate realistic price fluctuation
   baseAmount = addNoiseToData(baseAmount);
   baseAmount = addSeasonality(baseAmount, new Date());
   
   return {
     userId: randomUser.id,
-    action: randomAction,
-    productId: randomProduct.id,
-    category: randomCategory.name,
+    action: action,
+    productId: randomProduct.id,            // e.g. "prod001"
+    productName: randomProduct.name,          // e.g. "4Kテレビ 55インチ"
+    productPrice: randomProduct.price,        // e.g. 89800
+    categoryId: matchingCategory.id,          // e.g. "cat001"
+    category: matchingCategory.name,          // e.g. "電化製品"
     quantity: quantity,
     amount: baseAmount,
     timestamp: new Date()
@@ -370,9 +513,35 @@ const dynamicMultipleLogData = Array.from({ length: 10 }, () => {
 });
 
 try {
-  // Create multiple logs with the generated dynamic data
   const logs = logMaker.createMultiplePaymentLogs(dynamicMultipleLogData);
   console.log('Created dynamic multiple logs:', logs);
 } catch (error) {
   console.error('Error creating dynamic multiple logs:', error.message);
 }
+
+// ----- Usage example for User Action Logging -----
+const sampleUserAction = {
+  requestID: null, // Will be generated dynamically if null
+  userId: 'user123',
+  actionType: 'ORDER_COMPLETE', // Changed to ORDER_COMPLETE
+  page_url: 'http://example.com/home',
+  productId: 'prod001',
+  productName: '4Kテレビ 55インチ',
+  productPrice: 89800,
+  quantity: 1,
+  categoryId: 'cat001',
+  categoryName: '電化製品',
+  orderId: 'order789',
+  searchKeyword: 'テレビ',
+  searchCategoryId: 'cat001',
+  searchCategoryName: '電化製品',
+  metadata: { additional_info: 'test action' }
+};
+
+(async () => {
+  try {
+    await logMaker.logUserAction(sampleUserAction);
+  } catch (err) {
+    console.error('Error logging user action:', err);
+  }
+})();
