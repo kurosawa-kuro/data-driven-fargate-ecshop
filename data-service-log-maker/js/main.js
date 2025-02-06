@@ -4,29 +4,36 @@ const fs = require('fs');
 const path = require('path');
 
 /*************************************
- * タイムスタンプ生成関連定数とグローバル変数
+ * ユーティリティ関数群
  *************************************/
-const TIMESTAMP_START = new Date("2024-01-01T00:00:00.000Z"); // 生成開始日時
-const TIMESTAMP_END   = new Date("2025-12-31T23:59:59.999Z"); // 生成終了日時
-let lastTimestamp = TIMESTAMP_START;
+// タイムスタンプ生成用定数
+const TIMESTAMP_START = new Date("2024-01-01T00:00:00.000Z");
+const TIMESTAMP_END   = new Date("2025-12-31T23:59:59.999Z");
 
 /**
- * Generates a random timestamp between TIMESTAMP_START and TIMESTAMP_END.
- *
+ * Returns a random ISO timestamp between TIMESTAMP_START and TIMESTAMP_END.
  * @returns {string} ISO formatted timestamp
  */
 function getRandomTimestamp() {
-  const startTime = TIMESTAMP_START.getTime();
-  const endTime = TIMESTAMP_END.getTime();
-  const randomTime = startTime + Math.random() * (endTime - startTime);
+  const randomTime =
+    TIMESTAMP_START.getTime() +
+    Math.random() * (TIMESTAMP_END.getTime() - TIMESTAMP_START.getTime());
   return new Date(randomTime).toISOString();
 }
 
+/**
+ * Returns a random element from an array.
+ * @param {Array} arr The array from which to pick an element.
+ * @returns {*} A random element from the array.
+ */
+function getRandomElement(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 /*************************************
- * 定数およびその他のデータ定義
+ * データ定義
  *************************************/
-const ENABLE_BATCH_LOG_PROCESSING = true;
-const LOG_COUNT = 10; // 生成するログの件数
+const LOG_COUNT = 100; // 生成するログの件数
 
 const userList = [
   { id: "user001" },
@@ -106,7 +113,7 @@ const productList = [
   { id: "prod048", name: "玄関収納", price: 28000, category_id: "cat005" },
   { id: "prod049", name: "サイドテーブル", price: 12800, category_id: "cat005" },
   { id: "prod050", name: "シューズラック", price: 8800, category_id: "cat005" }
-];
+ ];
 
 const categoryList = [
   { id: "cat001", name: "電化製品" },
@@ -117,55 +124,48 @@ const categoryList = [
 ];
 
 /*************************************
- * ユーティリティ関数群
+ * ドメインロジック - ログ生成処理
  *************************************/
-
 /**
- * Returns a random element from an array.
- * @param {Array} arr 
- * @returns {*} A random element from arr.
+ * Generates a single payment log.
+ * @returns {Object} A log object.
  */
-function getRandomElement(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+function generatePaymentLog() {
+  const randomUser = getRandomElement(userList);
+  const randomProduct = getRandomElement(productList);
+  const matchingCategory = categoryList.find(
+    cat => cat.id === randomProduct.category_id
+  ) || { id: null, name: "" };
+  const quantity = Math.floor(Math.random() * 5) + 1;
+  
+  return {
+    userId: randomUser.id,
+    action: "ORDER_COMPLETE",
+    productId: randomProduct.id,
+    productName: randomProduct.name,
+    productPrice: randomProduct.price,
+    categoryId: matchingCategory.id,
+    categoryName: matchingCategory.name,
+    quantity: quantity,
+    timestamp: getRandomTimestamp()
+  };
 }
 
 /**
- * Returns a random country.
- * 80% chance to return "日本", otherwise random from other options.
- * @returns {string}
+ * Generates multiple payment logs.
+ * @param {number} count Number of logs to generate.
+ * @returns {Array} Array of log objects.
  */
-function getRandomCountry() {
-  if (Math.random() < 0.8) {
-    return "日本";
+function generatePaymentLogs(count) {
+  const logs = [];
+  for (let i = 0; i < count; i++) {
+    logs.push(generatePaymentLog());
   }
-  const otherCountries = ["アメリカ", "中国", "韓国", "台湾", "ベトナム"];
-  return getRandomElement(otherCountries);
-}
-
-/**
- * Adds noise to the value.
- * @param {number} value 
- * @param {number} noiseLevel 
- * @returns {number}
- */
-function addNoiseToData(value, noiseLevel = 0.1) {
-  return value * (1 + (Math.random() - 0.5) * noiseLevel);
-}
-
-/**
- * Adds seasonal adjustment based on the month.
- * @param {number} baseAmount 
- * @param {Date} date 
- * @returns {number}
- */
-function addSeasonality(baseAmount, date) {
-  const month = date.getMonth();
-  const seasonalFactor = 1 + Math.sin((month / 12) * 2 * Math.PI) * 0.2;
-  return baseAmount * seasonalFactor;
+  return logs;
 }
 
 /*************************************
- * LogMaker クラス（ユーザーアクションログ機能は削除済）
+ * LogMaker クラス（ログの保管とフィルタリング）
  *************************************/
 class LogMaker {
   constructor() {
@@ -173,26 +173,18 @@ class LogMaker {
   }
   
   /**
-   * Create multiple payment logs from provided data array.
-   * @param {Array} logDataArray 
-   * @returns {Array} Generated logs
+   * Adds an array of logs to the internal storage.
+   * @param {Array} newLogs Array of log objects.
    */
-  createMultiplePaymentLogs(logDataArray) {
-    logDataArray.forEach(data => {
-      // timestamp が Date 型の場合は ISO 文字列に変換
-      if (data.timestamp instanceof Date) {
-        data.timestamp = data.timestamp.toISOString();
-      }
-      this.logs.push(data);
-    });
-    return this.logs;
+  addLogs(newLogs) {
+    this.logs.push(...newLogs);
   }
   
   /**
    * Returns logs within the specified date range.
-   * @param {string} startISO 
-   * @param {string} endISO 
-   * @returns {Array}
+   * @param {string} startISO Start date in ISO format.
+   * @param {string} endISO End date in ISO format.
+   * @returns {Array} Filtered logs.
    */
   getLogsByDateRange(startISO, endISO) {
     const start = new Date(startISO);
@@ -202,58 +194,47 @@ class LogMaker {
       return logTime >= start && logTime <= end;
     });
   }
-  
-  /**
-   * Generates a unique request ID.
-   * @returns {string}
-   */
-  generateRequestID() {
-    return `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
 }
 
 /*************************************
- * 使用例（ユーザーアクションログ機能は使用せず、支払いログのみ生成）
+ * ファイル出力ユーティリティ
  *************************************/
-const logMaker = new LogMaker();
-
-// 動的に LOG_COUNT 件の支払いログサンプルを生成（各ログはランダムな timestamp を有する）
-const dynamicMultipleLogData = Array.from({ length: LOG_COUNT }, () => {
-  const randomUser = getRandomElement(userList);
-  const randomProduct = getRandomElement(productList);
-  const matchingCategory = categoryList.find(cat => cat.id === randomProduct.category_id) || randomProduct;
-  const action = "ORDER_COMPLETE";
-  const quantity = Math.floor(Math.random() * 5) + 1;
-  
-  return {
-    userId: randomUser.id,
-    action: action,
-    productId: randomProduct.id,
-    productName: randomProduct.name,
-    productPrice: randomProduct.price,
-    categoryId: matchingCategory.id,
-    category: matchingCategory.name,
-    quantity: quantity,
-    timestamp: getRandomTimestamp()
-  };
-});
-
-// グローバル変数 logs を利用してログを生成
-let logs = [];
-try {
-  logs = logMaker.createMultiplePaymentLogs(dynamicMultipleLogData);
-  console.log('Created dynamic multiple logs:', logs);
-} catch (error) {
-  console.error('Error creating dynamic multiple logs:', error.message);
+/**
+ * Writes logs to the given file path in newline-delimited JSON format.
+ * @param {Array} logs Array of log objects.
+ * @param {string} filePath Destination file path.
+ */
+function writeLogsToFile(logs, filePath) {
+  const data = logs.map(log => JSON.stringify(log)).join('\n') + '\n';
+  fs.writeFileSync(filePath, data, "utf8");
+  console.log(`Logs written to ${filePath}`);
 }
 
-// 指定期間内のログをフィルタリング（現在時刻から10分後まで）
-const now = new Date();
-const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
-const logsWithinRange = logMaker.getLogsByDateRange(now.toISOString(), tenMinutesLater.toISOString());
-console.log('Logs within specified date range:', logsWithinRange);
+/*************************************
+ * メイン処理
+ *************************************/
+function main() {
+  try {
+    // ログ生成（支払いログ）
+    const generatedLogs = generatePaymentLogs(LOG_COUNT);
+    
+    // LogMakerクラスによりログを保持
+    const logMaker = new LogMaker();
+    logMaker.addLogs(generatedLogs);
+    console.log('Created dynamic multiple logs:', logMaker.logs);
+    
+    // 指定期間内（現在時刻から10分後）のログをフィルタリング
+    const now = new Date();
+    const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
+    const filteredLogs = logMaker.getLogsByDateRange(now.toISOString(), tenMinutesLater.toISOString());
+    console.log('Logs within specified date range:', filteredLogs);
+    
+    // ログを order.log に出力
+    const outputFilePath = path.join(__dirname, 'order.log');
+    writeLogsToFile(logMaker.logs, outputFilePath);
+  } catch (error) {
+    console.error('Error in main process:', error.message);
+  }
+}
 
-// 結果を order.log に書き出す（各ログを JSON 文字列で改行区切りにする）
-const outputFilePath = path.join(__dirname, 'order.log');
-fs.writeFileSync(outputFilePath, logs.map(log => JSON.stringify(log)).join('\n') + '\n', "utf8");
-console.log(`Logs written to ${outputFilePath}`);
+main();
