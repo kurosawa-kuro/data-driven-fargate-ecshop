@@ -98,6 +98,12 @@ function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Updated function for device type detection: returns a random value from the list ['desktop', 'web', 'iPhone', 'Android']
+function detectDeviceType(userAgent) {
+  const deviceTypes = ['desktop', 'web', 'iPhone', 'Android'];
+  return getRandomElement(deviceTypes);
+}
+
 // Stub for getting request context (to be replaced with actual implementation)
 function getRequestContext() {
   return {
@@ -110,15 +116,6 @@ function getRequestContext() {
     session: { id: 'session123' },
     query: {} // Assume empty query for UTM extraction
   };
-}
-
-// Stub for device type detection based on user agent
-function detectDeviceType(userAgent) {
-  // Simple implementation; replace with actual detection logic
-  if (userAgent.includes('Mobile')) {
-    return 'mobile';
-  }
-  return 'desktop';
 }
 
 // Stub for categorizing action types
@@ -351,11 +348,16 @@ class LogMaker {
     );
   }
 
-  // Utility method: retrieves logs within a specified date range
+  // Utility method: retrieves logs within a specified date range (inclusive)
   getLogsByDateRange(startDate, endDate) {
-    return this.logs.filter(log =>
-      log.timestamp >= startDate && log.timestamp <= endDate
-    );
+    // Convert startDate and endDate to milliseconds for accurate comparison
+    const startTime = new Date(startDate).getTime();
+    const endTime = new Date(endDate).getTime();
+    
+    return this.logs.filter(log => {
+      const logTime = new Date(log.timestamp).getTime();
+      return logTime >= startTime && logTime <= endTime;
+    });
   }
 
   // Utility method: calculates total amount for logs of a specific user
@@ -518,6 +520,16 @@ try {
 } catch (error) {
   console.error('Error creating dynamic multiple logs:', error.message);
 }
+
+// ----- Example usage of getLogsByDateRange -----
+// Assume logs have been created and pushed into logMaker.logs
+const now = new Date();
+// Define end date as 10 minutes later from now
+const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
+
+// Retrieve logs in the specified date range (using ISO string for clarity)
+const logsWithinRange = logMaker.getLogsByDateRange(now.toISOString(), tenMinutesLater.toISOString());
+console.log('Logs within specified date range:', logsWithinRange);
 
 // ----- Usage example for User Action Logging -----
 const sampleUserAction = {
