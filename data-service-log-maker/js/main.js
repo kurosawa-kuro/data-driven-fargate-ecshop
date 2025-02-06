@@ -98,6 +98,45 @@ function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Stub for getting request context (to be replaced with actual implementation)
+function getRequestContext() {
+  return {
+    headers: {
+      'user-agent': 'example user-agent',
+      'cf-ipcountry': 'JP',
+      referer: 'http://example.com'
+    },
+    ip: '127.0.0.1',
+    session: { id: 'session123' },
+    query: {} // Assume empty query for UTM extraction
+  };
+}
+
+// Stub for device type detection based on user agent
+function detectDeviceType(userAgent) {
+  // Simple implementation; replace with actual detection logic
+  if (userAgent.includes('Mobile')) {
+    return 'mobile';
+  }
+  return 'desktop';
+}
+
+// Stub for categorizing action types
+function categorizeAction(actionType) {
+  // Return a categorized action string based on actionType
+  return actionType.toUpperCase();
+}
+
+// Stub for extracting UTM parameters from query
+function extractUTMParams(query) {
+  // Return UTM parameters if exists; placeholder implementation
+  return {
+    utm_source: query.utm_source || '',
+    utm_medium: query.utm_medium || '',
+    utm_campaign: query.utm_campaign || ''
+  };
+}
+
 /* 
   Improvement Functions:
   
@@ -240,12 +279,6 @@ class LogMaker {
       ...data,
       logId: this.generateLogId(),
       createdAt: new Date(),
-      // Add related product information if exists
-      relatedProducts: productRelations[data.productId] || [],
-      // Add user purchasing preferences if exists
-      userPreferences: userPreferences[data.userId] || [],
-      // Simulate session behavior for this log entry
-      sessionBehavior: generateSessionBehavior(data.userId)
     };
     return enrichedLog;
   }
