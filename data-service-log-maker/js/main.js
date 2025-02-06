@@ -178,10 +178,7 @@ function generatePaymentLog() {
     context: {
       page_url: "http://example.com/home",
       referrer: "http://example.com",
-      session_id: "session123",
-      utm_source: "",
-      utm_medium: "",
-      utm_campaign: ""
+      session_id: "session123"
     },
     product_data: {
       product_id: parseNumericId(randomProduct.id),
@@ -191,12 +188,6 @@ function generatePaymentLog() {
       category_id: parseNumericId(matchingCategory.id),
       category_name: matchingCategory.name
     },
-    search_data: {
-      keyword: "",
-      category_id: "",
-      category_name: ""
-    },
-    metadata: { additional_info: "test action" },
     order_data: { order_id: generateOrderID() }
   };
 }
