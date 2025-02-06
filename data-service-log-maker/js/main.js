@@ -1,10 +1,33 @@
+"use strict";
+
 const fs = require('fs');
 const path = require('path');
 
-// Constant flag to control if batch writing should be used
-const ENABLE_BATCH_LOG_PROCESSING = true;
+/*************************************
+ * タイムスタンプ生成関連定数とグローバル変数
+ *************************************/
+const TIMESTAMP_START = new Date("2024-01-01T00:00:00.000Z"); // 生成開始日時
+const TIMESTAMP_END   = new Date("2025-12-31T23:59:59.999Z"); // 生成終了日時
+let lastTimestamp = TIMESTAMP_START;
 
-// List definitions
+/**
+ * Generates a random timestamp between TIMESTAMP_START and TIMESTAMP_END.
+ *
+ * @returns {string} ISO formatted timestamp
+ */
+function getRandomTimestamp() {
+  const startTime = TIMESTAMP_START.getTime();
+  const endTime = TIMESTAMP_END.getTime();
+  const randomTime = startTime + Math.random() * (endTime - startTime);
+  return new Date(randomTime).toISOString();
+}
+
+/*************************************
+ * 定数およびその他のデータ定義
+ *************************************/
+const ENABLE_BATCH_LOG_PROCESSING = true;
+const LOG_COUNT = 10; // 生成するログの件数
+
 const userList = [
   { id: "user001" },
   { id: "user002" },
@@ -93,311 +116,114 @@ const categoryList = [
   { id: "cat005", name: "家具" },
 ];
 
-// Utility function to get a random element from an array
+/*************************************
+ * ユーティリティ関数群
+ *************************************/
+
+/**
+ * Returns a random element from an array.
+ * @param {Array} arr 
+ * @returns {*} A random element from arr.
+ */
 function getRandomElement(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Updated function for device type detection: returns a random value from ['desktop', 'web', 'iPhone', 'Android']
-function detectDeviceType(userAgent) {
-  const deviceTypes = ['desktop', 'web', 'iPhone', 'Android'];
-  return getRandomElement(deviceTypes);
+/**
+ * Returns a random country.
+ * 80% chance to return "日本", otherwise random from other options.
+ * @returns {string}
+ */
+function getRandomCountry() {
+  if (Math.random() < 0.8) {
+    return "日本";
+  }
+  const otherCountries = ["アメリカ", "中国", "韓国", "台湾", "ベトナム"];
+  return getRandomElement(otherCountries);
 }
 
-// Stub for getting request context (to be replaced with an actual implementation)
-function getRequestContext() {
-  return {
-    headers: {
-      'user-agent': 'example user-agent',
-      'cf-ipcountry': 'JP',
-      referer: 'http://example.com'
-    },
-    ip: '127.0.0.1',
-    session: { id: 'session123' },
-    query: {} // Assume empty query for UTM extraction
-  };
-}
-
-// Stub for categorizing action types
-function categorizeAction(actionType) {
-  return actionType.toUpperCase();
-}
-
-// Stub for extracting UTM parameters from query
-function extractUTMParams(query) {
-  return {
-    utm_source: query.utm_source || '',
-    utm_medium: query.utm_medium || '',
-    utm_campaign: query.utm_campaign || ''
-  };
-}
-
-// Add noise to a given value
-const addNoiseToData = (value, noiseLevel = 0.1) => {
+/**
+ * Adds noise to the value.
+ * @param {number} value 
+ * @param {number} noiseLevel 
+ * @returns {number}
+ */
+function addNoiseToData(value, noiseLevel = 0.1) {
   return value * (1 + (Math.random() - 0.5) * noiseLevel);
-};
+}
 
-// Add seasonal adjustment to a value based on the month
-const addSeasonality = (baseAmount, date) => {
+/**
+ * Adds seasonal adjustment based on the month.
+ * @param {number} baseAmount 
+ * @param {Date} date 
+ * @returns {number}
+ */
+function addSeasonality(baseAmount, date) {
   const month = date.getMonth();
   const seasonalFactor = 1 + Math.sin((month / 12) * 2 * Math.PI) * 0.2;
   return baseAmount * seasonalFactor;
-};
-
-// Introduce anomalies into logs (e.g., extreme outliers)
-const introduceAnomalies = (logs, anomalyRate = 0.05) => {
-  return logs.map(log => {
-    if (Math.random() < anomalyRate) {
-      return {
-        ...log,
-        amount: log.amount * 100  // Introduce extreme outlier in amount
-      };
-    }
-    return log;
-  });
-};
-
-// Class responsible for file operations for log writing
-class LogFileWriter {
-  constructor(filePath) {
-    this.logFilePath = filePath;
-  }
-
-  // Write log message to file; delete existing file if it exists
-  write(logMessage) {
-    if (fs.existsSync(this.logFilePath)) {
-      try {
-        fs.unlinkSync(this.logFilePath);
-      } catch (err) {
-        console.error('Failed to delete existing log file:', err);
-      }
-    }
-    fs.writeFile(this.logFilePath, logMessage, (err) => {
-      if (err) {
-        console.error('Failed to write log to file:', err);
-      }
-    });
-  }
 }
 
-// Class responsible for log management (payment logs & user action logs)
+/*************************************
+ * LogMaker クラス（ユーザーアクションログ機能は削除済）
+ *************************************/
 class LogMaker {
   constructor() {
     this.logs = [];
-    this.logFilePath = path.join(__dirname, 'payment.log');
-    this.logWriter = new LogFileWriter(this.logFilePath);
   }
-
-  // Creates and processes a single log entry
-  createPaymentLog(data) {
-    this.validateData(data);
-    const enrichedLog = this.createEnrichedLog(data);
-    this.logs.push(enrichedLog);
-    this.processLog(enrichedLog);
-    return enrichedLog;
-  }
-
-  // Creates and processes multiple log entries
-  createMultiplePaymentLogs(dataArray) {
-    if (!Array.isArray(dataArray)) {
-      throw new Error('Input must be an array of log data objects');
-    }
-    
-    let newLogs = dataArray.map(data => {
-      this.validateData(data);
-      return this.createEnrichedLog(data);
-    });
-    
-    newLogs = introduceAnomalies(newLogs, 0.05);
-    this.logs.push(...newLogs);
-    
-    if (ENABLE_BATCH_LOG_PROCESSING) {
-      this.processLogs(newLogs);
-    } else {
-      newLogs.forEach(log => this.processLog(log));
-    }
-    
-    return newLogs;
-  }
-
-  // Enriches raw log data with additional metadata to match the Athena log schema
-  createEnrichedLog(data) {
-    const req = getRequestContext();
-    return {
-      timestamp: data.timestamp ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
-      request_id: this.generateRequestID(),
-      log_type: "ORDER_COMPLETE",
-      environment: process.env.NODE_ENV || "development",
-      user_id: data.userId,
-      user_agent: req.headers['user-agent'],
-      client_ip: req.ip,
-      country_code: req.headers['cf-ipcountry'],
-      device_type: detectDeviceType(req.headers['user-agent']),
-      action: data.action,
-      context: {
-        note: "Payment log entry"
-      },
-      product_data: data.productId ? {
-          product_id: parseInt(data.productId.replace(/\D/g, "")),
-          product_name: data.productName,
-          product_price: data.productPrice,
-          quantity: data.quantity,
-          category_id: data.categoryId ? parseInt(data.categoryId.replace(/\D/g, "")) : 0,
-          category_name: data.category
-      } : undefined,
-      search_data: data.searchKeyword ? {
-          keyword: data.searchKeyword,
-          category_id: data.searchCategoryId || 0,
-          category_name: data.searchCategoryName || ""
-      } : undefined,
-      metadata: data.metadata || {},
-      order_data: data.orderId ? {
-          order_id: data.orderId.toString()
-      } : undefined
-    };
-  }
-
-  // Validates that necessary fields are present and valid
-  validateData(data) {
-    const requiredFields = ['userId', 'action', 'productId', 'category', 'quantity', 'amount', 'timestamp'];
-    for (const field of requiredFields) {
-      if (!data[field]) {
-        throw new Error(`Missing required field: ${field}`);
+  
+  /**
+   * Create multiple payment logs from provided data array.
+   * @param {Array} logDataArray 
+   * @returns {Array} Generated logs
+   */
+  createMultiplePaymentLogs(logDataArray) {
+    logDataArray.forEach(data => {
+      // timestamp が Date 型の場合は ISO 文字列に変換
+      if (data.timestamp instanceof Date) {
+        data.timestamp = data.timestamp.toISOString();
       }
-    }
-    if (data.quantity <= 0) {
-      throw new Error('Quantity must be positive');
-    }
-    if (data.amount <= 0) {
-      throw new Error('Amount must be positive');
-    }
-  }
-
-  // Processes a single log: delegates file writing and outputs to console
-  processLog(log) {
-    const logMessage = `${JSON.stringify(log)}\n`;
-    this.logWriter.write(logMessage);
-    console.log('Processing log:', log);
-  }
-  
-  // Processes an array of logs in batch and writes them all at once
-  processLogs(logs) {
-    const logMessage = logs.map(log => JSON.stringify(log)).join('\n') + '\n';
-    this.logWriter.write(logMessage);
-    logs.forEach(log => console.log('Processing log:', log));
-  }
-
-  // Utility method: searches logs matching given criteria
-  searchLogs(criteria) {
-    return this.logs.filter(log =>
-      Object.entries(criteria).every(([key, value]) => log[key] === value)
-    );
-  }
-
-  // Retrieves logs within a specified date range (inclusive)
-  getLogsByDateRange(startDate, endDate) {
-    const startTime = new Date(startDate).getTime();
-    const endTime = new Date(endDate).getTime();
-    
-    return this.logs.filter(log => {
-      const logTime = new Date(log.timestamp).getTime();
-      return logTime >= startTime && logTime <= endTime;
+      this.logs.push(data);
     });
-  }
-
-  // Utility method: calculates total amount for logs of a specific user
-  getTotalAmountByUser(userId) {
-    return this.logs
-      .filter(log => log.userId === userId)
-      .reduce((sum, log) => sum + log.amount, 0);
-  }
-
-  // -------------------------
-  // New Methods for Asynchronous User Action Logging (Athena format)
-  
-  /**
-   * Log user action asynchronously in Athena log format.
-   * Only processes actions with actionType "ORDER_COMPLETE".
-   */
-  async logUserAction(action) {
-    if (action.actionType !== "ORDER_COMPLETE") {
-      console.log("Skipping user action log because action type is not ORDER_COMPLETE");
-      return;
-    }
+    return this.logs;
   }
   
   /**
-   * Format the user action to Athena Log format.
+   * Returns logs within the specified date range.
+   * @param {string} startISO 
+   * @param {string} endISO 
+   * @returns {Array}
    */
-  async formatForAthena(action) {
-    const req = getRequestContext();
-    
-    return {
-      timestamp: new Date().toISOString(),
-      request_id: action.requestID || this.generateRequestID(),
-      log_type: 'USER_ACTION',
-      environment: process.env.NODE_ENV || 'development',
-      user_id: action.userId,
-      user_agent: req.headers['user-agent'],
-      client_ip: req.ip,
-      country_code: req.headers['cf-ipcountry'],
-      device_type: detectDeviceType(req.headers['user-agent']),
-      action: categorizeAction(action.actionType),
-      context: {
-        page_url: action.page_url,
-        source: action.metadata?.source,
-        referrer: req.headers.referer,
-        session_id: req.session?.id,
-        ...extractUTMParams(req.query)
-      },
-      product_data: action.productId ? {
-        product_id: action.productId,
-        product_name: action.productName || '',
-        product_price: action.productPrice || 0,
-        quantity: action.quantity || 0,
-        category_id: action.categoryId || 0,
-        category_name: action.categoryName || ''
-      } : undefined,
-      order_data: action.orderId ? {
-        order_id: action.orderId.toString()
-      } : undefined,
-      search_data: action.searchKeyword ? {
-        keyword: action.searchKeyword,
-        category_id: action.searchCategoryId || 0,
-        category_name: action.searchCategoryName || ''
-      } : undefined,
-      ...action.metadata
-    };
-  }
-  
-  /**
-   * Placeholder: Determines if the action is a logging-only action.
-   */
-  isLoggingOnlyAction(actionType) {
-    return actionType === 'VIEW';
+  getLogsByDateRange(startISO, endISO) {
+    const start = new Date(startISO);
+    const end = new Date(endISO);
+    return this.logs.filter(log => {
+      const logTime = new Date(log.timestamp);
+      return logTime >= start && logTime <= end;
+    });
   }
   
   /**
    * Generates a unique request ID.
+   * @returns {string}
    */
   generateRequestID() {
-    return `req-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+    return `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
 
-// ----- Usage example for Payment Logs -----
+/*************************************
+ * 使用例（ユーザーアクションログ機能は使用せず、支払いログのみ生成）
+ *************************************/
 const logMaker = new LogMaker();
 
-const dynamicMultipleLogData = Array.from({ length: 10 }, () => {
+// 動的に LOG_COUNT 件の支払いログサンプルを生成（各ログはランダムな timestamp を有する）
+const dynamicMultipleLogData = Array.from({ length: LOG_COUNT }, () => {
   const randomUser = getRandomElement(userList);
   const randomProduct = getRandomElement(productList);
   const matchingCategory = categoryList.find(cat => cat.id === randomProduct.category_id) || randomProduct;
-  const action = "ORDER_COMPLETE"; // 固定値で設定
+  const action = "ORDER_COMPLETE";
   const quantity = Math.floor(Math.random() * 5) + 1;
-  
-  let baseAmount = randomProduct.price * quantity;
-  baseAmount = addNoiseToData(baseAmount);
-  baseAmount = addSeasonality(baseAmount, new Date());
   
   return {
     userId: randomUser.id,
@@ -408,47 +234,26 @@ const dynamicMultipleLogData = Array.from({ length: 10 }, () => {
     categoryId: matchingCategory.id,
     category: matchingCategory.name,
     quantity: quantity,
-    amount: baseAmount,
-    timestamp: new Date()
+    timestamp: getRandomTimestamp()
   };
 });
 
+// グローバル変数 logs を利用してログを生成
+let logs = [];
 try {
-  const logs = logMaker.createMultiplePaymentLogs(dynamicMultipleLogData);
+  logs = logMaker.createMultiplePaymentLogs(dynamicMultipleLogData);
   console.log('Created dynamic multiple logs:', logs);
 } catch (error) {
   console.error('Error creating dynamic multiple logs:', error.message);
 }
 
-// ----- Example usage of getLogsByDateRange -----
+// 指定期間内のログをフィルタリング（現在時刻から10分後まで）
 const now = new Date();
 const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
 const logsWithinRange = logMaker.getLogsByDateRange(now.toISOString(), tenMinutesLater.toISOString());
 console.log('Logs within specified date range:', logsWithinRange);
 
-// ----- Usage example for User Action Logging -----
-const sampleUserAction = {
-  requestID: null,
-  userId: 'user123',
-  actionType: 'ORDER_COMPLETE',
-  page_url: 'http://example.com/home',
-  productId: 'prod001',
-  productName: '4Kテレビ 55インチ',
-  productPrice: 89800,
-  quantity: 1,
-  categoryId: 'cat001',
-  categoryName: '電化製品',
-  orderId: 'order789',
-  searchKeyword: 'テレビ',
-  searchCategoryId: 'cat001',
-  searchCategoryName: '電化製品',
-  metadata: { additional_info: 'test action' }
-};
-
-(async () => {
-  try {
-    await logMaker.logUserAction(sampleUserAction);
-  } catch (err) {
-    console.error('Error logging user action:', err);
-  }
-})();
+// 結果を order.log に書き出す（各ログを JSON 文字列で改行区切りにする）
+const outputFilePath = path.join(__dirname, 'order.log');
+fs.writeFileSync(outputFilePath, logs.map(log => JSON.stringify(log)).join('\n') + '\n', "utf8");
+console.log(`Logs written to ${outputFilePath}`);
