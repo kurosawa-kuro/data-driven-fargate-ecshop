@@ -168,7 +168,7 @@ function generatePaymentLog() {
     timestamp: getRandomTimestamp(),
     request_id: generateRequestID(),
     log_type: "USER_ACTION",
-    environment: process.env.NODE_ENV || "development",
+    environment: "production",
     user_id: randomUser.id,
     user_agent: "example user-agent",
     client_ip: "127.0.0.1",
@@ -192,9 +192,9 @@ function generatePaymentLog() {
       category_name: matchingCategory.name
     },
     search_data: {
-      keyword: "テレビ",
-      category_id: parseNumericId(matchingCategory.id),
-      category_name: matchingCategory.name
+      keyword: "",
+      category_id: "",
+      category_name: ""
     },
     metadata: { additional_info: "test action" },
     order_data: { order_id: generateOrderID() }
@@ -272,12 +272,6 @@ function main() {
     const logMaker = new LogMaker();
     logMaker.addLogs(generatedLogs);
     console.log('Created dynamic multiple logs:', logMaker.logs);
-    
-    // 指定期間内（現在時刻から10分後）のログをフィルタリング
-    const now = new Date();
-    const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000);
-    const filteredLogs = logMaker.getLogsByDateRange(now.toISOString(), tenMinutesLater.toISOString());
-    console.log('Logs within specified date range:', filteredLogs);
     
     // ログを order.log に出力
     const outputFilePath = path.join(__dirname, 'order.log');
