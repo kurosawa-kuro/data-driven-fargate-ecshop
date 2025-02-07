@@ -58,6 +58,54 @@ function parseNumericId(id) {
   return digits ? parseInt(digits, 10) : 0;
 } 
 
+/**
+ * Returns a random weighted item from an array of objects with 'item' and 'weight'.
+ * @param {Array<{ item: any, weight: number }>} items
+ * @returns {any} A weighted random item.
+ */
+function getRandomWeightedItem(items) {
+  const totalWeight = items.reduce((sum, { weight }) => sum + weight, 0);
+  const random = Math.random() * totalWeight;
+  let cumulative = 0;
+  for (const { item, weight } of items) {
+    cumulative += weight;
+    if (random < cumulative) {
+      return item;
+    }
+  }
+  return items[items.length - 1].item;
+}
+
+/**
+ * Returns a country code with the following distribution:
+ * 日本: 70%, アメリカ: 10%, 台湾: 7%, 韓国: 7%, 中国: 6%
+ * @returns {string}
+ */
+function getRandomCountryCode() {
+  const countries = [
+    { item: "日本", weight: 70 },
+    { item: "アメリカ", weight: 10 },
+    { item: "台湾", weight: 7 },
+    { item: "韓国", weight: 7 },
+    { item: "中国", weight: 6 }
+  ];
+  return getRandomWeightedItem(countries);
+}
+
+/**
+ * Returns a device type with the following distribution:
+ * Web: 50%, Android: 25%, iPhone: 25%
+ * @returns {string}
+ */
+function getRandomDeviceType() {
+  const devices = [
+    { item: "Web", weight: 50 },
+    { item: "Android", weight: 25 },
+    { item: "iPhone", weight: 25 }
+  ];
+  return getRandomWeightedItem(devices);
+}
+
 /*************************************
  * データ定義
  *************************************/
@@ -170,8 +218,8 @@ function generatePaymentLog() {
     user_id: randomUser.id,
     user_agent: "example user-agent",
     client_ip: "127.0.0.1",
-    country_code: "日本",
-    device_type: "iPhone",
+    country_code: getRandomCountryCode(),
+    device_type: getRandomDeviceType(),
     action: "ORDER_COMPLETE",
     context: {
       page_url: "http://example.com/home",
