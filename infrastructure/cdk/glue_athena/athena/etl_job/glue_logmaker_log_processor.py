@@ -8,7 +8,7 @@ from awsglue.dynamicframe import DynamicFrame
 from pyspark.sql.functions import col, year, month, dayofmonth, date_format
 
 # Constants for S3 paths - for easier maintenance and control
-IS_MINI = True  # Flag to control whether to use mini dataset. Set to True for mini mode.
+IS_MINI = False  # Flag to control whether to use mini dataset. Set to True for mini mode.
 RAW_DATA_PATH = "s3://custom-data-driven-app-01-bucket/raw-data/"
 RAW_DATA_PATH_MINI = "s3://custom-data-driven-app-01-bucket/raw-data-mini/"
 PROCESSED_DATA_PATH = "s3://custom-data-driven-app-01-bucket/processed-data/"
