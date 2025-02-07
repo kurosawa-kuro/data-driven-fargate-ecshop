@@ -6,3 +6,8 @@ GLUE_ETL_JOB = "data-driven-app-01-job"
 GLUE_ETL_CRAWL = "data-driven-app-01-crawl"
 GLUE_DB = "data-driven-app-01-db"
 GLUE_TBL_PREFIX = "order-complete-logs-"
+
+
+Todo
+・date処理
+・mini flag
