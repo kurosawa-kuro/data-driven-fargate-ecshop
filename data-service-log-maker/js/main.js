@@ -77,119 +77,118 @@
 // - ファイル書き込みエラーの捕捉
 // ```
 
-
-
 "use strict";
 
 const fs = require('fs');
 const path = require('path');
 
-/*************************************
- * ユーティリティ関数群
- *************************************/
-// タイムスタンプ生成用定数
-const TIMESTAMP_START = new Date("2024-01-01T00:00:00.000Z");
-const TIMESTAMP_END   = new Date("2025-12-31T23:59:59.999Z");
-
-/**
- * Returns a random ISO timestamp between TIMESTAMP_START and TIMESTAMP_END.
- * @returns {string} ISO formatted timestamp
- */
-function getRandomTimestamp() {
-  const randomTime =
-    TIMESTAMP_START.getTime() +
-    Math.random() * (TIMESTAMP_END.getTime() - TIMESTAMP_START.getTime());
-  return new Date(randomTime).toISOString();
-}
-
-/**
- * Returns a random element from an array.
- * @param {Array} arr The array from which to pick an element.
- * @returns {*} A random element from the array.
- */
-function getRandomElement(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-/**
- * Generates a unique request ID.
- * @returns {string} A unique request ID.
- */
-function generateRequestID() {
-  return `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-/**
- * Generates a unique order ID.
- * @returns {string} A unique order ID.
- */
-function generateOrderID() {
-  return `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-/**
- * Extracts numeric part from a string.
- * If no digits found, returns 0.
- * @param {string} id 
- * @returns {number}
- */
-function parseNumericId(id) {
-  if (typeof id === "number") return id;  // When id is already a number, return it
-  const digits = id.replace(/\D/g, '');
-  return digits ? parseInt(digits, 10) : 0;
-} 
-
-/**
- * Returns a random weighted item from an array of objects with 'item' and 'weight'.
- * @param {Array<{ item: any, weight: number }>} items
- * @returns {any} A weighted random item.
- */
-function getRandomWeightedItem(items) {
-  const totalWeight = items.reduce((sum, { weight }) => sum + weight, 0);
-  const random = Math.random() * totalWeight;
-  let cumulative = 0;
-  for (const { item, weight } of items) {
-    cumulative += weight;
-    if (random < cumulative) {
-      return item;
+/*************************************************
+ * ユーティリティ機能
+ * 一般的なヘルパーファンクションをグループ化（単一責任：各関数は１つの処理を担当）
+ *************************************************/
+const Utils = {
+  TIMESTAMP_START: new Date("2024-01-01T00:00:00.000Z"),
+  TIMESTAMP_END: new Date("2025-12-31T23:59:59.999Z"),
+  
+  /**
+   * Returns a random ISO timestamp between TIMESTAMP_START and TIMESTAMP_END.
+   * @returns {string} ISO formatted timestamp
+   */
+  getRandomTimestamp: function() {
+    const randomTime = this.TIMESTAMP_START.getTime() + Math.random() * (this.TIMESTAMP_END.getTime() - this.TIMESTAMP_START.getTime());
+    return new Date(randomTime).toISOString();
+  },
+  
+  /**
+   * Returns a random element from an array.
+   * @param {Array} arr The array from which to pick an element.
+   * @returns {*} A random element from the array.
+   */
+  getRandomElement: function(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  },
+  
+  /**
+   * Generates a unique request ID.
+   * @returns {string} A unique request ID.
+   */
+  generateRequestID: function() {
+    return `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  },
+  
+  /**
+   * Generates a unique order ID.
+   * @returns {string} A unique order ID.
+   */
+  generateOrderID: function() {
+    return `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  },
+  
+  /**
+   * Extracts numeric part from a string.
+   * If no digits found, returns 0.
+   * @param {string|number} id 
+   * @returns {number}
+   */
+  parseNumericId: function(id) {
+    if (typeof id === "number") return id;
+    const digits = id.replace(/\D/g, '');
+    return digits ? parseInt(digits, 10) : 0;
+  },
+  
+  /**
+   * Returns a random weighted item from an array of objects with 'item' and 'weight'.
+   * @param {Array<{ item: any, weight: number }>} items
+   * @returns {any} A weighted random item.
+   */
+  getRandomWeightedItem: function(items) {
+    const totalWeight = items.reduce((sum, { weight }) => sum + weight, 0);
+    const random = Math.random() * totalWeight;
+    let cumulative = 0;
+    for (const { item, weight } of items) {
+      cumulative += weight;
+      if (random < cumulative) {
+        return item;
+      }
     }
+    return items[items.length - 1].item;
+  },
+  
+  /**
+   * Returns a country code with the following distribution:
+   * 日本: 70%, アメリカ: 10%, 台湾: 7%, 韓国: 7%, 中国: 6%
+   * @returns {string}
+   */
+  getRandomCountryCode: function() {
+    const countries = [
+      { item: "日本", weight: 70 },
+      { item: "アメリカ", weight: 10 },
+      { item: "台湾", weight: 7 },
+      { item: "韓国", weight: 7 },
+      { item: "中国", weight: 6 }
+    ];
+    return this.getRandomWeightedItem(countries);
+  },
+  
+  /**
+   * Returns a device type with the following distribution:
+   * Web: 50%, Android: 25%, iPhone: 25%
+   * @returns {string}
+   */
+  getRandomDeviceType: function() {
+    const devices = [
+      { item: "Web", weight: 50 },
+      { item: "Android", weight: 25 },
+      { item: "iPhone", weight: 25 }
+    ];
+    return this.getRandomWeightedItem(devices);
   }
-  return items[items.length - 1].item;
-}
+};
 
-/**
- * Returns a country code with the following distribution:
- * 日本: 70%, アメリカ: 10%, 台湾: 7%, 韓国: 7%, 中国: 6%
- * @returns {string}
- */
-function getRandomCountryCode() {
-  const countries = [
-    { item: "日本", weight: 70 },
-    { item: "アメリカ", weight: 10 },
-    { item: "台湾", weight: 7 },
-    { item: "韓国", weight: 7 },
-    { item: "中国", weight: 6 }
-  ];
-  return getRandomWeightedItem(countries);
-}
-
-/**
- * Returns a device type with the following distribution:
- * Web: 50%, Android: 25%, iPhone: 25%
- * @returns {string}
- */
-function getRandomDeviceType() {
-  const devices = [
-    { item: "Web", weight: 50 },
-    { item: "Android", weight: 25 },
-    { item: "iPhone", weight: 25 }
-  ];
-  return getRandomWeightedItem(devices);
-}
-
-/*************************************
+/*************************************************
  * データ定義
- *************************************/
+ * ユーザー、商品、カテゴリーの定義を明確に
+ *************************************************/
 const LOG_COUNT = 100; // 生成するログの件数
 
 const userList = [
@@ -207,7 +206,7 @@ const userList = [
   { id: "user012" },
   { id: "user013" },
   { id: "user014" },
-  { id: "user015" },
+  { id: "user015" }
 ];
 
 const productList = [
@@ -256,7 +255,7 @@ const productList = [
   { id: 39, name: "レトルト食品セット", price: 4200, category_id: 4 },
   { id: 40, name: "オーガニックコーヒー", price: 3600, category_id: 4 },
   // 家具
-  { id: 41, name: "ソファーベッド", price: 78000, category_id: 5},
+  { id: 41, name: "ソファーベッド", price: 78000, category_id: 5 },
   { id: 42, name: "ダイニングセット", price: 128000, category_id: 5 },
   { id: 43, name: "本棚", price: 45800, category_id: 5 },
   { id: 44, name: "デスク", price: 38000, category_id: 5 },
@@ -268,39 +267,39 @@ const productList = [
   { id: 50, name: "シューズラック", price: 8800, category_id: 5 }
 ];
 
-// Unified category list
 const categoryList = [
   { id: 1, name: "電化製品" },
   { id: 2, name: "書籍" },
   { id: 3, name: "衣服" },
   { id: 4, name: "食品" },
-  { id: 5, name: "家具" },
+  { id: 5, name: "家具" }
 ];
 
-/*************************************
- * ドメインロジック - ログ生成処理
- *************************************/
+/*************************************************
+ * ドメインロジック - ログ生成
+ * 単一ログ生成機能と複数ログ生成機能をここに集約
+ *************************************************/
 /**
- * Generates a single payment log with the correct log format.
+ * Generates a single payment log.
+ * Responsible for creating an individual log entry following the system's schema.
  * @returns {Object} A log object.
  */
 function generatePaymentLog() {
-  const randomUser = getRandomElement(userList);
-  const randomProduct = getRandomElement(productList);
-  const matchingCategory =
-    categoryList.find(cat => cat.id === randomProduct.category_id) || { id: "", name: "" };
+  const randomUser = Utils.getRandomElement(userList);
+  const randomProduct = Utils.getRandomElement(productList);
+  const matchingCategory = categoryList.find(cat => cat.id === randomProduct.category_id) || { id: "", name: "" };
   const quantity = Math.floor(Math.random() * 5) + 1;
   
   return {
-    timestamp: getRandomTimestamp(),
-    request_id: generateRequestID(),
+    timestamp: Utils.getRandomTimestamp(),
+    request_id: Utils.generateRequestID(),
     log_type: "USER_ACTION",
     environment: "production",
     user_id: randomUser.id,
     user_agent: "example user-agent",
     client_ip: "127.0.0.1",
-    country_code: getRandomCountryCode(),
-    device_type: getRandomDeviceType(),
+    country_code: Utils.getRandomCountryCode(),
+    device_type: Utils.getRandomDeviceType(),
     action: "ORDER_COMPLETE",
     context: {
       page_url: "http://example.com/home",
@@ -308,21 +307,24 @@ function generatePaymentLog() {
       session_id: "session123"
     },
     product_data: {
-      product_id: parseNumericId(randomProduct.id),
+      product_id: Utils.parseNumericId(randomProduct.id),
       product_name: randomProduct.name,
       product_price: randomProduct.price,
       quantity: quantity,
-      category_id: parseNumericId(matchingCategory.id),
+      category_id: Utils.parseNumericId(matchingCategory.id),
       category_name: matchingCategory.name
     },
-    order_data: { order_id: generateOrderID() }
+    order_data: {
+      order_id: Utils.generateOrderID()
+    }
   };
 }
 
 /**
  * Generates multiple payment logs.
- * @param {number} count Number of logs to generate.
- * @returns {Array} Array of log objects.
+ * Iterates to create a specified number of logs.
+ * @param {number} count - Number of logs to generate.
+ * @returns {Array} An array of generated log objects.
  */
 function generatePaymentLogs(count) {
   const logs = [];
@@ -332,27 +334,28 @@ function generatePaymentLogs(count) {
   return logs;
 }
 
-/*************************************
- * LogMaker クラス（ログの保管とフィルタリング）
- *************************************/
+/*************************************************
+ * LogMaker Class - ログの管理とフィルタリング
+ * 単一責任原則に基づき、ログの保管と日付範囲によるフィルタリングに専念
+ *************************************************/
 class LogMaker {
   constructor() {
     this.logs = [];
   }
   
   /**
-   * Adds an array of logs to the internal storage.
-   * @param {Array} newLogs Array of log objects.
+   * Adds new logs to the storage.
+   * @param {Array} newLogs - Array of log objects.
    */
   addLogs(newLogs) {
     this.logs.push(...newLogs);
   }
   
   /**
-   * Returns logs within the specified date range.
-   * @param {string} startISO Start date in ISO format.
-   * @param {string} endISO End date in ISO format.
-   * @returns {Array} Filtered logs.
+   * Retrieves logs that fall within the specified ISO date range.
+   * @param {string} startISO - Start date in ISO format.
+   * @param {string} endISO - End date in ISO format.
+   * @returns {Array} Filtered log objects.
    */
   getLogsByDateRange(startISO, endISO) {
     const start = new Date(startISO);
@@ -364,34 +367,41 @@ class LogMaker {
   }
 }
 
-/*************************************
- * ファイル出力ユーティリティ
- *************************************/
+/*************************************************
+ * ファイル出力機能
+ * ログを newline-delimited JSON 形式でファイルへ書き出す責任
+ *************************************************/
 /**
- * Writes logs to the given file path in newline-delimited JSON format.
- * @param {Array} logs Array of log objects.
- * @param {string} filePath Destination file path.
+ * Writes logs to a specified file path.
+ * @param {Array} logs - Array of log objects.
+ * @param {string} filePath - Destination file path.
  */
 function writeLogsToFile(logs, filePath) {
-  const data = logs.map(log => JSON.stringify(log)).join('\n') + '\n';
-  fs.writeFileSync(filePath, data, "utf8");
-  console.log(`Logs written to ${filePath}`);
+  try {
+    const data = logs.map(log => JSON.stringify(log)).join('\n') + '\n';
+    fs.writeFileSync(filePath, data, "utf8");
+    console.log(`Logs written to ${filePath}`);
+  } catch (err) {
+    console.error(`Failed to write logs to ${filePath}:`, err.message);
+    throw err;
+  }
 }
 
-/*************************************
+/*************************************************
  * メイン処理
- *************************************/
+ * ログ生成からファイル出力までの一連の処理を統括
+ *************************************************/
 function main() {
   try {
-    // ログ生成（支払いログ）
+    // ログ生成
     const generatedLogs = generatePaymentLogs(LOG_COUNT);
     
-    // LogMakerクラスによりログを保持
+    // LogMakerインスタンスでログを管理
     const logMaker = new LogMaker();
     logMaker.addLogs(generatedLogs);
     console.log('Created dynamic multiple logs:', logMaker.logs);
     
-    // ログを order.log に出力
+    // ログをファイルに出力
     const outputFilePath = path.join(__dirname, 'order.log');
     writeLogsToFile(logMaker.logs, outputFilePath);
   } catch (error) {
@@ -399,4 +409,5 @@ function main() {
   }
 }
 
+// プログラム実行
 main();
