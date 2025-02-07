@@ -7,13 +7,14 @@ from awsglue.job import Job
 from awsglue.dynamicframe import DynamicFrame
 from pyspark.sql.functions import col, year, month, dayofmonth
 
-# Constants for S3 paths - for easier maintenance
-RAW_DATA_PATH = "s3://custom_data-driven-app-01-bucket/raw-data/"
-RAW_DATA_PATH_MINI = "s3://custom_data-driven-app-01-bucket/raw-data-mini/"
-PROCESSED_DATA_PATH = "s3://custom_data-driven-app-01-bucket/processed-data/"
-GLUE_ETL_JOB = "custom_data-driven-app-01-job"
-GLUE_ETL_CRAWL = "custom_data-driven-app-01-crawl"
-GLUE_DB = "custom_data-driven-app-01-db"
+# Constants for S3 paths - for easier maintenance and control
+IS_MINI = True  # Flag to control whether to use mini dataset. Set to True for mini mode.
+RAW_DATA_PATH = "s3://custom-data-driven-app-01-bucket/raw-data/"
+RAW_DATA_PATH_MINI = "s3://custom-data-driven-app-01-bucket/raw-data-mini/"
+PROCESSED_DATA_PATH = "s3://custom-data-driven-app-01-bucket/processed-data/"
+GLUE_ETL_JOB = "custom-data-driven-app-01-job"
+GLUE_ETL_CRAWL = "custom-data-driven-app-01-crawl"
+GLUE_DB = "custom-data-driven-app-01-db"
 GLUE_TBL_PREFIX = "custom_order-complete-logs-"
 
 # Initialize Glue context
@@ -24,11 +25,14 @@ spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
-# Read input JSON data from S3 as a DynamicFrame using the RAW_DATA_PATH constant
+# Select input path based on the IS_MINI flag
+input_data_path = RAW_DATA_PATH_MINI if IS_MINI else RAW_DATA_PATH
+
+# Read input JSON data from S3 as a DynamicFrame using the selected input_data_path
 dynamic_frame = glueContext.create_dynamic_frame.from_options(
     connection_type="s3",
     connection_options={
-        "paths": [RAW_DATA_PATH]
+        "paths": [input_data_path]
     },
     format="json"
 )
@@ -59,7 +63,7 @@ flat_df = df.select(
     col("order_data.order_id").alias("order_id")
 )
 
-# Add partition columns: year, month, day from the timestamp field.
+# Add partition columns: year, month, day derived from the timestamp field.
 flat_df = flat_df.withColumn("year", year(col("timestamp").cast("timestamp"))) \
                  .withColumn("month", month(col("timestamp").cast("timestamp"))) \
                  .withColumn("day", dayofmonth(col("timestamp").cast("timestamp")))
