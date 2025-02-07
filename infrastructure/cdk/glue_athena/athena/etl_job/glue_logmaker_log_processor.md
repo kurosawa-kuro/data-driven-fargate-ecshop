@@ -1,4 +1,5 @@
 # Constants for S3 paths - for easier maintenance
+IS_MINI = True  # Flag to control whether to use mini dataset. Set to True for mini mode.
 RAW_DATA_PATH = "s3://custom-data-driven-app-01-bucket/raw-data/"
 RAW_DATA_PATH_MINI = "s3://custom-data-driven-app-01-bucket/raw-data-mini/"
 PROCESSED_DATA_PATH = "s3://custom-data-driven-app-01-bucket/processed-data/"
