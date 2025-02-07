@@ -7,6 +7,10 @@ from awsglue.job import Job
 from awsglue.dynamicframe import DynamicFrame
 from pyspark.sql.functions import col, year, month, dayofmonth
 
+# Constants for S3 paths - for easier maintenance
+RAW_DATA_PATH = "s3://data-driven-app-bucket-01/raw-data/"
+PROCESSED_DATA_PATH = "s3://data-driven-app-bucket-01/processed-data/flat_order_logs/"
+
 # Initialize Glue context
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
 sc = SparkContext()
@@ -15,11 +19,11 @@ spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
-# Read input JSON data from S3 as a DynamicFrame
+# Read input JSON data from S3 as a DynamicFrame using the RAW_DATA_PATH constant
 dynamic_frame = glueContext.create_dynamic_frame.from_options(
     connection_type="s3",
     connection_options={
-        "paths": ["s3://data-driven-app-bucket-01/raw-data/"]
+        "paths": [RAW_DATA_PATH]
     },
     format="json"
 )
@@ -50,8 +54,7 @@ flat_df = df.select(
     col("order_data.order_id").alias("order_id")
 )
 
-# Add partition columns: year, month, day from timestamp field.
-# The timestamp column is cast to timestamp type to extract the date parts.
+# Add partition columns: year, month, day from the timestamp field.
 flat_df = flat_df.withColumn("year", year(col("timestamp").cast("timestamp"))) \
                  .withColumn("month", month(col("timestamp").cast("timestamp"))) \
                  .withColumn("day", dayofmonth(col("timestamp").cast("timestamp")))
@@ -61,12 +64,12 @@ flat_df.show()
 # Convert the flattened DataFrame back to DynamicFrame
 flat_dynamic_frame = DynamicFrame.fromDF(flat_df, glueContext, "flat_dynamic_frame")
 
-# Write the flattened data with partitioning (year, month, day) to S3 in Parquet format
+# Write the flattened data with partitioning (year, month, day) to S3 in Parquet format using the PROCESSED_DATA_PATH constant
 glueContext.write_dynamic_frame.from_options(
     frame=flat_dynamic_frame,
     connection_type="s3",
     connection_options={
-        "path": "s3://data-driven-app-bucket-01/processed-data/flat_order_logs/",
+        "path": PROCESSED_DATA_PATH,
         "partitionKeys": ["year", "month", "day"]
     },
     format="parquet"
