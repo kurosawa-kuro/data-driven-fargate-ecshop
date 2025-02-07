@@ -4,6 +4,73 @@
 import { prisma } from '../src/lib/database/prisma';
 import { UserStatus, ActionType } from '@prisma/client';
 
+// Unified product list
+const productList = [
+  // 電化製品
+  { id: 1, name: "4Kテレビ 55インチ", price: 89800, category_id: 1 },
+  { id: 2, name: "ノートパソコン", price: 128000, category_id: 1 },
+  { id: 3, name: "全自動洗濯機", price: 65000, category_id: 1 },
+  { id: 4, name: "電子レンジ", price: 23800, category_id: 1 },
+  { id: 5, name: "掃除ロボット", price: 45800, category_id: 1 },
+  { id: 6, name: "ドライヤー", price: 12800, category_id: 1 },
+  { id: 7, name: "コーヒーメーカー", price: 15800, category_id: 1 },
+  { id: 8, name: "空気清浄機", price: 34800, category_id: 1 },
+  { id: 9, name: "タブレット", price: 45800, category_id: 1 },
+  { id: 10, name: "スマートスピーカー", price: 12800, category_id: 1 },
+  // 書籍
+  { id: 11, name: "プログラミング入門書", price: 2800, category_id: 2 },
+  { id: 12, name: "ビジネス戦略の教科書", price: 1600, category_id: 2 },
+  { id: 13, name: "人気小説セット", price: 4500, category_id: 2 },
+  { id: 14, name: "料理レシピ本", price: 1800, category_id: 2 },
+  { id: 15, name: "歴史写真集", price: 3800, category_id: 2 },
+  { id: 16, name: "語学学習テキスト", price: 2400, category_id: 2 },
+  { id: 17, name: "児童書セット", price: 5600, category_id: 2 },
+  { id: 18, name: "経済学の基礎", price: 2200, category_id: 2 },
+  { id: 19, name: "健康医学大全", price: 3600, category_id: 2 },
+  { id: 20, name: "美術作品集", price: 4800, category_id: 2 },
+  // 衣服
+  { id: 21, name: "ビジネススーツ", price: 38000, category_id: 3 },
+  { id: 22, name: "カジュアルジャケット", price: 15800, category_id: 3 },
+  { id: 23, name: "デニムパンツ", price: 8900, category_id: 3 },
+  { id: 24, name: "コットンシャツ", price: 4900, category_id: 3 },
+  { id: 25, name: "ニットセーター", price: 6800, category_id: 3 },
+  { id: 26, name: "スポーツウェア上下", price: 12800, category_id: 3 },
+  { id: 27, name: "ダウンジャケット", price: 23800, category_id: 3 },
+  { id: 28, name: "レインコート", price: 5800, category_id: 3 },
+  { id: 29, name: "パジャマセット", price: 4800, category_id: 3 },
+  // 食品
+  { id: 30, name: "高級和牛セット", price: 28000, category_id: 4 },
+  { id: 31, name: "有機野菜詰め合わせ", price: 4800, category_id: 4 },
+  { id: 32, name: "果物セット", price: 5800, category_id: 4 },
+  { id: 33, name: "天然魚介類セット", price: 12800, category_id: 4 },
+  { id: 34, name: "調味料セット", price: 3800, category_id: 4 },
+  { id: 35, name: "お菓子アソート", price: 2800, category_id: 4 },
+  { id: 36, name: "健康食品セット", price: 8800, category_id: 4 },
+  { id: 37, name: "ドライフルーツ詰め合わせ", price: 3200, category_id: 4 },
+  { id: 38, name: "高級茶葉セット", price: 6800, category_id: 4 },
+  { id: 39, name: "レトルト食品セット", price: 4200, category_id: 4 },
+  { id: 40, name: "オーガニックコーヒー", price: 3600, category_id: 4 },
+  // 家具
+  { id: 41, name: "ソファーベッド", price: 78000, category_id: 5},
+  { id: 42, name: "ダイニングセット", price: 128000, category_id: 5 },
+  { id: 43, name: "本棚", price: 45800, category_id: 5 },
+  { id: 44, name: "デスク", price: 38000, category_id: 5 },
+  { id: 45, name: "クローゼット", price: 52000, category_id: 5 },
+  { id: 46, name: "テレビボード", price: 42000, category_id: 5 },
+  { id: 47, name: "チェスト", price: 34800, category_id: 5 },
+  { id: 48, name: "玄関収納", price: 28000, category_id: 5 },
+  { id: 49, name: "サイドテーブル", price: 12800, category_id: 5 },
+  { id: 50, name: "シューズラック", price: 8800, category_id: 5 }
+];
+
+// Unified category list
+const categoryList = [
+  { id: 1, name: "電化製品" },
+  { id: 2, name: "書籍" },
+  { id: 3, name: "衣服" },
+  { id: 4, name: "食品" },
+  { id: 5, name: "家具" },
+];
 
 /**
  * すべてのテーブルのデータを削除する
@@ -149,127 +216,73 @@ async function main() {
     ]);
 
     // カテゴリーの作成
-    const categories = await Promise.all([
-      prisma.category.create({
-        data: { name: "Electronics" }
-      }),
-      prisma.category.create({
-        data: { name: "Books" }
-      }),
-      prisma.category.create({
-        data: { name: "Clothing" }
-      }),
-      prisma.category.create({
-        data: { name: "Sports" }
-      }),
-      prisma.category.create({
-        data: { name: "Home & Garden" }
-      })
-    ]);
+    const createdCategories = await Promise.all(
+      categoryList.map(cat =>
+        prisma.category.create({
+          data: {
+            id: cat.id,
+            name: cat.name
+          }
+        })
+      )
+    );
 
     // 商品の作成
-    const products = await Promise.all([
-      prisma.product.create({
-        data: {
-          name: "Laptop",
-          price: 999.99,
-          rating: 4.5
-        }
-      }),
-      prisma.product.create({
-        data: {
-          name: "Smartphone",
-          price: 699.99,
-          rating: 4.3
-        }
-      }),
-      prisma.product.create({
-        data: {
-          name: "Headphones",
-          price: 199.99,
-          rating: 4.7
-        }
-      }),
-      prisma.product.create({
-        data: {
-          name: "Tablet",
-          price: 499.99,
-          rating: 4.2
-        }
-      }),
-      prisma.product.create({
-        data: {
-          name: "Smartwatch",
-          price: 299.99,
-          rating: 4.4
-        }
-      })
-    ]);
+    const createdProducts = await Promise.all(
+      productList.map(prod =>
+        prisma.product.create({
+          data: {
+            id: prod.id,
+            name: prod.name,
+            price: prod.price,
+            rating: 4.0 // default rating value
+          }
+        })
+      )
+    );
 
     // ProductCategoryの作成（各商品に異なるカテゴリーを割り当て）
-    await Promise.all([
-      prisma.productCategory.create({
-        data: {
-          productId: products[0].id,
-          categoryId: categories[0].id
-        }
-      }),
-      prisma.productCategory.create({
-        data: {
-          productId: products[1].id,
-          categoryId: categories[1].id
-        }
-      }),
-      prisma.productCategory.create({
-        data: {
-          productId: products[2].id,
-          categoryId: categories[2].id
-        }
-      }),
-      prisma.productCategory.create({
-        data: {
-          productId: products[3].id,
-          categoryId: categories[3].id
-        }
-      }),
-      prisma.productCategory.create({
-        data: {
-          productId: products[4].id,
-          categoryId: categories[4].id
-        }
-      })
-    ]);
+    await Promise.all(
+      productList.map(prod =>
+        prisma.productCategory.create({
+          data: {
+            productId: prod.id,
+            categoryId: prod.category_id
+          }
+        })
+      )
+    );
 
     // ViewHistoryの作成
     await Promise.all([
       prisma.viewHistory.create({
         data: {
           userId: users[0].id,
-          productId: products[0].id
+          productId: createdProducts[0].id
         }
       }),
       prisma.viewHistory.create({
         data: {
           userId: users[1].id,
-          productId: products[1].id
+          productId: createdProducts[1].id
         }
       }),
       prisma.viewHistory.create({
         data: {
           userId: users[2].id,
-          productId: products[2].id
+          productId: createdProducts[2].id
         }
       }),
       prisma.viewHistory.create({
         data: {
           userId: users[3].id,
-          productId: products[3].id
+          productId: createdProducts[3].id
         }
       }),
       prisma.viewHistory.create({
         data: {
           userId: users[4].id,
-          productId: products[4].id
+          productId: createdProducts[4].id
         }
       })
     ]);
@@ -281,10 +294,10 @@ async function main() {
         data: {
           userId: users[0].id,
           actionType: ActionType.CART_ADD,
-          productId: products[0].id,
-          productName: products[0].name,
-          categoryId: categories[0].id,
-          categoryName: categories[0].name,
+          productId: createdProducts[0].id,
+          productName: createdProducts[0].name,
+          categoryId: createdCategories[0].id,
+          categoryName: createdCategories[0].name,
           cartItemId: 1,
           quantity: 2,
           metadata: { source: "product_page" }
@@ -294,7 +307,7 @@ async function main() {
         data: {
           userId: users[1].id,
           actionType: ActionType.ORDER_RETURN_REQUEST,
-          productId: products[1].id,
+          productId: createdProducts[1].id,
           metadata: { returnId: 1 }
         }
       }),
@@ -310,7 +323,7 @@ async function main() {
         data: {
           userId: users[3].id,
           actionType: ActionType.REVIEW_SUBMIT,
-          productId: products[3].id,
+          productId: createdProducts[3].id,
           reviewText: "とても使いやすいです",
           rating: 5.0,
           metadata: { reviewId: 1 }
@@ -329,17 +342,17 @@ async function main() {
     const topPageDisplays = await Promise.all([
       // SALE display type
       ...Array.from({ length: 5 }, (_, index) => {
-        const prodIndex = index % products.length;
+        const prodIndex = index % createdProducts.length;
         return prisma.topPageDisplay.create({
           data: {
             displayType: "SALE",
-            productId: products[prodIndex].id,
-            productName: products[prodIndex].name,
-            productPrice: products[prodIndex].price,
-            categoryId: categories[prodIndex].id,         // Set corresponding category info
-            categoryName: categories[prodIndex].name,
+            productId: createdProducts[prodIndex].id,
+            productName: createdProducts[prodIndex].name,
+            productPrice: createdProducts[prodIndex].price,
+            categoryId: createdCategories[prodIndex % createdCategories.length].id,         // Set corresponding category info
+            categoryName: createdCategories[prodIndex % createdCategories.length].name,
             priority: index + 1,
-            specialPrice: Number((products[prodIndex].price * 0.9).toFixed(2)),
+            specialPrice: Number((createdProducts[prodIndex].price * 0.9).toFixed(2)),
             startDate: new Date(),
             endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
             isActive: true
@@ -348,16 +361,16 @@ async function main() {
       }),
       // RECOMMENDED_CATEGORY display type
       ...Array.from({ length: 5 }, (_, index) => {
-        const catIndex = index % categories.length;
-        const prodIndex = index % products.length;
+        const catIndex = index % createdCategories.length;
+        const prodIndex = index % createdProducts.length;
         return prisma.topPageDisplay.create({
           data: {
             displayType: "RECOMMENDED_CATEGORY",
-            categoryId: categories[catIndex].id,
-            categoryName: categories[catIndex].name,
-            productId: products[prodIndex].id,
-            productName: products[prodIndex].name,
-            productPrice: products[prodIndex].price,
+            categoryId: createdCategories[catIndex].id,
+            categoryName: createdCategories[catIndex].name,
+            productId: createdProducts[prodIndex].id,
+            productName: createdProducts[prodIndex].name,
+            productPrice: createdProducts[prodIndex].price,
             priority: index + 1,
             startDate: new Date(),
             isActive: true
@@ -366,15 +379,15 @@ async function main() {
       }),
       // CONTINUE_SHOPPING display type
       ...Array.from({ length: 5 }, (_, index) => {
-        const prodIndex = index % products.length;
+        const prodIndex = index % createdProducts.length;
         return prisma.topPageDisplay.create({
           data: {
             displayType: "CONTINUE_SHOPPING",
-            productId: products[prodIndex].id,
-            productName: products[prodIndex].name,
-            productPrice: products[prodIndex].price,
-            categoryId: categories[prodIndex].id,
-            categoryName: categories[prodIndex].name,
+            productId: createdProducts[prodIndex].id,
+            productName: createdProducts[prodIndex].name,
+            productPrice: createdProducts[prodIndex].price,
+            categoryId: createdCategories[prodIndex % createdCategories.length].id,
+            categoryName: createdCategories[prodIndex % createdCategories.length].name,
             priority: index + 1,
             startDate: new Date(),
             isActive: true
@@ -389,13 +402,13 @@ async function main() {
     const order = await prisma.order.create({
       data: {
         userId: users[0].id,
-        totalAmount: 999.99,
+        totalAmount: createdProducts[0].price,
         orderedAt: new Date(),
         orderItems: {
           create: {
-            productId: products[0].id,
+            productId: createdProducts[0].id,
             quantity: 1,
-            price: 999.99
+            price: createdProducts[0].price
           }
         }
       }
