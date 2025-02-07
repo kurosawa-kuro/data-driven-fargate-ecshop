@@ -53,9 +53,10 @@ function generateOrderID() {
  * @returns {number}
  */
 function parseNumericId(id) {
+  if (typeof id === "number") return id;  // When id is already a number, return it
   const digits = id.replace(/\D/g, '');
   return digits ? parseInt(digits, 10) : 0;
-}
+} 
 
 /*************************************
  * データ定義
