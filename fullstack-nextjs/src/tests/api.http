@@ -1,7 +1,7 @@
 ### ==================== 環境設定 ====================
 @ecsHost = 35.77.48.143
 @localHost = localhost
-@port = 3000
+@port = 3001
 
 http://35.77.48.143:3000
 
@@ -38,6 +38,14 @@ GET {{localBaseUrl}}/api/products
 
 ### 商品詳細取得
 GET {{localBaseUrl}}/api/products/1
+
+### ChatbotHandler
+POST {{localBaseUrl}}/api/chatbot
+Content-Type: application/json
+
+{
+  "message": "こんにちは"
+}
 
 ### カテゴリー別商品一覧取得
 GET {{localBaseUrl}}/api/products/category/1
