@@ -355,7 +355,8 @@ async function main() {
             specialPrice: Number((createdProducts[prodIndex].price * 0.9).toFixed(2)),
             startDate: new Date(),
             endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
-            isActive: true
+            isActive: true,
+            rating: createdProducts[prodIndex].rating || 4.0  // 商品のratingを使用、なければデフォルト値4.0
           }
         });
       }),
@@ -373,7 +374,8 @@ async function main() {
             productPrice: createdProducts[prodIndex].price,
             priority: index + 1,
             startDate: new Date(),
-            isActive: true
+            isActive: true,
+            rating: createdProducts[prodIndex].rating || 4.2  // 商品のratingを使用、なければデフォルト値4.2
           }
         });
       }),
@@ -390,7 +392,8 @@ async function main() {
             categoryName: createdCategories[prodIndex % createdCategories.length].name,
             priority: index + 1,
             startDate: new Date(),
-            isActive: true
+            isActive: true,
+            rating: createdProducts[prodIndex].rating || 4.5  // 商品のratingを使用、なければデフォルト値4.5
           }
         });
       })
