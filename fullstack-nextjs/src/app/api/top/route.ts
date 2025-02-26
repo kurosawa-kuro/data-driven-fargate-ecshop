@@ -2,19 +2,11 @@ import { prisma } from '@/lib/database/prisma';
 import { BaseApiHandler } from '@/lib/api/handler';
 import { NextResponse } from 'next/server';
 
-enum DisplayType {
-  SALE,                 // セール商品
-  RECOMMENDED,          // 閲覧履歴ベースのおすすめ
-  REPURCHASE,           // 再び購入
-  DAILY_DEAL,           // 今日の特価
-  RECOMMENDED_CATEGORY, // おすすめカテゴリー
-  CONTINUE_SHOPPING     // ショッピングを続ける
-}
 
 class ProductsHandler extends BaseApiHandler {
   async GET() {
     try {
-      const { userId } = await this.getHeaders();
+      // const { userId } = await this.getHeaders();
       
       // トップページ表示を取得
       const topPageDisplay = await prisma.topPageDisplay.findMany();
