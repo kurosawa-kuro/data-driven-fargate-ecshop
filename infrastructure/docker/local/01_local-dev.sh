@@ -2,7 +2,7 @@
 
 # 基本設定
 REGION="ap-northeast-1"
-ACCOUNT_ID="985539793438"
+ACCOUNT_ID="503561449641"
 REPOSITORY_NAME="nextjs-app"
 IMAGE_TAG="latest"
 PROJECT_ROOT="$(pwd)"

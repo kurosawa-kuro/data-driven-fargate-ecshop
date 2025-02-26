@@ -6,16 +6,24 @@ WORKDIR /app
 RUN apk add --no-cache openssl
 
 # pnpmのインストール
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm
 
-# 全ファイルをコピー
+# 依存関係のファイルだけを先にコピー
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
+
+# 依存関係のインストール（キャッシュを活用）
+RUN PNPM_HOME="/root/.local/share/pnpm" \
+    PATH="$PNPM_HOME:$PATH" \
+    pnpm install --frozen-lockfile --prefer-offline
+
+# Prisma Clientの生成
+RUN npx prisma generate
+
+# ソースコードをコピー
 COPY . .
 
-# 依存関係のインストール
-RUN pnpm install --frozen-lockfile
-
-# Prismaの生成とビルド
-RUN npx prisma generate
+# ビルド
 RUN pnpm run build || (cat .next/error.log && exit 1)
 
 # Production stage
@@ -29,7 +37,7 @@ ENV PORT=3000
 RUN apk add --no-cache openssl
 
 # pnpmのインストール
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm
 
 # アプリケーションファイルのコピー
 COPY --from=builder /app/package.json ./
@@ -37,7 +45,9 @@ COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/prisma ./prisma
 
 # 本番環境の依存関係のインストール
-RUN pnpm install --prod --frozen-lockfile
+RUN PNPM_HOME="/root/.local/share/pnpm" \
+    PATH="$PNPM_HOME:$PATH" \
+    pnpm install --prod --frozen-lockfile --prefer-offline
 
 # Prisma Clientの生成
 RUN npx prisma generate
