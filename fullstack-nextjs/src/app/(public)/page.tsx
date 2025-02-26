@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import CategoryButtons from "./products/categoryButtons";
 import { topAPI } from "@/lib/api/client";
 
@@ -33,7 +33,7 @@ interface ProductItem {
  * Renders a single product card.
  * Responsible for displaying product image, name and pricing.
  */
-function ProductCard({ item, groupKey }: { item: ProductItem; groupKey: string }) {
+function ProductCard({ item }: { item: ProductItem }) {
   return (
     <Link
       href={`/products/${item.productId}`}
@@ -41,10 +41,13 @@ function ProductCard({ item, groupKey }: { item: ProductItem; groupKey: string }
     >
       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-700 relative">
         <div className="relative w-full h-0 pb-[50%]">
-          <img
+          <Image
             src="/product/2025-02-26_09h24_47.png"
             alt={item.productName}
-            className="absolute inset-0 w-full h-full object-contain object-center group-hover:opacity-75 transition-opacity"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain object-center group-hover:opacity-75 transition-opacity"
+            priority={item.id <= 4}
           />
         </div>
       </div>
@@ -91,7 +94,7 @@ function GroupSection({
       <h2 className="text-2xl font-bold mb-4 text-white">{label}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {items.map((item: ProductItem) => (
-          <ProductCard key={`${groupKey}-${item.id}`} item={item} groupKey={groupKey} />
+          <ProductCard key={`${groupKey}-${item.id}`} item={item} />
         ))}
       </div>
     </section>
