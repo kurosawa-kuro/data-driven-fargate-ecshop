@@ -12,13 +12,18 @@ interface ChatMessage {
 
 export default function Page() {
   // チャット履歴の状態管理
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content: 'こんにちは！どのようなご質問がありますか？',
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  
+  // 初期メッセージを設定（クライアントサイドのみ）
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: 'こんにちは！どのようなご質問がありますか？',
+        timestamp: new Date(),
+      }]);
+    }
+  }, [messages.length]);
   
   // 入力メッセージの状態管理
   const [inputMessage, setInputMessage] = useState('');
@@ -109,6 +114,15 @@ export default function Page() {
     }
   };
 
+  // 時刻のフォーマット関数
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <h1 className="text-2xl font-bold mt-2 mb-6 px-4 text-white">問い合わせ（人工知能）</h1>
@@ -147,7 +161,7 @@ export default function Page() {
               )}
               <p className="whitespace-pre-wrap">{message.content}</p>
               <div className="text-xs opacity-70 mt-1 text-right">
-                {message.timestamp.toLocaleTimeString()}
+                {formatTime(message.timestamp)}
               </div>
             </div>
           </div>
