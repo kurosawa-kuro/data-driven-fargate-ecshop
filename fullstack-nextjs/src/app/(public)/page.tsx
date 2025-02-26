@@ -15,9 +15,12 @@ const dummyCategories = [
 // Group labels mapping for display groups (Japanese labels)
 const GROUP_LABELS: Record<string, string> = {
   SALE: "セール商品",
-  CONTINUE_SHOPPING: "引き続きお買い物",
   RECOMMENDED_CATEGORY: "おすすめカテゴリー",
+  CONTINUE_SHOPPING: "引き続きお買い物",
 };
+
+// 表示順序の定義
+const DISPLAY_ORDER = ["SALE", "RECOMMENDED_CATEGORY", "CONTINUE_SHOPPING"];
 
 // Interface for product item data
 interface ProductItem {
@@ -120,10 +123,18 @@ export default async function Page() {
       {/* Render category buttons */}
       <CategoryButtons categories={dummyCategories} />
 
-      {/* Render product group sections */}
-      {Object.entries(topPageDisplayByDisplayType).map(([groupKey, items]) => (
-        <GroupSection key={groupKey} groupKey={groupKey} items={items} labels={GROUP_LABELS} />
-      ))}
+      {/* Render product group sections in specified order */}
+      {DISPLAY_ORDER.map((groupKey) => {
+        const items = topPageDisplayByDisplayType[groupKey] || [];
+        return (
+          <GroupSection 
+            key={groupKey} 
+            groupKey={groupKey} 
+            items={items} 
+            labels={GROUP_LABELS} 
+          />
+        );
+      })}
     </div>
   );
 }
