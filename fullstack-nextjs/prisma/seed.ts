@@ -341,7 +341,7 @@ async function main() {
     // TopPageDisplayのシード作成（すべてのエントリーに対し、商品情報とカテゴリー情報を必須で設定）
     const topPageDisplays = await Promise.all([
       // SALE display type
-      ...Array.from({ length: 5 }, (_, index) => {
+      ...Array.from({ length: 4 }, (_, index) => {
         const prodIndex = index % createdProducts.length;
         return prisma.topPageDisplay.create({
           data: {
@@ -360,7 +360,7 @@ async function main() {
         });
       }),
       // RECOMMENDED_CATEGORY display type
-      ...Array.from({ length: 5 }, (_, index) => {
+      ...Array.from({ length: 4 }, (_, index) => {
         const catIndex = index % createdCategories.length;
         const prodIndex = index % createdProducts.length;
         return prisma.topPageDisplay.create({
@@ -378,7 +378,7 @@ async function main() {
         });
       }),
       // CONTINUE_SHOPPING display type
-      ...Array.from({ length: 5 }, (_, index) => {
+      ...Array.from({ length: 4 }, (_, index) => {
         const prodIndex = index % createdProducts.length;
         return prisma.topPageDisplay.create({
           data: {

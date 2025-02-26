@@ -66,6 +66,7 @@ model Product {
   name            String
   price           Float
   rating          Float
+  image           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -119,6 +120,7 @@ model TopPageDisplay {
   productId       Int?        // 商品ID (for product-based display)
   productName     String?     // 商品名を保存（冗長データとして記録）
   productPrice    Float?      // 商品価格を保存（冗長データとして記録）
+  image           String?     // 商品画像を保存（冗長データとして記録）
   categoryId      Int?        // カテゴリーID (for category-based display)
   categoryName    String?     // カテゴリー名を保存（冗長データとして記録）
   priority        Int         @default(0)  // 表示順

@@ -40,14 +40,13 @@ function ProductCard({ item, groupKey }: { item: ProductItem; groupKey: string }
       className="group block bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
     >
       <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-t-lg bg-gray-700 relative">
-        <Image
-          src={`https://picsum.photos/id/${item.productId}/180/200`}
-          alt={item.productName}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover object-center group-hover:opacity-75 transition-opacity"
-          priority={item.productId <= 4}
-        />
+        <div className="relative w-full h-0 pb-[50%]">
+          <img
+            src="/product/2025-02-26_09h24_47.png"
+            alt={item.productName}
+            className="absolute inset-0 w-full h-full object-contain object-center group-hover:opacity-75 transition-opacity"
+          />
+        </div>
       </div>
       <div className="p-4">
         <h2 className="text-lg font-medium text-white">{item.productName}</h2>
