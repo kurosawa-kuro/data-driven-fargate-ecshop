@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { logger } from '@/lib/logger';
 import { cartAPI } from '@/lib/api/client';
 
@@ -120,9 +121,11 @@ export default function Page() {
               <div className="flex flex-col lg:flex-row items-center gap-4">
                 {/* 商品画像 */}
                 <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
-                  <img
+                  <Image
                     src={getImageUrl(item.product)}
                     alt={item.product.name}
+                    width={96}
+                    height={96}
                     className="object-contain object-center w-full h-full group-hover:opacity-75 transition-opacity"
                   />
                 </div>

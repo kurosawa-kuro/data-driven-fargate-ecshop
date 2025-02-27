@@ -3,6 +3,7 @@
 // import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { orderAPI, cartAPI } from '@/lib/api/client';
 
 interface Product {
@@ -103,9 +104,11 @@ export default function Page() {
               {order.orderItems?.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
                   <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 overflow-hidden">
-                    <img
+                    <Image
                       src={item.product.imageUrl || `/product/${item.product.name}.webp`}
                       alt={item.product.name}
+                      width={80}
+                      height={80}
                       className="object-cover w-full h-full"
                     />
                   </div>

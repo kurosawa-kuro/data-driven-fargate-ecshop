@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/database/prisma';
-import { ActionType } from '@prisma/client';
 import { logger } from '@/lib/logger';
 import { BaseApiHandler } from '@/lib/api/handler';
 import { getChatCompletion, getPersonalizedRecommendation } from '@/lib/ai/openai';

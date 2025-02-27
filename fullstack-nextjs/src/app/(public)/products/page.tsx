@@ -1,15 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
 import { productAPI } from "@/lib/api/client";
 import CategoryButtons from "./categoryButtons";
 import ProductCard, { ProductItem } from "@/components/ProductCard";
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  rating: number;
-}
 
 // ダミーのカテゴリーデータ
 const dummyCategories = [
