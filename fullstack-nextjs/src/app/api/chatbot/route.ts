@@ -12,7 +12,7 @@ class ChatbotHandler extends BaseApiHandler {
       console.log('ChatbotHandler POST');
 
       // ユーザーIDの取得（実際の認証システムに合わせて調整）
-      const userId = "c7c4da88-10e1-7011-ab2f-e0b20ba6d86a";
+      const userId = "c7e49a78-d031-70c4-4b79-8b34ccf7c684";
 
       const user = await prisma.user.findUnique({ 
         where: { id: userId! } 

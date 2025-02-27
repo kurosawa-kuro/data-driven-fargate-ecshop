@@ -29,7 +29,7 @@ export default function ProductCard({ item }: { item: ProductItem }) {
   const price = item.productPrice || item.price || 0;
   
   // 画像URLの取得（指定がある場合はそれを使用、なければデフォルト画像）
-  const imageUrl = item.imageUrl || "/product/2025-02-26_09h24_47.png";
+  const imageUrl = item.imageUrl || "/product/4Kテレビ 55インチ.webp";
 
   return (
     <Link

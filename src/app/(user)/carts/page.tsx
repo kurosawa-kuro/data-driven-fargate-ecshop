@@ -116,9 +116,9 @@ export default function Page() {
                 {/* 商品画像 */}
                 <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
                   <img
-                    src="/product/4Kテレビ 55インチ.webp"
-                    alt={item.product.name}
-                    className="object-contain object-center w-full h-full group-hover:opacity-75 transition-opacity"
+                  src="/product/4Kテレビ 55インチ.webp"
+                  alt={item.product.name}
+                  className="object-contain object-center w-full h-full group-hover:opacity-75 transition-opacity"
                   />
                 </div>
                 
@@ -183,4 +183,4 @@ export default function Page() {
       </div>
     </div>
   );
-}
+} 
