@@ -150,7 +150,7 @@ export default function Page() {
                 <div className="flex items-center mb-1">
                   <div className="w-6 h-6 relative mr-2">
                     <Image
-                      src="/product/2025-02-26_09h24_47.png"
+                      src="/system/chatbot.png"
                       alt="AI Assistant"
                       fill
                       className="rounded-full object-cover"
