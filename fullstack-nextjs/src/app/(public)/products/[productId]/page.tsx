@@ -1,6 +1,7 @@
 import { CartActions } from './addToCart';
 import { productAPI, historyAPI } from '@/lib/api/client';
 import { Product } from "@prisma/client";
+import { default as NextImage } from 'next/image';
 
 // 型定義
 type ProductPageProps = {
@@ -32,6 +33,9 @@ export default async function Page({ params }: ProductPageProps) {
     console.error('閲覧履歴の記録に失敗しました:', error);
   }
 
+  // 画像URLの取得（指定がある場合はそれを使用、なければデフォルト画像）
+  const imageUrl = product.image || "/product/"+ product.name +".webp";
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-8 text-white">商品詳細</h1>
@@ -39,11 +43,14 @@ export default async function Page({ params }: ProductPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* 左ペイン: 商品画像 */}
         <div className="overflow-hidden rounded-lg bg-gray-700 relative h-[400px]">
-          <img
-            src="/product/4Kテレビ 55インチ.webp"
-            alt={product.name}
-            className="object-cover w-full h-full"
-          />
+          <NextImage
+              src={imageUrl}
+              alt={product.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover"
+              priority
+            />
         </div>
 
         {/* 中央ペイン: 商品情報 */}

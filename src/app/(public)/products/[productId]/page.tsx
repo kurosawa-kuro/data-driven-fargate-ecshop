@@ -1,7 +1,7 @@
 import { CartActions } from './addToCart';
 import { productAPI, historyAPI } from '@/lib/api/client';
 import { Product } from "@prisma/client";
-import Image from 'next/image';
+import { default as NextImage } from 'next/image';
 
 // 型定義
 type ProductPageProps = {
@@ -39,11 +39,14 @@ export default async function Page({ params }: ProductPageProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* 左ペイン: 商品画像 */}
-        <div className="overflow-hidden rounded-lg bg-gray-700 relative h-[400px] flex items-center justify-center p-4">
-          <img
+        <div className="overflow-hidden rounded-lg bg-gray-700 relative h-[400px]">
+          <NextImage
             src="/product/4Kテレビ 55インチ.webp"
             alt={product.name}
-            className="object-contain object-center max-h-full max-w-full group-hover:opacity-75 transition-opacity"
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover"
+            priority
           />
         </div>
 

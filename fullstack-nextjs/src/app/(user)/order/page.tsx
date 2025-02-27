@@ -104,7 +104,7 @@ export default function Page() {
                 <div key={item.id} className="flex items-center gap-4 border-b border-gray-700 last:border-b-0 pb-4 last:pb-0">
                   <div className="w-20 h-20 bg-gray-700 rounded flex-shrink-0 overflow-hidden">
                     <img
-                      src={item.product.imageUrl || "/product/4Kテレビ 55インチ.webp"}
+                      src={item.product.imageUrl || `/product/${item.product.name}.webp`}
                       alt={item.product.name}
                       className="object-cover w-full h-full"
                     />

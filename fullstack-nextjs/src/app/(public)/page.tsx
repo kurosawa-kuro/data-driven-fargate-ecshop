@@ -1,5 +1,3 @@
-import Link from "next/link";
-import Image from "next/image";
 import CategoryButtons from "./products/categoryButtons";
 import { topAPI } from "@/lib/api/client";
 import ProductCard, { ProductItem } from "@/components/ProductCard";
