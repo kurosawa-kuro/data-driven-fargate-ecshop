@@ -1,5 +1,7 @@
 # data-driven-fargate-ecshop
 
+https://youtu.be/XVPcCGq3tuo
+
 - **ECS Fargate を活用したコンテナ基盤**  
   - Amazon ECS Fargate 上でアプリケーションをデプロイすることで、サーバの運用管理から解放され、スケーラブルな運用が可能。
 
